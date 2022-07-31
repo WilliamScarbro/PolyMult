@@ -1,0 +1,2 @@
+rew in NUM-LABEL-REP : < I C ; 3 > (< I P P ; 2 + (I P C) + (I C) + (I C) + (I P C) + I
+    P C > < I P C ; 0 >) .

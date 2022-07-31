@@ -1,0 +1,5 @@
+set profile on .
+rew in UNIQ-SUBE : visit( USubEV , t(1) + t(2) * t(3) + t(4) ) .
+show profile .
+***red in UNIQ-SUBE :  t(2) + t(3) .
+***xmatch in UNIQ-SUBE : use( e1 , ms ) <=? use(t(1) + (t(2) * t(3) + t(4)), union(empty, t(1) + (t(2) * t(3) + t(4)))) .

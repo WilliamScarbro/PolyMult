@@ -1,0 +1,4 @@
+*** rew in NUM-LABEL : < P ; 0 + 1 + 0 + 1 > .
+*** rew in NUM-LABEL : < P ; 0 + 1 + 2 + 3 + 0 + 1 + 2 + 3 + 0 + 1 + 2 + 3 > .
+
+rew in PATTERN-FIND : tConf < o(0) : Lab | Pat : A B C A B C A B C ,  Args : empty > .

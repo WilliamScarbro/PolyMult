@@ -1,0 +1,29 @@
+
+***(
+Extends SET by defining matching elements as equal
+   - extends automatic duplicate deletion
+   - defines "m-in" operator to extend "in" to include matches
+  This should be done by redifining equality 
+    in TRIV to including pattern matching
+)
+
+fmod MATCH-SET{X :: TRIV} is
+  inc SET{X} .
+  
+  sort M-Set{X} .
+  subsort M-Set{X} < Set{X} .
+  
+  op _m-in_ :  X$Elt Set{X} -> Bool .
+
+  vars N, M : NeSet{X} .
+  vars E E2 : X$Elt .
+  var S : Set{X} .
+  
+  ceq N, M = N if N := M . 
+
+  ceq E m-in (E2) = true if E2 := E . 
+  ceq E m-in (E2 , S ) = true if E2 := E . 
+  eq E m-in S = false [owise] .
+endfm
+
+

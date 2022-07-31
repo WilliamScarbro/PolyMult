@@ -1,0 +1,57 @@
+
+fmod NUM is
+  sort Num .
+  op 0 : -> Num [ctor] .
+  op 1 : -> Num [ctor] .
+  op 2 : -> Num [ctor] .
+  op 3 : -> Num [ctor] .
+  op null : -> Num .
+  op _ + _  : Num Num -> Num [assoc id: null] .
+endfm
+
+fmod LABEL is
+  sort Label .
+  op I : -> Label [ctor] .
+  op P : -> Label [ctor] .
+  op C : -> Label [ctor] .
+  op _ _ : Label Label -> Label [assoc] .
+endfm
+
+fmod NUM-LABEL-SIG is
+  protecting NUM .
+  protecting LABEL .
+  subsorts Label < Num .
+  sort Pair .
+  op <_;_> : Label Num -> Pair .
+  op _ _ : Pair Pair -> Pair [comm] .
+  op _ + _ : Num Label -> Num [assoc id: null] .
+  op _ + _ : Label Num -> Num [assoc id: null] .
+endfm
+
+mod NUM-LABEL is
+  including NUM-LABEL-SIG .
+  var a : Label .
+  var b : Label .
+  var B : Num .
+  var R : Num .
+  var S : Num .
+  var T : Num .
+ 
+  crl [expand] : < a ; R + B + S + B + T > => < a P ; R + ( a C ) + S + ( a C ) + T > < a C ; B > if not ( B == null )  /\ not ( B :: Label ) .
+  crl [sub] : < a ; R + B + S > < b ; B > => < a ; R + b + S > < b ; B > if not ( B == null ) /\ not ( B :: Label ) .
+  *** crl [replace] : < a ; B + R > => < a ; 0 + R > if not ( R == null ) /\ not ( B == null ) .
+endm
+
+mod NUM-LABEL-REP is
+  including NUM-LABEL-SIG .
+  var a : Label .
+  var b : Label .
+  var B : Num .
+  var R : Num .
+  var S : Num .
+  var T : Num .
+ 
+  crl [un-expand] :  < a P ; R + ( a C ) + S + ( a C ) + T > < a C ; B > =>  < a ; R + B + S + B + T > if not ( B == null )  /\ not ( B :: Label ) .
+  crl [un-sub] : < a ; R + b + S > < b ; B > => < a ; R + B + S > < b ; B >  if not ( B == null ) /\ not ( B :: Label ) .
+endm
+

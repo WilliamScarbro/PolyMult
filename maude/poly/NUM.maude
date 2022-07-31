@@ -1,0 +1,9 @@
+
+
+
+fmod FVAL{F :: Field} is
+  sort Val .
+  ops z e m : FVAL .
+  op _+_ : FVAL FVAL -> FVAL [assoc comm id .
+  op _*_ : FVAL FVAL -> FVAL .
+  op inv : FVAL -> F:VAL .

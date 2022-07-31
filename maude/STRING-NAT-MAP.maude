@@ -1,0 +1,3 @@
+fmod STRING-NAT-MAP is
+  pr MAP{String, Nat} .
+endfm

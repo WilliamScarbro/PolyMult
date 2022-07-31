@@ -1,0 +1,4 @@
+red in INT-MATRIX :  0,0  |-> 1 +  0,0  |-> 2 ;  0,1  |-> 1 . 
+***red in INT-MATRIX :   0,0  |-> 2 ;  0,1  |-> 1 . 
+red in MM : mm(2) .
+red in INT-MATRIX : norm( 0,0  |-> 1 +  0,0  |-> 2 ;  0,1  |-> 1 ) . 

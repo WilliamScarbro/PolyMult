@@ -1,0 +1,40 @@
+load FIND-LABEL
+
+mod PATTERN-FIND is
+  pr INT .
+  pr FIND-LABEL .
+  inc CONFIGURATION .
+
+  subsort Label < Oid .
+
+  op Lab : -> Cid [ctor] .
+  op Time : -> Cid [ctor] .
+  op Pat :_  : Pattern -> Attribute [ctor gather (&)] .
+  op Count :_  : Int -> Attribute [ctor gather (&)] .
+  op Args :_ : Set{Label} -> Attribute [ctor] .
+  op func : Label Pattern -> Msg [ctor] .
+  op time : Int -> Msg [ctor] .
+  op count : -> Msg [ctor] .
+  op o : Int -> Label [ctor] .
+
+  
+  vars a b : Label .
+  vars R S T U : Pattern .
+  vars i : Int .
+  vars args args2 : Set{Label} .
+  
+  rl [ increment ] : < a : Time | Count : i > count => < a : Time | Count : i + 1 > time(i) .
+  
+  crl [ propose ] : < a : Lab | Pat : R U S U T , Args : args > time(i) 
+    => < a : Lab | Pat : R o(i) S o(i) T , Args : insert(o(i), args) >  < o(i) : Lab | Pat : U , Args : visit(FL , U ) > count 
+    if not ( U == null ) /\ not ( U :: Label ) .
+  
+  crl [ accept ] : < a : Lab | Pat : R U S , Args : args > < b : Lab | Pat : U , Args : args2 > 
+    => < a : Lab | Pat : R b S , Args : insert(b, args) > < b : Lab | Pat : U , Args : args2 > 
+    if not ( U == null ) /\ not ( U :: Label ) .
+  
+  op tConf : -> Configuration [ctor] .
+  eq tConf = < o(-1) : Time | Count : 1 > count .
+endm
+
+

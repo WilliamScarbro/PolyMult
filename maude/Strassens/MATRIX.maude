@@ -1,0 +1,12 @@
+*** contents coppied from maude manual
+
+fmod INDEX-PAIR is
+  pr INT .
+  sort IndexPair .
+  op _,_ : Int Int -> IndexPair [ctor] .
+endfm
+
+view IndexPair from TRIV to INDEX-PAIR is
+  sort Elt to IndexPair .
+endv
+

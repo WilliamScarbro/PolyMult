@@ -1,0 +1,9 @@
+load RAT-POLY .
+
+view Qid from TRIV to QID is
+  sort Elt to Qid .
+endv
+
+fmod QID-RAT-POLY is
+  pr RAT-POLY{Qid} .
+endfm

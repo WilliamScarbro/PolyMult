@@ -1,0 +1,25 @@
+load PATTERN-LABEL .
+
+fmod FIND-LABEL is
+  pr LABEL .
+  pr PATTERN .
+  pr STRING .
+  pr VISITOR .
+  pr SET{Label} .
+
+  subsort Label < Pattern .
+  subsort Set{Label} < Memento .
+
+  op FL : -> Visitor [ctor] .
+
+  vars P1 P2 : Pattern .
+  var L : Label .
+  vars SL1 SL2 : Set{Label} .
+  vars T : Terminal .
+  eq FL = vid("Find-Label-Visitor") .
+  
+  eq visit( vid("Find-Label-Visitor") , L ) = L .
+  eq visit( vid("Find-Label-Visitor") , T ) = empty .
+  eq SL1 # SL2 = union( SL1, SL2 ) .
+
+endfm

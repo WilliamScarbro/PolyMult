@@ -1,0 +1,3 @@
+set profile on .
+red in FIND-LABEL : visit( FL , A B o(1) o(2) C D A B C D A o(3) o(2) B C D ) .
+show profile .

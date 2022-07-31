@@ -1,0 +1,2 @@
+***rew [10] in UNIQ-SUBE-SIMP : use( t(1) + t(2) + t(3) * l(0) , empty ) .
+rew [100] in UNIQ-SUBE-SIMP : use( t(1) + l(1) * l(0) + t(2) + t(1) + t(0)   , empty ) .

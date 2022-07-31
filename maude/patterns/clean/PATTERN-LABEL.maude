@@ -1,0 +1,30 @@
+load VISITOR
+
+fmod PATTERN is
+  pr VISITOR .
+  
+  sorts Pattern Terminal .
+  subsort Terminal < Pattern < Place .
+  op A : -> Terminal .
+  op B : -> Terminal .
+  op C : -> Terminal .
+  op D : -> Terminal .
+  op null : -> Pattern .
+  op _ _ : Pattern Pattern -> Pattern [ assoc id: null] . 
+  vars P1 P2 : Pattern .
+  vars V : Visitor .
+  ceq visit( V , P1 P2 ) = visit( V , P1 ) # visit( V , P2 ) if not ( P1 == null ) /\ not ( P2 == null ) .
+endfm
+
+
+fmod LABEL is 
+  pr INT .
+  sort Label .
+  op o : Int -> Label [ctor] .
+endfm
+
+view Label from TRIV to LABEL is
+  sort Elt to Label .
+endv
+
+

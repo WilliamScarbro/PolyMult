@@ -1,0 +1,7 @@
+
+fmod OPER{X :: DEFAULT} is
+  pr STRING .
+  sort Oper{X} .
+  op o : String -> Oper{X} .
+  op _(_,_) : Oper{X} X$Elt X$Elt -> X$Elt .
+endfm

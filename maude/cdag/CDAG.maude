@@ -1,0 +1,6 @@
+
+
+
+fmod CDAG is
+  pr INT .
+  op add

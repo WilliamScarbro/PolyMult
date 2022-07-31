@@ -1,0 +1,5 @@
+fmod TEST is
+  pr STRING .
+  op con : -> String [ctor] .
+  eq con = "abc" .
+endfm

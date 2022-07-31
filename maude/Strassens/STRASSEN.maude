@@ -1,0 +1,109 @@
+load MM .
+
+
+mod FASTMM is
+  pr MM .
+
+  op satisfies : IntMatrixSet IntMatrix -> IntMatrix .
+  
+  *** 1 for true 0 for false
+  ***op satisfies-mm : IntMatrixSet IntMatrixSet ->  . 
+  op isZero : IntMatrix -> Bool .
+  
+  ***op strassens : -> IntMatrixSet [ctor] . 
+  op norm-cond : IntMatrix IntMatrix IntMatrix -> Bool .
+
+  *** (only P1-P4)
+  ***(eq strassens =  (0,0 x 0,1) |-> 1 ; (0,0 x 1,1 ) |-> -1 ,
+                   ( 0,0 x 1,1 ) |-> 1 ; ( 0,1 x 1,1 ) |-> 1 ,
+                   ( 1,0 x 0,0 ) |-> 1 ; ( 0,1 x 0,0 ) |-> 1 ,
+                   ( 1,1 x 1,0 ) |-> 1 ; ( 1,1 x 0,0 ) |-> -1 .
+  )
+
+  vars IM1 IM2 IM3 : IntMatrix .
+  vars IP1 IP2 : PairIndex . 
+  vars i j : Int .
+  vars IMS1 IMS2 : IntMatrixSet .
+
+
+  eq IM1 ; IP1 |-> 0 = IM1 .
+  
+  ***eq isZero( IM1 ; IP1 |-> i ) = false if (i =/= 0) .
+  ***eq isZero( IM1 ) = true [owise] .
+
+  ***eq satisfies-mm( IMS1, IMS2 ; IM1 ) = if satisfies( IMS1, IM1 ) then 1 else 0 fi , satisfies-mm( IMS1, IMS2 ) .
+  
+  eq norm-cond( IM1 , IM2 , IM3 ) = true . ***norm( IM2 ) + norm( IM1 ) > norm( IM3 ) .
+  
+  eq satisfies( IMS1 , zeroMatrix ) = zeroMatrix .
+  crl satisfies( (IMS1, IM1) , IM2 ) => satisfies( (IMS1, IM1), IM2 + IM1 ) if norm-cond( IM1, IM2, IM2 + IM1 ) .
+  crl satisfies( (IMS1, IM1) , IM2 ) => satisfies( (IMS1, IM1), IM2 - IM1 ) if norm-cond( IM1, IM2, IM2 - IM1 ) .
+
+endm
+
+fmod LABEL is
+  pr STRING .
+  sort Label .
+  op l : String -> Label .
+endfm
+
+fmod EQ is
+  sort Eq .
+  op null-eq : -> Eq .
+  op _+_ : Eq Eq -> Eq [assoc comm ] .
+  op _-_ : Eq Eq -> Eq .
+  op -_ : Eq -> Eq .
+  vars e1 e2 : Eq .
+  eq null-eq - e1 = - e1 .
+  eq e1 - null-eq = e1 .
+  eq e1 + null-eq = e1 .
+  eq e1 + ( - e2 ) = e1 - e2 .
+endfm
+
+view Label from TRIV to LABEL is
+  sort Elt to Label .
+endv
+
+mod OBJ-FASTMM is
+  pr FASTMM .
+  pr LABEL .
+  pr EQ .
+  pr CONFIGURATION .
+  pr SET{Label} .
+
+  subsort Label < Oid .
+  subsort Label < Eq .
+
+  op Rule : -> Cid [ctor] .
+  op Exp : -> Cid [ctor] .
+  
+  op Def :_ : IntMatrix -> Attribute [ctor gather (&)] .
+  op State :_ : IntMatrix -> Attribute [ctor gather (&)] .
+  op Hist :_ : Eq -> Attribute [ctor gather (&)] .
+  op RuleCount :_ : Int -> Attribute [ctor gather (&)] .
+  
+  op ExpConst : Label IntMatrix -> Object [ctor obj] .
+  ***op RuleConst : Label IntMatrix -> Config [ctor obj] .  
+
+  ***op rule-req : Label Label -> Msg [msg] .
+  ***op rule-fill : Label IntMatrix -> Msg [msg] .
+  
+  
+  op strassen : -> Configuration [ctor] .
+  eq strassen =  < l("P1") : Rule | Def : (0,0 x 0,1) |-> 1 ; (0,0 x 1,1 ) |-> -1 > 
+                < l("P2") : Rule | Def : ( 0,0 x 1,1 ) |-> 1 ; ( 0,1 x 1,1 ) |-> 1 > 
+                < l("P3") : Rule | Def : ( 1,0 x 0,0 ) |-> 1 ; ( 0,1 x 0,0 ) |-> 1 >  
+                < l("P4") : Rule | Def : ( 1,1 x 1,0 ) |-> 1 ; ( 1,1 x 0,0 ) |-> -1 > .  
+ 
+  vars IM1 IM2 IM3 : IntMatrix .
+  vars i j : Int .
+  var a b c : Label .
+  var eq1 : Eq .
+  var Conf : Configuration .  
+
+  eq ExpConst(a , IM1 ) = < a : Out | Def : IM1 , State : IM1 , Hist : null-eq > .
+  rl < a : Out | Def : IM1 , State : IM2 , Hist : eq1 > < b : Rule | Def : IM3 > => < a : Out | Def : IM1 , State : IM2 + IM3 , Hist : eq1 + b > < b : Rule | Def : IM3 > .
+  rl < a : Out | Def : IM1 , State : IM2 , Hist : eq1 > < b : Rule | Def : IM3 > => < a : Out | Def : IM1 , State : IM2 - IM3 , Hist : eq1 - b > < b : Rule | Def : IM3 > .
+
+    
+endm 

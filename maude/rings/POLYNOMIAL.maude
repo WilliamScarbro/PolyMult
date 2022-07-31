@@ -1,0 +1,30 @@
+load MONOMIAL .
+load RING .
+
+fmod POLYNOMIAL{R :: RING, X :: TRIV} is
+  protecting MONOMIAL{X} .
+  sorts Poly{R, X} .
+  subsorts R$Ring < Poly{R, X} .
+  *** multiplication
+  op __ : Poly{R, X} Poly{R, X} -> Poly{R, X} [assoc comm] .
+  *** addition
+  op _++_ : Poly{R, X} Poly{R, X} -> Poly{R, X} [assoc comm] .
+  op --_ : Poly{R, X} -> Poly{R, X} .
+  op __ : R$Ring Mon{X} -> Poly{R, X} .
+  vars A B : R$Ring .
+  vars U V : Mon{X} .
+  vars P Q R : Poly{R, X} .
+  eq P ++ z = P .
+  eq P ++ (-- P) = z .
+  eq P e = P .
+  eq -- (P ++ Q) = (-- P) ++ (-- Q) .
+  eq -- (A U) = (- A) U .
+  eq P (Q ++ R) = (P Q) ++ (P R) .
+  eq z U = z .
+  eq z P = z .
+  eq A (B U) = (A B) U .
+  eq (A U) ++ (B U) = (A ++ B) U .
+  eq (A U) (B V) = (A B) (U V) .
+  eq A B = A * B .
+  eq A ++ B = A + B .
+endfm

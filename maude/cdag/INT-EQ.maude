@@ -1,0 +1,50 @@
+load VISITOR
+
+
+fmod EQUATION is
+  sort Eq .
+endfm
+ 
+view EQ from TRIV to EQUATION is
+  sort Elt to Eq .
+endv
+
+fmod LABEL is
+  pr INT .
+  sort Label .
+  op l : Int -> Label [ctor] .
+endfm
+
+view Label from TRIV to LABEL is
+  sort Elt to Label .
+endv
+
+
+fmod INT-EQ is
+  pr VISITOR .
+  pr STRING .
+  pr INT .
+  pr LIST{EQ} .
+  pr LABEL .
+
+  sort Oper .
+  sort Opid .
+  sort Terminal .
+  subsort Terminal < Eq < Place .
+  subsort Label < Eq .
+  subsort Oper < Place .
+  
+  op t : Int -> Terminal [ctor] .
+  op o : String -> Opid [ctor] .
+  op oper : Opid List{EQ} -> Oper [ctor] .
+  op _+_ : Eq Eq -> Eq [assoc prec 33 gather (E e) ] . *** "gather (E e)" makes the operator left associative, avoids ambiguous parses
+  op _*_ : Eq Eq -> Eq [assoc prec 31 gather (E e) ] .
+  
+  vars e1 e2 : Eq .
+  vars V : Visitor .
+  eq visit( V , e1 + e2 ) = visit(V , oper( o("+"), append(e1 , e2) ) ) # ( visit( V , e1 ) # visit( V , e2 ) ) .
+    ***if not ( e1 == null ) /\ not ( e2 == null ) .
+  eq visit( V , e1 * e2 ) = visit(V , oper( o("*"), append(e1 , e2) ) ) # ( visit( V , e1 ) # visit( V , e2 ) ) .
+    ***if not ( e1 == null ) /\ not ( e2 == null ) .
+endfm  
+

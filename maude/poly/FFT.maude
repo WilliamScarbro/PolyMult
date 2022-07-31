@@ -1,0 +1,19 @@
+
+fmod QRING is
+  sort QRing .
+  op qring : Int Int -> QRing .
+endm
+
+fmod FFTMOD is
+  protecting QRING .
+  protecting LIST{QRing} .
+  op fft : Nat List{QRing} -> List{QRing} .
+  op inv_fft : Nat LIST{QRing} -> LIST{QRing} .
+  op phi : 
+  op _*_ : List{QRing} List{QRing} -> List{QRing} .
+  vars A B : List{QRing} .
+  var a b : QRing .
+  vars k n d : Int .
+  eq fft( k , A * B ) -> fft( k , A ) * fft( k , A ) .
+  eq qring( n, d ) -> inv_fft( k , fft( k , qring( n , d ) ) ) if n rem k == 0 .
+  eq fft( k , qring( n , d ) ) -> 

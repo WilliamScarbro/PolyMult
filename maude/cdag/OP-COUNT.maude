@@ -1,0 +1,33 @@
+load INT-EQ
+
+
+fmod OP-COUNT is
+  pr LABEL .
+  pr INT-EQ .
+  pr LIST{EQ} .
+ 
+  sort OpCount . 
+  subsort Label < Eq .
+  subsort OpCount < Memento .
+  
+  op OpCV : -> Visitor [ctor] .
+  op op-count : Int Int -> OpCount [ctor] .
+
+  vars e1 e2 : Eq .
+  var L : Label .
+  var T : Terminal .
+  var o : Oper .
+  var el : List{EQ} .
+  vars i1 i2 i3 i4 : Int .
+
+  eq OpCV = vid("Op-Count-Visitor") .
+  
+  eq visit( vid("Op-Count-Visitor"), L ) = op-count(0,0) .
+  eq visit( vid("Op-Count-Visitor"), T ) = op-count(0,0) .
+  
+  eq visit( vid("Op-Count-Visitor"), oper(o("+"), el)) = op-count(1,0) .
+  eq visit( vid("Op-Count-Visitor"), oper(o("*"), el)) = op-count(0,1) .
+
+  eq op-count(i1,i2) # op-count(i3,i4) = op-count(i1 + i3,i2 + i4) .
+endfm
+  

@@ -1,0 +1,47 @@
+***
+*** Module for dealing with machine words as
+*** sequences of bits
+***
+fmod BITS is
+        protecting MACHINE-INT .
+
+        sorts Bit Bits .
+
+        subsort Bit < Bits .
+
+        ops 0 1 : -> Bit .
+
+        op __ : Bits Bits ->
+		Bits [assoc prec 1 gather (e E)] .
+
+        op |_| : Bits -> MachineInt .
+
+        op _++_ : Bits Bits ->
+		Bits [assoc comm prec 3 gather (E e)] .
+
+        op bits : Bits MachineInt MachineInt -> Bits .
+
+        vars S T : Bits .
+        vars B C : Bit .
+        var L : Bool .
+        var I J : MachineInt .
+
+        *** Length
+        eq | B | = 1 .
+        eq | S B | = | S | + 1 .
+
+        *** Extract Bits...
+        eq bits(S B,0,0) = B .
+        eq bits(B,J,0) = B .
+        ceq bits(S B,J,0) = bits(S, J - 1,0) B if J > 0 .
+        ceq bits(S B,J,I) = bits(S,J - 1,I - 1)
+		if I > 0 and J > 0 .
+
+        *** Binary addition
+        eq 0 ++ S = S .
+        eq 1 ++ 1 = 1 0 .
+        eq 1 ++ (T 0) = T 1 .
+        eq 1 ++ (T 1) = (T ++ 1) 0 .
+        eq (S B) ++ (T 0) = (S ++ T) B .
+        eq (S 1) ++ (T 1) = (S ++ T ++ 1) 0 .
+endfm

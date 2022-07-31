@@ -1,0 +1,6 @@
+load POLYNOMIAL .
+load RingToRat .
+
+fmod RAT-POLY{X :: TRIV} is
+  protecting POLYNOMIAL{RingToRat, X} .
+endfm

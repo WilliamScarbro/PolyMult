@@ -1,0 +1,22 @@
+
+fmod INDUCTION is
+  pr INT .
+  pr STRING .
+  sort Function .
+  sort Induction .
+  op [_] : String -> Function [ctor] .
+  op _{_} : Function Int -> Int [ prec 32 ] .
+  op ind : Function Int Int -> Int .
+
+  
+  var F : Function .
+  var R : Int .
+  var I : Int .
+
+  ceq ind(F, R, I) = ind(F, F{R}, I - 1) if ( I > 0 ) .
+  ceq ind(F, R, I) = R if ( I == 0 ) .
+  
+  ceq ["s"]{ I } = ["s"]{I - 1} + 1 if I > 0 .
+  ceq ["s"]{ I } = 1 if ( I == 0 ) .
+  ***eq ["fib"]{ I } = ["fib"]{ I - 1 } + ["fib"]{ I - 2 } .
+endfm

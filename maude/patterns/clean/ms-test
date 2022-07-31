@@ -1,0 +1,1 @@
+red in PAT-MSET : (A B) B in insert( A (B B), empty)  .

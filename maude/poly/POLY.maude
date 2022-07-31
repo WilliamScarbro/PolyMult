@@ -1,0 +1,117 @@
+
+
+
+fmod StringList is
+  protecting LIST{String} .
+endfm
+
+fth RING is
+  sort Ring .
+  ops z e : -> Ring .
+  op _+_ : Ring Ring -> Ring [assoc comm id: z] .
+  op _*_ : Ring Ring -> Ring [assoc comm id: e] .
+  op -_ : Ring -> Ring .
+  vars A B C : Ring .
+  eq A + (- A) = z [nonexec] .
+  eq A * (B + C) = (A * B) + (A + C) [nonexec] .
+endfth
+
+fth FIELD is
+  including RING .
+  sort Field .
+  subsorts Field < Ring .
+  op inv : Field -> Field .
+  vars A B : Field .
+  eq A * inv( A ) = e [nonexec] .
+endfth
+
+mod FFIELD is
+  protecting NAT .
+  sort FField .
+  subsort FField < Nat .
+  op m : -> FField .
+  op _/_ : FField FField -> FField .
+  op inv : FField -> FField .
+  op -_ : FField -> FField .
+endm
+
+fmod MODP is
+  protecting INT .
+  sort IntP .
+  op P : -> NzInt . 
+  op [_] : Int -> IntP [ctor] .
+  op _+_ : Int IntP -> IntP .
+  op _+_ : IntP IntP -> IntP .
+  op _*_ : Int IntP -> IntP .
+  op _*_ : IntP IntP -> IntP .
+  op -_ : IntP -> IntP .
+  op inv : IntP -> IntP .
+  vars N M : Int .
+  ceq [ N ] = [ N rem P ] if N >= P .
+  ceq [ N ] = [ ( N rem P ) + P ] if N < 0 .
+  eq [ N ] + [ M ] = [ N + M ] .
+  eq [ N ] * [ M ] = [ N * M ] .
+endfm
+
+mod GENP is
+  protecting MODP .
+  sort GenP .
+  subsort GenP < IntP .
+  op P : -> Int .
+  op G : -> Int .
+  op {_} : Int -> GenP [ctor] .
+  var N : Int .
+  var M : Int .
+  *** fermats little theorem
+  ceq { N } = { N rem (P - 1) } if N >= P - 1 .
+  ceq { N } = { ( N rem (P - 1) ) + (P - 1) } if N < 0 .
+  eq { N } * { M } = { N + M } . 
+  eq inv( { N } ) = { - N } .
+  rl [eval] : { N } => [ G ^ N ] .
+endm
+
+mod GEN5 is
+  protecting GENP .
+  sort Gen5 .
+  subsort Gen5 < GenP .
+  eq P = 5 .
+  eq G = 2 .
+endm
+
+***(
+view FF5 from FIELD to MODP is
+  sort Field to NatP .
+  sort Ring to NatP .
+  op z to term [0] .
+  op e to term [1] .
+endv
+
+fmod NUM{F :: FIELD} is
+  sorts Num{F} .
+  vars A : F$Field .
+  eq A * m = z .
+endfm
+
+fmod NUM5 is
+  protecting NUM{FF5} .
+  sort Num5 .
+  subsort Num5 < Num{FF5} .
+endfm 
+  )
+fmod BITS is
+  sort Bits .
+  ops 0 1 : -> Bits .
+endfm
+
+view TrivtoBits from TRIV to BITS is
+  sort Elt to Bits .
+endv
+
+fmod MYLIST{X :: TRIV} is
+endfm
+
+fmod BITLIST is
+  protecting LIST{TrivtoBits} .
+  sort BitList .
+  subsort BitList < List{TrivtoBits} .
+endfm

@@ -1,0 +1,10 @@
+fth BITS is
+  including TRIV .
+  sort Bits .
+  op 1 : -> Bits [ctor] .
+  op 0 : -> Bits [ctor] .
+  op _ _ : Bits Bits -> Bits [assoc] .
+endfth
+  
+
+

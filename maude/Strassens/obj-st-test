@@ -1,0 +1,6 @@
+***(search [1] in OBJ-FASTMM : strassen  < l("ae+bg") : Rule | Def : mm-el(2,(0,1)) , State : mm-el(2,(0,1)), Hist : null-eq > 
+                          =>! Conf < l("ae+bg") : Rule | Def : IM1 , State : zeroMatrix, Hist : eq1 > .
+)
+set profile on .
+frew [10] in OBJ-FASTMM : strassen OutConst( l("ae+bg") , mm-el(2,(0,1)) ) .
+show profile .

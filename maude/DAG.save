@@ -1,0 +1,13 @@
+mod DAG is
+  protecting DAG-SIG .
+  var a : String .
+  var B : String .
+  var R : String .
+  var S : String .
+  var T : String .
+
+  var E : Entry{String,String} .
+  var M : Map{String,String} .
+  rl [replace] : $hasMapping(M, .
+  *** rl [expand] : E{a, R + B + S + B + T } => E{a + "0",R + length(a) + S + length(a) + T} , E{a + "1", B} .
+endm*/

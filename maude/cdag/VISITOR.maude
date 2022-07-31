@@ -1,0 +1,12 @@
+fmod VISITOR is
+  pr STRING .
+  sort Visitor .
+  sort Place .
+  sort Memento .
+  op vid : String -> Visitor [ctor] . 
+  op visit : Visitor Place -> Memento . 
+  op nill : -> Memento .
+  op _#_ : Memento Memento -> Memento [id: nill] .
+endfm
+
+

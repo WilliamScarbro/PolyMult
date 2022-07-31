@@ -1,0 +1,6 @@
+load BITS .
+
+view Bits from TRIV to BITS is
+  sort Elt to Bits .
+endv
+

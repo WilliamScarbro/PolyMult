@@ -1,0 +1,18 @@
+fmod F-FIELD is
+  protecting INT .
+  protecting NAT .
+  sorts Gen FField .
+  subsorts Gen < FField < Int .
+  
+  op gen : -> Gen [ctor] .
+  op P : -> Nat [ctor] .
+  op inv_ : FField -> FField .
+
+  op rep : Int -> FField .
+
+  var e : FField .
+  eq gen ^ (P - 1) = 1 .
+  eq e = e rem P .
+  eq P = 7 .
+  eq e * inv e = 1 .
+endfm

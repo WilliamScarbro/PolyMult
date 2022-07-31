@@ -1,0 +1,5 @@
+set profile on .
+
+red in INDUCTION : ind( ["s"] , 0 , 3 ) .
+
+show profile .

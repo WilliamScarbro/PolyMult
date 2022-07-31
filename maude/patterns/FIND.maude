@@ -1,0 +1,61 @@
+fmod VISITOR is
+  pr STRING .
+  sort Visitor .
+  sort Place .
+  sort Memento .
+  op vid : String -> Visitor [ctor] . 
+  op visit : Visitor Place -> Memento . 
+  op nill : -> Memento .
+  op _#_ : Memento Memento -> Memento [id: nill] .
+endfm
+
+fmod PATTERN is
+  pr VISITOR .
+  
+  sorts Pattern Terminal .
+  subsort Terminal < Pattern < Place .
+  op A : -> Terminal .
+  op B : -> Terminal .
+  op C : -> Terminal .
+  op D : -> Terminal .
+  op null : -> Pattern .
+  op _ _ : Pattern Pattern -> Pattern [ assoc id: null] . 
+  vars P1 P2 : Pattern .
+  vars V : Visitor .
+  ceq visit( V , P1 P2 ) = visit( V , P1 ) # visit( V , P2 ) if not ( P1 == null ) /\ not ( P2 == null ) .
+endfm
+
+fmod LABEL is 
+  pr INT .
+  sort Label .
+  op o : Int -> Label [ctor] .
+endfm
+
+view Label from TRIV to LABEL is
+  sort Elt to Label .
+endv
+
+
+fmod FIND-LABEL is
+  pr LABEL .
+  pr PATTERN .
+  pr STRING .
+  pr VISITOR .
+  pr SET{Label} .
+
+  subsort Label < Pattern .
+  subsort Set{Label} < Memento .
+
+  op FL : -> Visitor [ctor] .
+
+  vars P1 P2 : Pattern .
+  var L : Label .
+  vars SL1 SL2 : Set{Label} .
+  vars T : Terminal .
+  eq FL = vid("Find-Label-Visitor") .
+  
+  eq visit( vid("Find-Label-Visitor") , L ) = L .
+  eq visit( vid("Find-Label-Visitor") , T ) = empty .
+  eq SL1 # SL2 = union( SL1, SL2 ) .
+
+endfm

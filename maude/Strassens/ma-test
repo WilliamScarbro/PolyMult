@@ -1,0 +1,1 @@
+red in STRING-TO-INT : combine( "a" |-> 1 , "a" |-> 2 , o("+") ).

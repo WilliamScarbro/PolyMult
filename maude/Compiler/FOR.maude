@@ -1,0 +1,33 @@
+
+
+fth EXPR{T::TYPE} is
+  including TRIV .
+  sort Elt .
+  sort Expr{T} < Elt .
+  op expr 
+  op subVar : Expr{T} QiD V$Elt -> Expr{T} .
+  op &_ : Qid -> T$Elt .
+  vars Q : QiD .
+  eq subVar( 
+    
+fmod NATEXPR is
+  protecting NAT .
+  sort NatExpr .
+  subsort NatExpr .
+  op $_ : QiD -> Nat .
+  op subVar : NatExpr QiD -> NatExpr .
+  
+  
+view NATEXPR_V from EXPR to NAT is
+  sort Expr to NatExpr .
+endv
+
+fmod FOR{E::EXPR} is
+  protecting LIST{E} .
+  sort Interval .
+  op interval : Int Int -> Interval .
+  op for : QiD Interval E -> List{E} .
+  var index : QiD .
+  vars Start End : Int .
+  ceq for( index , interval( Start , End ) , Expr ) -> E$subVar(index) for(index, interval( Start + 1, End ) , E ) if Start < End .
+  ceq for( index , interval( Start , End ) , Expr ) -> E$subVar(index) if Start == End .

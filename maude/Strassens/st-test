@@ -1,0 +1,8 @@
+
+rew [200] in FASTMM : satisfies( strassens, mm-el(2,(0,1)) ) .
+***search [1] in FASTMM : satisfies( strassens, mm-el(2, (0,1)) ) =>! zeroMatrix .
+***show search graph .
+
+
+
+

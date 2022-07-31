@@ -1,0 +1,21 @@
+load INT-EQ .
+
+fmod USE is
+  pr LABEL .
+  pr INT-EQ .
+  pr LIST{EQ} .
+  
+  
+  sort USEList .
+  subsort USEList < List{EQ} .
+  op use_i : Eq UseList -> UseList .
+  op use : UseList -> 
+  
+  var e1 e2 : Eq .
+  var T : Terminal .
+  var L : Label .
+  
+
+  eq use( e1 + e2 , USEList ) = 
+
+  eq matches( e1 + e2 , e3 + e4 ) = ( matches( e1 , e3 ) and matches(e2, e4) ) or ( matches( 

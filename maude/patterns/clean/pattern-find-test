@@ -1,0 +1,2 @@
+***rew in PATTERN-FIND : tConf < o(0) : Lab | Pat : A B C A B C A B C ,  Args : empty > .
+rew in PATTERN-FIND : tConf < o(0) : Lab | Pat : A A A A A A A A A A A ,  Args : empty > .

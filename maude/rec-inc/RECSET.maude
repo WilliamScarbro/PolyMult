@@ -1,0 +1,16 @@
+
+fmod INTSET is
+  pr SET{Int} * ( sort Set{Int} to IntSet,
+                  op _,_ to is(_,_) : Int Int -> IntSet ).
+endfm
+
+view IntSet from TRIV to INTSET is
+  sort Elt to IntSet .
+endv
+
+fmod INTSETSET is
+  pr SET{IntSet} * ( sort Set{IntSet} to IntSetSet ,
+                    op _,_ to iss(_,_) : IntSet IntSet -> IntSetSet  ).
+endfm
+
+  

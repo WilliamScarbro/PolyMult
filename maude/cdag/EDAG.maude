@@ -1,0 +1,39 @@
+load OP-COUNT .
+
+mod EDAG is
+  pr OP-COUNT .
+  inc CONFIGURATION .
+  
+  subsort Label < Oid .
+  
+  
+  op Var : -> Cid [ctor] .
+  op OidCounter : -> Cid [ctor] .
+  op Controller : -> Cid [ctor] .
+  
+  op Eq :_ : Eq -> Attribute [ctor gather (&) ] .
+  op OpC :_ : Int -> Attribute [ctor gather (&) ] .
+  op OidCount :_ : Int -> Attribute [ctor gather (&) ] .
+  op VarType : String -> Attribute [ctor] .
+
+  op oid_count : Int -> Msg [ctor] .
+  op oid_signal : Oid -> Msg [ctor] .
+  
+  vars a b : Label .
+  var i : Int .
+  var class : Cid .
+  vars e1 e2 : Eq .
+  var VT : Attribute . 
+  
+  rl [increment] : < a : OidCounter | OidCount : i > oid_signal(a) 
+    => < a : OidCounter | OidCount : i + 1 > oid_count(i) .
+
+  *** Var constructor, "Args : {}" is not safe (matches input vars) but "OpC : -1" prevents overmatching
+  eq < a : Var | VT, Eq : e1 , OpC : -1 , Args : {} > = < a : class | VT, Eq : e1 , OpC : visit( OpC_V , e1 ) , Args : visit( FL , e1) > . 
+
+  op OidConf1 : -> Configuration [ctor] .
+  eq OidConf1 = < l(-1) : OidCounter | OidCount : 1 > oid_count(1) .
+endm
+   
+  
+  

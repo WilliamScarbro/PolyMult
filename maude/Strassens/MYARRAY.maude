@@ -1,0 +1,47 @@
+load OPER .
+
+fmod MYARRAY{X :: TRIV , Y :: DEFAULT } is
+  protecting ARRAY{X,Y} .
+  protecting SET{X} .
+  
+  op index-set : Array{X,Y} -> Set{X} .
+
+  var D : X$Elt .
+  vars R R’ : Y$Elt .
+  var M : Array{X,Y} .
+
+  eq index-set( (M ; D |-> R)  ) = D , index-set( M ) .
+  eq index-set(empty) = empty .
+endfm
+
+
+
+fmod COMB-ARRAY{ X :: TRIV , Y :: DEFAULT } is
+  pr MYARRAY{X,Y} .
+  pr OPER{Y} .
+  pr SET{X} .
+  pr STRING .
+
+  *** user function
+  op combine :  Array{X,Y} Array{X,Y} Oper{Y} -> Array{X,Y} .
+  *** internal helper
+  op combine-set : Set{X} Array{X,Y} Array{X,Y} Oper{Y} -> Array{X,Y} .
+
+  vars m1 m2 : Array{X,Y} .
+  var oper : Oper{Y} .
+  var S : Set{X} .
+  var D : X$Elt .
+  var R R' : Y$Elt .
+
+  eq combine( m1, m2, oper ) = combine-set( union( index-set(m1), index-set(m2) ) , m1, m2, oper ) .
+  eq combine-set( (S , D) , m1 , m2 , oper ) = combine-set( S , m1 , m2, oper ) ; D |-> oper(m1[D] , m2[D] ) .
+  eq combine-set( empty, m1, m2, oper ) = empty .
+ 
+  
+endfm
+
+
+*** tests
+fmod STRING-TO-INT is
+  pr COMB-ARRAY{String,Int0} .
+endfm 

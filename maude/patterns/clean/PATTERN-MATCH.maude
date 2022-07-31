@@ -1,0 +1,44 @@
+load PATTERN-LABEL 
+
+fmod PATTERN-MATCH is
+  pr PATTERN .
+  pr LABEL .
+
+  var P1 P2 : Pattern .
+ 
+  ceq B P1 = P2 if P2 := A ( P1 ) /\ not ( P1 == null ) .
+endfm
+
+  
+fmod MATCH-SET{X :: TRIV} is
+  inc SET{X} .
+  
+  sort M-Set{X} .
+  subsort M-Set{X} < Set{X} .
+  
+  op _m-in_ :  X$Elt Set{X} -> Bool .
+
+  vars N, M : NeSet{X} .
+  vars E E2 : X$Elt .
+  var S : Set{X} .
+  
+  ceq N, M = N if N := M .
+
+  ceq E m-in (E2) = true if E2 := E .
+  ceq E m-in (E2 , S ) = true if E2 := E .
+  eq E m-in S = false [owise] .
+endfm
+
+view pat from TRIV to PATTERN is
+  sort Elt to Pattern .
+endv
+
+fmod PAT-MSET is
+  pr MATCH-SET{pat} .
+  
+  vars N M : Pattern .
+endfm
+
+fmod PAT-SET is 
+  pr SET{pat} .
+endfm

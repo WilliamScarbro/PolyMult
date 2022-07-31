@@ -1,0 +1,19 @@
+# simplified 15
+fmod TTT is
+  protects NAT .
+  sort Tile .
+  sort Board{Tile} .
+  sort X-Board O-Board < Board .
+
+  op empty-tile : -> TILE [ctor] .
+  op X : -> TILE [ctor] .
+  op O : -> TILE [ctor] .
+  
+  op empty-board : -> X-Board [ctor] .
+  op x-move : X-Board -> O-Board .
+  op O-move : O-Board -> X-Board .
+
+  
+  
+  
+  

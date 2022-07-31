@@ -1,0 +1,28 @@
+
+
+fth E-LANG is
+  pr STRING .
+  sort func .
+  sort type .
+  op [_] : String -> func [ctor] .
+  op {_} : String -> Type [ctor] . 
+  op _(_) : func type -> type .
+endfth
+
+ 
+fmod MEMO is
+  pr E-LANG .
+  pr SET .
+  sort Call .
+  sort Library .
+  subsort Library < Set{Call} .
+  op call : 
+
+fmod FIB is
+  pr INT .
+  
+endfm
+
+view fib from E-LANG to FIB is
+  sort func to fib .
+   

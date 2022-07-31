@@ -1,0 +1,31 @@
+load INT-EQ
+
+
+fmod MULT-COUNT is
+  pr LABEL .
+  pr INT-EQ .
+  pr LIST{EQ} .
+  
+  subsort Label < Eq .
+  subsort Int < Memento .
+  
+  op MC : -> Visitor [ctor] .
+  
+  vars e1 e2 : Eq .
+  var L : Label .
+  var T : Terminal .
+  var o : Oper .
+  var el : List{EQ} .
+  vars i i2 : Int .
+
+  eq MC = vid("Mult-Count-Visitor") .
+  
+  eq visit( vid("Mult-Count-Visitor"), L ) = 0 .
+  eq visit( vid("Mult-Count-Visitor"), T ) = 0 .
+  
+  eq visit( vid("Mult-Count-Visitor"), oper(o("+"), el)) = 0 .
+  eq visit( vid("Mult-Count-Visitor"), oper(o("*"), el)) = 1 .
+
+  eq i # i2 = i + i2 .
+endfm
+  

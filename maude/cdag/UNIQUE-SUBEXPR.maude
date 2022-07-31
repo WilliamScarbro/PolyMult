@@ -1,0 +1,65 @@
+load INT-EQ
+
+
+fmod UNIQ-SUBE is
+  pr LABEL .
+  pr INT-EQ .
+  pr SET{EQ} .
+  pr LIST{EQ} .
+ 
+  subsort Label < Eq .
+  subsort Set{EQ} < Memento .
+  
+  op USubEV : -> Visitor [ctor] .
+  op use : Eq Set{EQ} -> Set{EQ} [ctor] .
+
+  vars e1 e2 : Eq .
+  var L : Label .
+  var T : Terminal .
+  var o : Oper .
+  var S S2 : Set{EQ} .
+  var el : List{EQ} .
+  vars i1 i2 i3 i4 : Int .
+
+  eq USubEV = vid("Uniq-SubE-Visitor") .
+  
+  eq visit(  vid("Uniq-SubE-Visitor") , L ) = empty .
+  eq visit(  vid("Uniq-SubE-Visitor") , T ) = empty .
+
+  
+  eq visit( vid("Uniq-SubE-Visitor"), oper(o("+"), el)) =  head(el) + tail(el)  .
+  eq visit( vid("Uniq-SubE-Visitor"), oper(o("*"), el)) =  head(el) * tail(el)  .
+
+  eq S # S2 = union(S,S2) .
+
+endfm
+
+*** very large (considers transformations) only works to ~5 terminals  
+mod UNIQ-SUBE-FULL is
+  pr LABEL .
+  pr INT-EQ .  
+  pr SET{EQ} .
+    
+  op use : Eq Set{EQ} -> Set{EQ} [memo] .
+
+  op nlot : Eq -> Bool .
+  op rmlt : Set{EQ} -> Set{EQ} .
+
+  var E1 E2 : Eq .
+  var L : Label .
+  var T : Terminal .
+  var S : Set{EQ} .
+
+
+  eq nlot(E1) = not( E1 :: Label or E1 :: Terminal ) .
+  
+  ceq use( E1 + E2 , S ) = union(union( use( E1 + E2 , union(S,(E1,E2)) ) , use( E1, empty ) ) , use( E2, empty ) )
+    if ( not ( E1 in S ) or not( E2 in S ) ) .
+  ceq use( E1 * E2 , S ) = union(union( use( E1 * E2 , union(S,(E1,E2)) ) , use( E1, empty ) ) , use( E2, empty ) )
+    if ( not ( E1 in S ) or not( E2 in S ) ) .
+  
+  rl use( E1, S ) => rmlt(S) .
+  
+  eq rmlt( (E1 , S) ) = union( if nlot(E1) then E1 else empty fi, rmlt(S) ) .
+  eq rmlt( empty ) = empty .
+endm

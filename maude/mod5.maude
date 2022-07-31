@@ -1,0 +1,31 @@
+***(
+fmod MOD is
+  protecting NAT .
+  sort Nat5 .
+  op [_] : Nat -> NatP [ctor] .
+  op _+_ : Nat Nat5 -> Nat5 .
+  op _+_ : Nat5 Nat5 -> Nat5 .
+  op _*_ : Nat Nat5 -> Nat5 .
+  op _*_ : Nat5 Nat5 -> Nat5 .
+  vars n M : Nat .
+  ceq [n ] = [ n rem 5 ] if n >= 5 .
+  eq [ n ] + [ M ] = [ n + M ] .
+  eq [ n ] * [ M ] = [ n * M ] .
+endfm
+)
+fmod MODP is
+  protecting NAT .
+  sort NatP .
+  op P : -> Nat . 
+  op [_] : Nat -> NatP [ctor] .
+  op _+_ : Nat NatP -> NatP .
+  op _+_ : NatP NatP -> NatP .
+  op _*_ : Nat NatP -> NatP .
+  op _*_ : NatP NatP -> NatP .
+  vars N M : Nat .
+  ceq [ N ] = [ N rem P ] if N >= P .
+  eq [ N ] + [ M ] = [ N + M ] .
+  eq [ N ] * [ M ] = [ N * M ] .
+  eq P = 5 .
+endfm
+

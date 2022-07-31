@@ -1,0 +1,100 @@
+load MYARRAY .
+
+fmod INT-PAIR is
+  pr INT .
+  sort IntPair .
+  op _,_ : Int Int -> IntPair .
+endfm
+
+view IntPair from TRIV to INT-PAIR is
+  sort Elt to IntPair .
+endv
+
+fmod INDEX{T :: TRIV} is
+  pr INT .
+  sort Index{T} .
+  subsort T$Elt < Index{T} .
+  op _x_ : Index{T} Index{T} -> Index{T} [ctor].
+  op dim : -> Int [ctor] .
+endfm
+
+fmod PAIR-INDEX is
+  pr INDEX{IntPair} * ( sort Index{IntPair} to PairIndex ).
+endfm
+
+view PairIndex from TRIV to PAIR-INDEX is
+  sort Elt to PairIndex .
+endv
+
+fmod MATRIX{Y :: DEFAULT} is
+  pr (COMB-ARRAY * (sort Entry{X,Y} to Entry{Y},
+                    sort Array{X,Y} to Matrix{Y},
+                    sort Set{X} to IndexPairSet,
+                    sort Oper{Y} to TokenOp))
+      {PairIndex, Y} .
+endfm
+
+fmod INT-MATRIX is
+  pr MATRIX{Int0} * (sort Entry{Int0} to IntMatrixEntry,
+                    sort Matrix{Int0} to IntMatrix,
+                    sort TokenOp to IntOp,
+                    op empty to zeroMatrix) .
+  op _+_ : IntMatrix IntMatrix -> IntMatrix [assoc comm prec 72 ] .
+  op _-_ : IntMatrix IntMatrix -> IntMatrix [prec 72 ] .
+
+  op norm : IntMatrix -> Int .
+  
+  ***op nodup : IntMatrix -> Bool .
+
+  
+  var ip : PairIndex .
+  vars i j : Int .
+  vars im1 im2 : IntMatrix .
+  
+  ***eq nodup(im1) = if im1 := ip |-> i ; ip |-> j ; im2 then false else true fi .
+
+  eq norm( im1 ; ip |-> i ) = norm( im1 ) + abs(i) .
+  eq norm( zeroMatrix ) = 0 .
+
+  eq im1 + im2 = combine( im1, im2, o("+") ) .
+  eq o("+")(i,j) = i + j . 
+
+  eq im1 - im2 = combine( im1, im2, o("-") ) .
+  eq o("-")(i,j) = i - j .
+
+  eq im1 + zeroMatrix = im1 .
+  eq im1 - zeroMatrix = im1 . 
+  ***eq norm( im1 ; ip |-> ip
+endfm
+
+view IntMatrix from TRIV to INT-MATRIX is
+  sort Elt to IntMatrix .
+endv
+
+fmod MM is
+  pr INT-MATRIX .
+  pr SET{IntMatrix} * ( sort Set{IntMatrix} to IntMatrixSet ) .
+  
+  op mm : Nat ->  IntMatrixSet [ctor] .
+  op mm-el : Int PairIndex -> IntMatrix .
+  
+  vars i j : Int .
+  eq mm(2) =  mm-el(2, (0,0) ) , mm-el(2, (0,1) ) ,
+              mm-el(2, (1,0) ) , mm-el(2, (1,1) ) .
+  eq mm-el(2, (i,j) ) =  (i,0) x (0,j) |-> 1 ; (i,1) x (1,j)  |-> 1 .
+endfm
+
+***(
+fmod TENSOR is
+  pr INT-MATRIX .
+  sort Tensor .
+  subsort Int Tensor < IntMatrix .
+
+  op _[_] : Tensor Pair -> Tensor .
+  
+
+  vars i j : Int .
+  var T : Tensor .
+  var PI1 PI2 : PairIndex .
+  ***eq T[PI1 x PI2] = 
+endfm)
