@@ -1,0 +1,136 @@
+load OBJ-BFS .
+
+mod OBJ-FFT-SEARCH is 
+  pr OBJ-BFS .
+  pr FFT .
+  pr FACTOR .
+  pr LIST{Eq} . 
+  pr LIST{Rat} .
+  pr LIST{Label} .
+  pr MAP{Eq,Label} .
+  pr UNIQ{Eq} .
+
+  op MULT : -> Cid . 
+  op CONTROLLER : -> Cid .
+  op RED : -> Cid .
+  op multctl : -> Oid .
+  op redctl : -> Oid .
+
+  op EQ :_ : Eq -> Attribute [ctor gather (&)] .
+  op ChildLabels :_ : List{Label} -> Attribute [ctor gather (&)] .
+  op ReductionLabels :_ : List{Label} -> Attribute [ctor gather (&)] .
+  op Type :_ : Type -> Attribute [ctor gather (&)] .
+  op ServicingReq : -> Attribute [ctor] .
+  op ReqOid :_ : Oid -> Attribute [ctor gather (&)] .
+  op EtoL :_ : Map{Eq,Label} -> Attribute [ctor gather (&)] .
+  op OidC :_ : Int -> Attribute [ctor gather (&)] .  
+  op State :_ : String -> Attribute [ctor gather (&)] .
+  op ProdClass :_ : Cid -> Attribute [ctor gather (&)] .
+  op CurrentRed :_ : Eq -> Attribute [ctor gather (&)] .
+  op CurrentChild :_ : Eq -> Attribute [ctor gather (&)] .
+
+  op reduction-request : Oid Oid -> Msg .
+  op reduction-response : Oid Oid List{Label} -> Msg .
+  op eq-to-label-req : Oid Label Eq -> Msg .
+  op eq-to-label-resp : Label Oid Label -> Msg .
+
+  op redctl-init : -> Configuration .
+  op mult-init : Label Eq -> Configuration .
+  op multctl-init : -> Configuration .
+
+  op mult-reductions : Eq QR -> List{Eq} .
+  op mult-reductions-help : Eq List{Rat} -> List{Eq} .
+  op remove : List{Rat} Rat -> List{Rat} .
+  op find-labels : List{Eq} -> List{Label} .
+
+  vars L L2 : Label .
+  vars E E2 E3 : Eq . 
+  vars T : Type .
+  vars LR LR2 : List{Rat} .
+  vars LL LL2 : List{Label} .
+  vars EL EL2 : List{Eq} .
+  vars ELM : Map{Eq,Label} .
+  vars OD1 : Oid .
+  var CD : Cid .
+  vars n d k N : Rat .
+  var i : Int .
+  var A : AttributeSet .
+  
+
+  eq remove( n LR , n ) = remove( LR , n ) .
+  eq remove( n LR , d ) = n remove( LR , d ) [owise] .
+  eq remove( nil , d ) = nil .
+
+  eq mult-reductions( E , qr(n,d,N) ) = mult-reductions-help( E ,
+                                         remove(remove(all-factors(n),n),1) ) .
+  eq mult-reductions-help( E , k LR ) = append(fft-red(k, E ),mult-reductions-help( E , LR )) .
+  eq mult-reductions-help( E , nil ) = nil .
+  
+  eq redctl-init = < redctl : CONTROLLER | EtoL : empty , OidC : 0, ProdClass : RED > .
+  eq multctl-init = < multctl : CONTROLLER | EtoL : empty , OidC : 1 , ProdClass : MULT > .
+  eq mult-init( L , E ) = < L : MULT | EQ : E , Type : type(E) , State : "Initialized" > .
+ 
+  *** when neighbors is cached
+  rl < L : MULT | A , ReductionLabels : LL , State : "Expanded" > 
+        reduction-request(L, OD1)
+     => < L : MULT | A , ReductionLabels : LL, State : "Expanded" > 
+        reduction-response(OD1, L , LL ) .
+
+  *** finding neighbors
+  *** Initialized -> FindReductions
+  rl < L : MULT | EQ : E , Type : T , State : "Initialized" >
+       reduction-request(L , OD1) 
+     => < L : MULT | EQ : E , Type : T , State : "FindReductions" , ReqOid : OD1 , ReductionLabels : find-labels( mult-reductions( E,T ) ), ChildLabels : nil  > 
+      [print "Initialized -> FindReductions" ] .
+ 
+  *** FindReductions -> FindChildren
+  rl < L : MULT | A , State : "FindReductions" , ReductionLabels : LL find-labels( E2 EL ) , ChildLabels : LL2 > 
+      => < L : MULT | A , State : "FindChildren" , ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 find-labels( uniq(find-mult( E2 )) ), CurrentRed : E2 >
+      [print "FindReductions -> FindChildren" ] .
+
+  *** FindChildren -> LabelChildren
+  rl < L : MULT | A , State : "FindChildren",  ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 find-labels( E3 EL2 ) >
+      => < L : MULT | A , State : "LabelChildren", ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 find-labels( EL2 ) , CurrentChild : E3 >
+         eq-to-label-req( multctl , L, E3 ) 
+      [print "FindChildren -> LabelChildren" ] .
+
+  *** LabelChildren -> FindChildren
+  rl < L : MULT | A , State : "LabelChildren", ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 find-labels( EL2 ), CurrentRed : E2 , CurrentChild : E3 >
+        eq-to-label-resp( L, multctl , L2 ) 
+      => < L : MULT | A , State : "FindChildren", ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 L2 find-labels( EL2 ), CurrentRed : replace( E2, L2, E3 ) >
+      [print "LabelChildren -> FindChildren" L2 ] .
+    
+  *** FindChildren -> LabelReduction
+  rl < L : MULT | A , State : "FindChildren" , ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 find-labels( nil ) , CurrentRed : E2 >
+      => < L : MULT | A , State : "LabelReduction" , ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 >
+        eq-to-label-req( redctl , L , E2 )
+      [print "FindChildren -> LabelReduction" ] .
+  
+  *** LabelReduction -> FindReductions
+  rl < L : MULT | A , State : "LabelReduction" , ReductionLabels : LL find-labels( EL ) , ChildLabels : LL2 >
+        eq-to-label-resp( L, redctl , L2 )
+      => < L : MULT | A , State : "FindReductions" , ReductionLabels : LL L2 find-labels( EL ) , ChildLabels : LL2 >
+      [print "LabelReduction -> FindReductions" L2 ] .
+
+  *** FindReductions -> Expanded
+  rl < L : MULT | A, State : "FindReductions", ReqOid : OD1 , ReductionLabels : LL find-labels( nil ) , ChildLabels : LL2 > 
+      => < L : MULT | A, State : "Expanded", ReductionLabels : LL , ChildLabels : LL2 > 
+        reduction-response( OD1, L , LL ) 
+      [print "FindReductions -> Expanded" ] .
+
+  *** CONTROLLER
+  crl < OD1 : CONTROLLER | EtoL : ELM , OidC : i, ProdClass : CD > 
+        eq-to-label-req( OD1 , L , E )
+      => < OD1 : CONTROLLER | EtoL : ELM , OidC : i , ProdClass : CD >
+        eq-to-label-resp( L , OD1 , ELM[E] )
+      if $hasMapping(ELM,E) .
+  
+  crl < OD1 : CONTROLLER | EtoL : ELM , OidC : i, ProdClass : CD >
+        eq-to-label-req( OD1 , L , E )
+      => < OD1 : CONTROLLER | EtoL : insert(E,l(i),ELM) , OidC : i + 2, ProdClass : CD >
+        < l(i) : CD | EQ : E , Type : type(E) , State : "Initialized" >
+        eq-to-label-resp( L , OD1 , l(i) )
+      if not $hasMapping(ELM,E) .
+endm
+
+  

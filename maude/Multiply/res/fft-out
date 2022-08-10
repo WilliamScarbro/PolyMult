@@ -1,0 +1,3 @@
+o("NTT_inv")(o("tup")(o("mult")(o("phi")(l("a") of qr(4, 4),0) of qr(4, 4),o("phi")(l("b") of qr(4, 4),0) of qr(4, 4)) of qr(2, (4 + 0 * N) / 2),o("mult")(o("phi")(l("a") of qr(4, 4),1)
+    of qr(4, 4),o("phi")(l("b") of qr(4, 4),1) of qr(4, 4)) of qr(2, (4 + N * 1) / 2)) of tup,2) of qr(4, 4)
+

@@ -1,0 +1,41 @@
+load LABEL .
+
+fmod BFS{T :: TRIV} is
+  pr LIST{T} .  
+  pr SET{T} .
+  op bfs : List{T} Set{T} -> List{T} .
+  op LToSet : List{T} -> Set{T} .
+  op SToList : Set{T} -> List{T} .
+  op neighbors : T$Elt -> List{T} .  
+
+  var E  : T$Elt .
+  var L : List{T} .
+  var S : Set{T} .
+  
+  eq LToSet( L E ) = LToSet(L), E .
+  eq SToList( S E ) = SToList(S) E .
+
+  ceq bfs( E L , S ) = E bfs( L neighbors(E) , union(S,E) ) if not E in S .
+  eq bfs( E L , ( E, S ) ) = bfs( L , ( E , S ) ) .
+  eq bfs( nil , S ) = nil .
+endfm
+
+
+*** Test
+load FACTOR .
+
+fmod SEARCH-FACTORS is
+  pr FACTOR .
+  pr BFS{Rat} .
+
+  op search-factors : Rat -> List{Rat} .
+  op div-by-list : Rat List{Rat} -> List{Rat} .
+
+  var n p : Rat .
+  var nl : List{Rat} .
+  
+  eq div-by-list( n , p nl ) = (n / p) div-by-list( n , nl ) .
+  eq div-by-list( n, nil ) = nil .
+  eq search-factors( n ) = div-by-list( n , uniq-factor(n)) .
+  eq neighbors( n ) = search-factors( n ) .
+endfm

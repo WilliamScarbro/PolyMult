@@ -1,0 +1,6 @@
+
+***red in OBJ-FFT-SEARCH : mult-reductions( mult(l("a") of qr(8,8,8),l("b") of qr(8,8,8)), qr(8,8,8) ) .
+
+set print attribute on .
+set print format on .
+rew [1] in OBJ-FFT-SEARCH : multctl-init redctl-init mult-init( l(0) , mult(l("a") of qr(4,4,4), l("b") of qr(4,4,4) ) ) reduction-request(l(0) , bfsctl ) .

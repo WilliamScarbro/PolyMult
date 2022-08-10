@@ -1,0 +1,1 @@
+rew in OBJ-SEARCH-FACTORS : bfsinit( l(0) ) fact-init label-by-value-req( factctl, l(-1) , 1073741824 ) .

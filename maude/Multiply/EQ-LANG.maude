@@ -1,0 +1,54 @@
+load LABEL .
+
+fmod EQ is
+  pr LABEL .
+  pr RAT .
+
+  sort Eq .
+  sort Oper .
+  sort Func .
+  sort Type .
+  sort TLab .
+  sort Tup .
+
+  subsort TLab < Eq .
+  subsort Tup < Type .
+
+  op _ of _ : Label Type -> TLab .
+  op _(_,_) : Oper Eq Eq -> Eq .
+  op _(_) : Func Eq -> Eq .
+  op tup : Eq Eq -> Eq [assoc] .
+  op Tup : Type Type -> Tup [assoc] .
+  op type : Eq -> Type .
+  op image-type : Func Type -> Type . *** including type allows the same function to be defined over different domain types
+  op replace : Eq Label Eq -> Eq .
+
+  vars F : Func .
+  vars O : Oper .
+  vars TL : TLab .
+  vars L : Label .
+  vars T : Type .
+  vars EQ EQ2 EQ3 : Eq .
+  
+  eq type( L of T ) = T .
+  eq type( O(EQ, EQ2) ) = type(EQ) . *** assumes type EQ same as type EQ2, should have type check
+  eq type( F(EQ) ) = image-type(F,type(EQ)) .
+  eq type( tup( EQ , EQ2 ) ) = Tup( type( EQ ), type( EQ2 ) ) .
+
+  ceq replace( F(EQ) , L , EQ3 ) = F(replace(EQ,L,EQ3)) if not (EQ3 == F(EQ)) .
+  ceq replace( O( EQ, EQ2 ) , L , EQ3 ) = O(replace(EQ,L,EQ3),replace(EQ2,L,EQ3)) if not EQ3 == O(EQ,EQ2) .
+  ceq replace( tup( EQ, EQ2 ) , L , EQ3 ) = tup(replace(EQ,L,EQ3),replace(EQ2,L,EQ3)) if not EQ3 == tup(EQ,EQ2) .
+  ceq replace( TL , L , EQ ) = TL if not EQ == TL .
+  eq replace( EQ, L , EQ ) = L of type(EQ) .
+
+endfm
+
+view Eq from TRIV to EQ is 
+  sort Elt to Eq .
+endv
+
+***fmod EQ-TEST is
+***  pr LIST{Label} .
+***  pr LIST{Rat} .
+***  pr LIST{Eq} .
+***endfm

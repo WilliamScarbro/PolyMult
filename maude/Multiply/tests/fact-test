@@ -1,0 +1,8 @@
+set print attribute on .
+
+red in FACTOR : factor( 73 ) .
+red in FACTOR : factor( 1024 ) .
+
+red in FACTOR : factor( 2310 ) .
+
+red in FACTOR : all-factors(12) .

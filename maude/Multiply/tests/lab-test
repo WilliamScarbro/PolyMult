@@ -1,0 +1,2 @@
+red in LABEL : l("a") + l("b") .
+red in LABEL : parent(l("a") + l("b")) .

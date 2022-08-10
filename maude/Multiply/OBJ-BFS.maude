@@ -1,0 +1,136 @@
+***load LABEL .
+load FFT .
+
+mod OBJ-BFS is
+  pr LIST{Label} .
+  pr SET{Label} .
+  pr CONFIGURATION .
+  
+  subsort Label < Oid .
+
+  op bfsctl : -> Oid [ctor] .
+  op BFSCONTROLLER : -> Cid [ctor] .
+  op PrioQ :_ : List{Label} -> Attribute [ctor gather (&)] .
+  op History :_ : List{Label} -> Attribute [ctor gather (&)] .
+  op bfsinit : Label -> Configuration .  
+  op WaitingResp  : -> Attribute [ctor] .
+
+  *** Msg : reciever , sender , data
+  op neighbors-request : Oid Oid -> Msg .
+  op neighbors-response : Oid Oid List{Label} -> Msg .
+
+  var L : Label .
+  var LL1 LL2 LL3 : List{Label} .
+  var LS : Set{Label} .
+  var B : Bool .
+  
+  crl < bfsctl : BFSCONTROLLER | PrioQ : L LL1 , History : LL2  >
+      => < bfsctl : BFSCONTROLLER | PrioQ : LL1 , History : LL2 , WaitingResp > 
+          neighbors-request(L, bfsctl) 
+      if not occurs(L , LL2 ).
+  
+  rl < bfsctl : BFSCONTROLLER | PrioQ : LL1 , History : LL2 , WaitingResp >
+        neighbors-response( bfsctl , L , LL3 ) 
+      => < bfsctl : BFSCONTROLLER | PrioQ : LL1 LL3 , History : LL2 L  > .
+  
+  crl < bfsctl : BFSCONTROLLER | PrioQ : L LL1 , History : LL2 > 
+      => < bfsctl : BFSCONTROLLER | PrioQ : LL1 , History : LL2 > 
+      if occurs( L , LL2 ) .
+  
+  eq bfsinit( L ) = < bfsctl : BFSCONTROLLER | PrioQ : L , History : nil > .
+
+endm
+ 
+*** test
+load FACTOR .
+
+mod OBJ-SEARCH-FACTORS is
+  pr FACTOR .
+  pr OBJ-BFS .
+  pr MAP{Rat,Label} .
+  pr LIST{Rat} .
+
+  op factctl : -> Oid [ctor] .
+  op FACTCONTROLLER : -> Cid .
+  op FACTOR : -> Cid .
+
+  op Value :_ : Rat -> Attribute [ctor gather (&)] .
+  op ServicingReq :  -> Attribute [ctor] .
+  op ReqOid :_ : Oid -> Attribute [ctor gather (&)] .
+  op RtoL :_ : Map{Rat,Label} -> Attribute [ctor gather (&)] .
+  op FLC :_ : Int -> Attribute [ctor gather (&)] .
+  op NeighborLabels :_ : List{Label} -> Attribute [ctor gather (&)] .
+  
+
+  op label-by-value-req : Oid Oid List{Rat} -> Msg .
+  op label-by-value-resp : Oid Oid List{Label} -> Msg .
+
+  op find-labels : List{Rat} -> List{Label} .
+  op fact-init : -> Configuration .
+
+*** from BFS
+  op search-factors : Rat -> List{Rat} .
+  op div-by-list : Rat List{Rat} -> List{Rat} .
+
+  var n p : Rat .
+  var nl : List{Rat} .
+
+  eq div-by-list( n , p nl ) = (n / p) div-by-list( n , nl ) .
+  eq div-by-list( n, nil ) = nil .
+  eq search-factors( n ) = div-by-list( n , uniq-factor(n)) .
+*** end include
+
+  var L L2 : Label .
+  var OD1 OD2 : Oid .
+  var LL LL2 : List{Label} .
+  var RL : List{Rat} .
+  var R : Rat .
+  var B : Bool .
+  var V1 V2 : Rat .
+  var RLM : Map{Rat,Label} .
+  var i : Int .
+
+  eq fact-init = < factctl : FACTCONTROLLER | RtoL : empty , FLC : 0 > .
+  *** when FACTOR has neighbors cached
+  rl [NR-W-CACHE] :
+      < L : FACTOR | Value : V1 , NeighborLabels : LL > 
+        neighbors-request(L , OD1)
+      => < L : FACTOR | Value : V1 , NeighborLabels : LL > 
+        neighbors-response( OD1, L , LL ) .
+  
+  *** when FACTOR needs to discover neighbors
+  *** 1. recieve neighbors request, find factors
+  rl [NR-WO-CACHE-1] : 
+      < L : FACTOR | Value : V1 > 
+          neighbors-request(L,OD1) 
+      => < L : FACTOR | Value : V1 , ServicingReq  , ReqOid : OD1 , NeighborLabels : find-labels( search-factors(V1) ) > .
+  *** 2. ask for FACTOR label of neighbor R .
+  rl [NR-WO-CACHE-2] :
+      < L : FACTOR | Value : V1 , ServicingReq  , ReqOid : OD1 , NeighborLabels : LL find-labels( R RL ) > 
+      => < L : FACTOR | Value : V1 , ServicingReq , ReqOid : OD1 , NeighborLabels : LL find-labels( RL ) , WaitingResp > 
+          label-by-value-req( factctl , L , R ) .
+  *** 3. add requested factor label to list
+  rl [NR-WO-CACHE-3] :
+      < L : FACTOR | Value : V1 , ServicingReq , ReqOid : OD1 , NeighborLabels : LL find-labels( RL ) , WaitingResp > 
+          label-by-value-resp( L , factctl , L2 )
+      => < L : FACTOR | Value : V1 , ServicingReq , ReqOid : OD1 , NeighborLabels : LL L2 find-labels( RL ) > .
+  *** 4. send response to searcher
+  rl [NR-WO-CACHE-4] :
+      < L : FACTOR | Value : V1 , ServicingReq , ReqOid : OD1 , NeighborLabels : LL find-labels( nil ) >
+      => < L : FACTOR | Value : V1 , NeighborLabels : LL > 
+          neighbors-response( OD1 , L , LL ) .
+
+  crl [FCTL-LBV-REQ-1] :
+      < factctl : FACTCONTROLLER | RtoL : RLM , FLC : i > 
+        label-by-value-req( factctl , L , R ) 
+      => < factctl : FACTCONTROLLER | RtoL : RLM , FLC : i > 
+        label-by-value-resp( L , factctl , RLM[R] ) 
+      if $hasMapping(RLM,R) .
+  crl [FCTL-LBV-REQ-2] :
+      < factctl : FACTCONTROLLER | RtoL : RLM , FLC : i > 
+        label-by-value-req( factctl , L , R ) 
+      => < factctl : FACTCONTROLLER | RtoL : insert( R , l(i) , RLM ) , FLC : i + 1 > 
+        < l(i) : FACTOR | Value : R > 
+        label-by-value-req( factctl , L , R ) 
+      if not $hasMapping(RLM,R) .
+endm

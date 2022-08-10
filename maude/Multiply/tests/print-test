@@ -1,0 +1,2 @@
+set print attribute on .
+red 0 p("a") 1  p("b") .
