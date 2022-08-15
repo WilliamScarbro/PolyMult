@@ -1,36 +1,42 @@
-rew [1]  < multctl : CONTROLLER | 
-  EtoL : empty,
-  OidC : 1,
-  ProdClass : MULT >
-
-< redctl : CONTROLLER | 
-  EtoL : empty,
-  OidC : 0,
-  ProdClass : RED >
-
-< l(0) : MULT | 
-  EQ : mult(l("a") of qr(4, 4, 4),l("b") of qr(4, 4, 4)),
-  ChildLabels : find-labels(nil),
-  ReductionLabels : find-labels(nil),
-  Type : qr(4, 4, 4),
-  ReqOid : bfsctl,
-  State : "LabelChildren",
-  CurrentRed : qr-constr(2)(
-    tup(phi-inv(2, 0)(
-    tup(mult(phi(2, 0)(
-    l("a") of qr(4, 4, 4)),phi(2, 0)(
-    l("b") of qr(4, 4, 4))), mult(phi(2, 1)(
-    l("a") of qr(4, 4, 4)),phi(2, 1)(
-    l("b") of qr(4, 4, 4))))), phi-inv(2, 1)(
-    tup(mult(phi(2, 0)(
-    l("a") of qr(4, 4, 4)),phi(2, 0)(
-    l("b") of qr(4, 4, 4))), mult(phi(2, 1)(
-    l("a") of qr(4, 4, 4)),phi(2, 1)(
-    l("b") of qr(4, 4, 4))))))),
-  CurrentChild : mult(phi(2, 0)(
-    l("a") of qr(4, 4, 4)),phi(2, 0)(
-    l("b") of qr(4, 4, 4))) >
-
-eq-to-label-req(multctl, l(0), mult(phi(2, 0)(
-    l("a") of qr(4, 4, 4)),phi(2, 0)(
-    l("b") of qr(4, 4, 4)))) .
+invalid option: rew [1]
+qr-constr(2)
+    (tup(phi-inv(2, 0)
+    (tup(mult(phi(2, 0)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 0)
+    (l("b") of qr(4, 4, 4))), mult(phi(2, 1)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 1)
+    (l("b") of qr(4, 4, 4))))), phi-inv(2, 1)
+    (tup(mult(phi(2, 0)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 0)
+    (l("b") of qr(4, 4, 4))), mult(phi(2, 1)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 1)
+    (l("b") of qr(4, 4, 4)))))))
+qr(2, 2, 4)
+qr(4, 4, 4)
+(mult(phi(2, 0)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 0)
+    (l("b") of qr(4, 4, 4)))) (mult(phi(2, 0)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 0)
+    (l("b") of qr(4, 4, 4)))) (mult(phi(2, 0)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 0)
+    (l("b") of qr(4, 4, 4)))) (mult(phi(2, 0)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 0)
+    (l("b") of qr(4, 4, 4))))
+qr-constr(2)
+    (tup(phi-inv(2, 0)
+    (tup(l("c") of qr(2, 2, 4), mult(phi(2, 1)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 1)
+    (l("b") of qr(4, 4, 4))))), phi-inv(2, 1)
+    (tup(l("c") of qr(2, 2, 4), mult(phi(2, 1)
+    (l("a") of qr(4, 4, 4)),
+    phi(2, 1)
+    (l("b") of qr(4, 4, 4)))))))

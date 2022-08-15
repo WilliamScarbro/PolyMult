@@ -106,22 +106,22 @@ mod OBJ-FFT-SEARCH is
 
   *** RED
   *** when children are cached
-  rl < L : RED | A , ChildLabels : LL , State : "Expanded" > 
+  rl < L : RED | A , EQ : E , State : "Expanded" > 
         reduction-request(L, OD1)
-     => < L : RED | A , ChildLabels : LL, State : "Expanded" > 
-        expand-response(OD1, L , LL ) .
+     => < L : RED | A , EQ : E , State : "Expanded" > 
+        reduction-response(OD1, L , E ) .
   
   *** finding neighbors
   *** Initialized -> FindChildren
   rl < L : RED | EQ : E , Type : T , State : "Initialized" >
-       expand-request(L , OD1) 
+        reduction-request(L , OD1) 
      => < L : RED | EQ : E , Type : T , State : "FindReductions" , ReqOid : OD1 , ChildLabels : find-labels( uniq(find-mult(E)) ) > 
      [print ": Initialized -> FindChildren" ] .
  
   *** FindChildren -> LabelChild
   rl < L : RED | A ,  State : "FindChildren" , ChildLabels : LL find-labels( E2 EL ) > 
       => < L : RED | A , State : "LabelChild", ChildLabels : LL find-labels( EL ), CurrentChild : E2  >
-         eq-to-label-req( multctl , L, E2 ) 
+        eq-to-label-req( multctl , L, E2 ) 
       [print "FindChildren -> LabelChild" L ] .
   
   *** LabelChild -> FindChildren
@@ -131,9 +131,9 @@ mod OBJ-FFT-SEARCH is
       [print "LabelChild -> FindChilds" L2 ] .
 
   *** FindChildren -> Expanded
-  rl < L : RED | A, State : "FindChildren", ReqOid : OD1 , ChildLabels : LL find-labels( nil ) > 
-      => < L : RED | A, State : "Expanded", ChildLabels : LL > 
-        reduction-response( OD1, L , LL ) 
+  rl < L : RED | A, EQ : E , State : "FindChildren", ReqOid : OD1 , ChildLabels : LL find-labels( nil ) > 
+      => < L : RED | A, EQ : E , State : "Expanded", ChildLabels : LL > 
+        reduction-response( OD1, L , E ) 
       [print "FindChildren -> Expanded" ] .
 
    
@@ -167,5 +167,5 @@ mod OBJ-FFT-SEARCH is
   rl < redctl : CONTROLLER | A , EtoL : ELM , State : "ServingReq" , ReqOid : L >
       reduction-response(redctl,L2,E)
      => < redctl : CONTROLLER | A , EtoL : insert(E,L2,ELM) , State : "Free" >
-        eq-to-label-resp( L , OD1 , L2 ) .
+        eq-to-label-resp( L , redctl , L2 ) .
 endm

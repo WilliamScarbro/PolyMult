@@ -35,7 +35,7 @@ if [[ ! -z $i ]]; then
   if [[ ! -f $i ]]; then
     usage
   fi
-  maude-pipe.sh -m $mh/$m -of -a "rew [1]" < $i | tee $mdf
+  maude-pipe.sh -m $m -of -a "rew [1]" < $i | tee $mdf
   echo $msf > $msfp
   echo $mdf > $mdfp
 else
