@@ -1,10 +1,18 @@
 load LABEL .
 
 fmod EQ is
+  sort Eq .
+endfm
+
+view Eq from TRIV to EQ is
+  sort Elt to Eq .
+endv
+
+fmod EQ-LANG is
   pr LABEL .
   pr RAT .
+  pr LIST{Eq} .
 
-  sort Eq .
   sort Oper .
   sort Func .
   sort Type .
@@ -20,11 +28,12 @@ fmod EQ is
   op tup : Eq Eq -> Eq [assoc] .
   op Tup : Type Type -> Tup [assoc] .
   op type : Eq -> Type .
-  op image-type : Func Type -> Type . *** including type allows the same function to be defined over different domain types
+  op image-type : Func Type -> Type . *** including type arg allows the same function to be defined over different domain types
   op replace : Eq Label Eq -> Eq .
+  op find-op : Eq Oper -> List{Eq} .
 
   vars F : Func .
-  vars O : Oper .
+  vars O O2 : Oper .
   vars TL : TLab .
   vars L : Label .
   vars T : Type .
@@ -41,14 +50,18 @@ fmod EQ is
   ceq replace( TL , L , EQ ) = TL if not EQ == TL .
   eq replace( EQ, L , EQ ) = L of type(EQ) .
 
+  eq find-op( O(EQ, EQ2) , O ) = append(append(O(EQ,EQ2), find-op(EQ,O)), find-op(EQ2,O)) .
+  ceq find-op( O(EQ, EQ2) , O2 ) = append( find-op(EQ,O2), find-op(EQ2,O2)) if O =/= O2 .
+  eq find-op( F(EQ) , O ) = find-op(EQ,O) .
+  eq find-op(tup(EQ,EQ2) , O ) = append( find-op(EQ,O), find-op(EQ2,O)) .
+  eq find-op( TL , O ) = nil .
+  
 endfm
 
-view Eq from TRIV to EQ is 
-  sort Elt to Eq .
-endv
 
-***fmod EQ-TEST is
-***  pr LIST{Label} .
-***  pr LIST{Rat} .
-***  pr LIST{Eq} .
-***endfm
+fmod EQ-TEST is
+  pr EQ-LANG .
+
+  op t1 : -> Type .
+  op o : -> Oper .
+endfm

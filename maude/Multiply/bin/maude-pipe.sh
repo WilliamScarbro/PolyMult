@@ -33,8 +33,15 @@ fi
 
 mh=$MAUDE_HOME
 
-if [[ -z $m ]] || [[ ! -f $mh/$m ]]; then
+if [[ -z $m ]]; then
   usage
+  echo "Error: 'm' flag is required"
+  exit 1
+fi
+
+if [[ ! -f $mh/$m ]]; then
+  usage
+  echo "Error: $mh/$m is not a file"
   exit 1
 fi
 
@@ -43,7 +50,7 @@ rm -rf $tmp
 mkdir -p $tmp
 echo "maude pipe run | date: `date` | maude source: $m | input: $i" > $tmp/context
 
-maude $mh/$m -no-wrap < /dev/stdin > $tmp/out1
+maude $mh/$m -no-wrap < /dev/stdin > $tmp/out1 2> $tmp/error
 out=$tmp/out1
 counter=1
 
@@ -72,8 +79,8 @@ fi
 if [[ ! -z $f ]]; then
   update_out
   sed 's/)(/)\n    (/g' $out -i
-  sed 's/,\([a-z]\)/,\n    \1/g' $out -i
+  #sed 's/,\([a-z]\)/,\n    \1/g' $out -i
 fi
 
-
+cat $tmp/error > /dev/stderr
 cat $out

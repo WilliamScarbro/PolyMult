@@ -1,7 +1,9 @@
-load EQ-LANG
+load EQ-LANG .
+load FACTOR .
 
 fmod QR is
-  pr EQ .
+  pr EQ-LANG .
+
   sort QR .
   subsort QR < Type .
   
@@ -60,9 +62,8 @@ fmod FFT is
   eq image-type( phi-inv(k,i) , Tup(qr(n,d,N), T ) ) = qr-coef( qr( n * k , k * d , N) , i ) .
 
   eq find-mult( F( a ) ) = find-mult( a ) .
-  eq find-mult( tup( a , b ) ) = append(find-mult(a), find-mult(a) ) .
+  eq find-mult( tup( a , b ) ) = append(find-mult(a), find-mult(b) ) .
   eq find-mult( mult(a,b) ) = mult(a,b) .
   eq find-mult( tl ) = nil .
-
 
 endfm

@@ -37,8 +37,8 @@ mod OBJ-FFT-SEARCH is
   op eq-to-label-resp : Label Oid Label -> Msg .
 
   op redctl-init : -> Configuration .
-  op mult-init : Label Eq -> Configuration .
   op multctl-init : -> Configuration .
+  op mult-init : Eq -> Configuration .
 
   op mult-reductions : Eq QR -> List{Eq} .
   op mult-reductions-help : Eq List{Rat} -> List{Eq} .
@@ -68,9 +68,9 @@ mod OBJ-FFT-SEARCH is
   eq mult-reductions-help( E , k LR ) = append(fft-red(k, E ),mult-reductions-help( E , LR )) .
   eq mult-reductions-help( E , nil ) = nil .
   
-  eq redctl-init = < redctl : CONTROLLER | EtoL : empty , OidC : 0, ProdClass : RED , State : "Free" > .
-  eq multctl-init = < multctl : CONTROLLER | EtoL : empty , OidC : 1 , ProdClass : MULT, State : "Free" > .
-  eq mult-init( L , E ) = < L : MULT | EQ : E , Type : type(E) , State : "Initialized" > .
+  eq redctl-init = < redctl : CONTROLLER | EtoL : empty , OidC : 1, ProdClass : RED , State : "Free" > .
+  eq multctl-init = < multctl : CONTROLLER | EtoL : empty , OidC : 0 , ProdClass : MULT, State : "Free" > .
+  eq mult-init( E ) = eq-to-label-req( multctl , l(-1) , E ) . ***< L : MULT | EQ : E , Type : type(E) , State : "Initialized" > .
 
   *** MULT 
   *** when reductions are cached
@@ -115,7 +115,7 @@ mod OBJ-FFT-SEARCH is
   *** Initialized -> FindChildren
   rl < L : RED | EQ : E , Type : T , State : "Initialized" >
         reduction-request(L , OD1) 
-     => < L : RED | EQ : E , Type : T , State : "FindReductions" , ReqOid : OD1 , ChildLabels : find-labels( uniq(find-mult(E)) ) > 
+     => < L : RED | EQ : E , Type : T , State : "FindChildren" , ReqOid : OD1 , ChildLabels : find-labels( uniq(find-mult(E)) ) > 
      [print ": Initialized -> FindChildren" ] .
  
   *** FindChildren -> LabelChild
@@ -148,10 +148,10 @@ mod OBJ-FFT-SEARCH is
   *** multctl : CONTROLLER
   *** Free -> Free
   crl < multctl : CONTROLLER | EtoL : ELM , OidC : i, ProdClass : CD, State : "Free" >
-        eq-to-label-req( OD1 , L , E )
-      => < OD1 : CONTROLLER | EtoL : insert(E,l(i),ELM) , OidC : i + 2, ProdClass : CD, State : "Free" >
+        eq-to-label-req( multctl , L , E )
+      => < multctl : CONTROLLER | EtoL : insert(E,l(i),ELM) , OidC : i + 2, ProdClass : CD, State : "Free" >
         < l(i) : CD | EQ : E , Type : type(E) , State : "Initialized" >
-        eq-to-label-resp( L , OD1 , l(i) )
+        eq-to-label-resp( L , multctl , l(i) )
       if not $hasMapping(ELM,E) .
 
   *** redctl : CONTROLLER

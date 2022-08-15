@@ -1,0 +1,28 @@
+load FFT .
+load REDUCTION .
+
+mod FFT-REDUCTIONS is
+  pr FFT .
+  pr FACTOR .
+  pr REDUCTION-SEARCH .
+  pr LIST{Rat} .  
+
+  op fft-reduction : -> Reduction [ctor] .
+  op remove : List{Rat} Rat -> List{Rat} .
+  op reduction-space-help : Reduction Type -> List{Rat} .
+  
+  vars Re : Reduction .
+  vars n d N : Rat .
+  var E : Eq .
+  var LR : List{Rat} .
+   
+  eq remove( n LR , n ) = remove( LR , n ) .
+  eq remove( n LR , d ) = n remove( LR , d ) [owise] .
+  eq remove( nil , d ) = nil .
+ 
+  eq reduction-space(fft-reduction , E) = reduction-space-help( fft-reduction , type(E) ) .
+  eq reduction-space-help( fft-reduction , qr(n,d,N) ) = remove(remove(all-factors(n),n),1) .
+  eq apply-reduction( red-inst(fft-reduction,n) , E ) = fft-red( n , E ) .
+  eq GoldenOp = mult .
+
+endm

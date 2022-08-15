@@ -1,1 +1,1 @@
-red in EQ : o("a")(l("1"),l("2")) .
+red in EQ-TEST : o(l("1") of t1 ,l("2") of t1) .

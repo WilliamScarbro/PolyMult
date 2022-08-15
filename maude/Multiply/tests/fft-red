@@ -1,0 +1,2 @@
+rew opctl-init redctl-init eq-to-label-req( opctl , l(-1) , mult( l("a") of qr(4,4,4) , l("b") of qr(4,4,4) ) ) reduce-oper-req( l(0) , l(-1) , fft-reduction ).
+

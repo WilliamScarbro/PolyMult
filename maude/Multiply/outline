@@ -1,0 +1,22 @@
+
+
+Framework for applying arbitrary reductions to multiply operator on quotient ring
+
+EQ-LANG:
+  operator
+  type
+  function
+  reduction
+Reduction Search (obj)
+  operator (obj)
+  reduction (obj)
+  rule (obj)
+  reduce( operator , rule ) -> reduction(list) <- action
+QR:
+  multiply (operator)
+  add (operator)
+  qr (type)
+FFT:
+  fft (function)
+  other fft flavors
+  fft-reduction (reduction)
