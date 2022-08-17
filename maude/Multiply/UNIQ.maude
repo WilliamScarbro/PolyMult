@@ -2,23 +2,18 @@
 
 fmod UNIQ{T :: TRIV} is
   pr LIST{T} .
-  pr SET{T} .
-
-  op uniq : List{T} -> List{T} .
-  op LtoS : List{T} -> Set{T} .
-  op StoL : Set{T} -> List{T} .
-
-  var L : List{T} .
-  var S : Set{T} .
-  var R : T$Elt .
-
-  eq uniq( L ) = StoL(LtoS(L)) .
-
-  eq LtoS( R L ) = R , LtoS( L ) .
-  eq StoL( (R, S) ) = R StoL( S ) .
   
-  eq LtoS(nil) = empty .
-  eq StoL(empty) = nil .
+  op uniq : List{T} -> List{T} .
+  op uniq-help : List{T} List{T} -> List{T} .
+  
+  vars L L2 : List{T} .
+  var E : T$Elt .
+
+  eq uniq( L ) = uniq-help( L , nil ) .
+  ceq uniq-help( E L , L2 ) = uniq-help( L, L2 ) if occurs(E,L2) .
+  ceq uniq-help( E L , L2 ) = uniq-help( L , E L2 ) if not occurs(E,L2) .
+  eq uniq-help( nil , L ) = L .
+
 endfm
 
 fmod UNIQ-INT is

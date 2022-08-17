@@ -14,12 +14,13 @@ msfp=$mch/MAUDE_DEST_POINTER
 mdf=$mch/out-file1
 msf=$mch/out-file2
 
-while getopts sm:i: flag
+while getopts psm:i: flag
 do
   case ${flag} in
     i) i="${OPTARG}";;
     m) m="${OPTARG}";;
     s) s="s";;
+    p) p="p";;
   esac
 done
 
@@ -28,12 +29,13 @@ function usage {
   echo "  -i FILE : initialize cycle with FILE"
   echo "  -m FILE : maude source"
   echo "  -s      : Supress errors"
+  echo "  -p      : Print INFO"
 }
 
 function maude_pipe {
   ef=$mch/error
   #echo "maude-pipe.sh -m $1 -a 'rew [1]' < $2 > $3 2> $ef"
-  maude-pipe.sh -m $1 -a "rew [1]" -of < $2 > $3 2> $ef
+  maude-pipe.sh -m $1 -a "rew [1]" -of$p < $2 > $3 2> $ef
   if [[ ! -z `cat $ef` ]] && [[ -z $s ]] ; then
     echo "Error"
     cat $ef
@@ -41,7 +43,16 @@ function maude_pipe {
   echo "---"
   cat $3
   echo "---"
+  if [[ ! -z $p ]]; then
+    cat /tmp/maude-pipe/INFO
+  fi
+ 
 }  
+if [[ -z $m ]]; then
+  usage
+  echo "Error: 'm' flag must be specified"
+  exit 1
+fi
 
 if [[ ! -f $m ]]; then
   usage

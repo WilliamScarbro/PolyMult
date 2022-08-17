@@ -30,10 +30,12 @@ fmod FFT is
   op phi-inv : Rat Rat -> Func . *** k, i
   op fft : Rat -> Func . *** k
   op fft-inv : Rat -> Func . *** k
+  op coef : Rat -> Func .
+
   op mult : -> Oper .
 
   *** utility functions, differentiated from true functions so they respect transformation order
-  *** i.e. these functions change (or evaluate) the underlying equation. These changes need to be done in specific orders 
+  *** i.e. these functions change (or evaluate) the underlying equation. Most of these changes need to be done in specific orders
   op find-mult : Eq -> List{Eq} .
   op fft-red : Rat Eq -> Eq . *** k
 
@@ -44,26 +46,50 @@ fmod FFT is
   vars tl : TLab .
   var L : Label .
 
-  eq fft-red(k,a) = fft-inv(k)( fft(k)( (a) ) ). 
-  eq fft(k)(a) = phi-tup(k,0,k - 1)(a) .
+  eq fft-red(k,a) = fft-inv(k)[ fft(k)[ a ] ]. 
+  eq fft(k)[a] = phi-tup(k,0,k - 1)[a] .
   
-  ceq phi-tup(k, i, j)(a) = tup(phi(k,i)(a),phi-tup(k,i + 1,j)(a)) if i < j .
-  ceq phi-tup(k, i, j)(a) = phi(k,i)(a) if i == j .
+  ceq phi-tup(k, i, j)[a] = tup(phi(k,i)[a],phi-tup(k,i + 1,j)[a]) if i < j .
+  ceq phi-tup(k, i, j)[a] = phi(k,i)[a] if i == j .
   
-  eq phi(k,i)( mult(a,b) ) = mult(phi(k,i)(a), phi(k,i)(b)) .
+  eq phi(k,i)[ mult[a,b] ] = mult[phi(k,i)[a], phi(k,i)[b]] .
 
   eq image-type( phi(k,i) , qr(n,d,N) ) = qr(n / k, (d + i * N) / k, N) . 
   
-  eq fft-inv(k)( a ) = qr-constr(k)(phi-inv-tup(k,0,k - 1)( a ) ) .
-  ceq phi-inv-tup(k,i,j)( a ) = tup( phi-inv(k,i)( a ) , phi-inv-tup(k,i + 1,j)( a ) ) if i < j .
-  ceq phi-inv-tup(k,i,j)( a ) = phi-inv(k,i)( a ) if i == j .
+  eq fft-inv(k)[ a ] = qr-constr(k)[phi-inv-tup(k,0,k - 1)[ a ] ] .
+  ceq phi-inv-tup(k,i,j)[ a ] = tup( phi-inv(k,i)[ a ] , phi-inv-tup(k,i + 1,j)[ a ] ) if i < j .
+  ceq phi-inv-tup(k,i,j)[ a ] = phi-inv(k,i)[ a ] if i == j .
 
   *** requires that first element of tuple has type qr(n/k,(d+0N)/k) (n,d before phi is applied)
   eq image-type( phi-inv(k,i) , Tup(qr(n,d,N), T ) ) = qr-coef( qr( n * k , k * d , N) , i ) .
 
-  eq find-mult( F( a ) ) = find-mult( a ) .
-  eq find-mult( tup( a , b ) ) = append(find-mult(a), find-mult(b) ) .
-  eq find-mult( mult(a,b) ) = mult(a,b) .
-  eq find-mult( tl ) = nil .
+  eq image-type( coef(i) , qr(n,d,N) ) = qr-coef(qr(n,d,N),i) .
 
 endfm
+
+fmod FFT-EVAL is
+  pr FFT .
+
+  op lowConv : Eq Eq -> Func .
+  op highConv : Eq Eq -> Func .
+  
+  op convolution : Eq Eq QR -> Func .
+  op make-tuple : List{Eq} -> Eq .
+
+  vars a b c : Eq .
+  vars i j k n d N : Rat .
+  vars F : Func .
+  var QRing : QR .
+
+
+*** evaluation
+  evaluate-help( mult[ a , b ] , qr(n,d,N) ) = qr-contr( make-tuple( map( convolution( a, b, qr(n,d,N)  ) , range(0,n) ) ) ) .
+
+  eq convolution( a , b , qr(n,d,N) )[ r(j) ] = add[ sum( map( lowConv( a , b ) , range(0,j) ) , mult[ omega(N,d) , sum( map( highConv( a, b ) , range(j + 1, n ) ) ) ] ] .
+  
+  TODO:
+    range
+    r(int) is a TL   
+    sum
+    omega is a TL
+    rename TL Terminal

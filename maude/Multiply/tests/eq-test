@@ -1,1 +1,2 @@
-red in EQ-TEST : o(l("1") of t1 ,l("2") of t1) .
+red in EQ-TEST : find-op( o(l("1") of t1 ,l("2") of t1), o) .
+red in EQ-TEST : find-func( f(o(l("2") of t1 ,l("2") of t1)), f) .

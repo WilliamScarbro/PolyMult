@@ -23,16 +23,20 @@ fmod EQ-LANG is
   subsort Tup < Type .
 
   op _ of _ : Label Type -> TLab .
-  op _(_,_) : Oper Eq Eq -> Eq .
-  op _(_) : Func Eq -> Eq .
+  op _[_,_] : Oper Eq Eq -> Eq .
+  op _[_] : Func Eq -> Eq .
   op tup : Eq Eq -> Eq [assoc] .
   op Tup : Type Type -> Tup [assoc] .
   op type : Eq -> Type .
   op image-type : Func Type -> Type . *** including type arg allows the same function to be defined over different domain types
   op replace : Eq Label Eq -> Eq .
   op find-op : Eq Oper -> List{Eq} .
+  op find-func : Eq Func -> List{Eq} .
+  op evaluate : Eq -> Eq .
+  op evaluate-help : Eq Type -> Eq .
+  op map : F List{Eq} .
 
-  vars F : Func .
+  vars F F2 : Func .
   vars O O2 : Oper .
   vars TL : TLab .
   vars L : Label .
@@ -40,22 +44,35 @@ fmod EQ-LANG is
   vars EQ EQ2 EQ3 : Eq .
   
   eq type( L of T ) = T .
-  eq type( O(EQ, EQ2) ) = type(EQ) . *** assumes type EQ same as type EQ2, should have type check
-  eq type( F(EQ) ) = image-type(F,type(EQ)) .
+  eq type( O[EQ, EQ2] ) = type(EQ) . *** assumes type EQ same as type EQ2, should have type check
+  eq type( F[EQ] ) = image-type(F,type(EQ)) .
   eq type( tup( EQ , EQ2 ) ) = Tup( type( EQ ), type( EQ2 ) ) .
 
-  ceq replace( F(EQ) , L , EQ3 ) = F(replace(EQ,L,EQ3)) if not (EQ3 == F(EQ)) .
-  ceq replace( O( EQ, EQ2 ) , L , EQ3 ) = O(replace(EQ,L,EQ3),replace(EQ2,L,EQ3)) if not EQ3 == O(EQ,EQ2) .
+  ceq replace( F[EQ] , L , EQ3 ) = F[replace(EQ,L,EQ3)] if not (EQ3 == F[EQ]) .
+  ceq replace( O[ EQ, EQ2 ] , L , EQ3 ) = O[replace(EQ,L,EQ3),replace(EQ2,L,EQ3)] if not EQ3 == O[EQ,EQ2] .
   ceq replace( tup( EQ, EQ2 ) , L , EQ3 ) = tup(replace(EQ,L,EQ3),replace(EQ2,L,EQ3)) if not EQ3 == tup(EQ,EQ2) .
   ceq replace( TL , L , EQ ) = TL if not EQ == TL .
   eq replace( EQ, L , EQ ) = L of type(EQ) .
 
-  eq find-op( O(EQ, EQ2) , O ) = append(append(O(EQ,EQ2), find-op(EQ,O)), find-op(EQ2,O)) .
-  ceq find-op( O(EQ, EQ2) , O2 ) = append( find-op(EQ,O2), find-op(EQ2,O2)) if O =/= O2 .
-  eq find-op( F(EQ) , O ) = find-op(EQ,O) .
+  eq find-op( O[EQ, EQ2] , O ) = append(append(O[EQ,EQ2], find-op(EQ,O)), find-op(EQ2,O)) .
+  ceq find-op( O[EQ, EQ2] , O2 ) = append( find-op(EQ,O2), find-op(EQ2,O2)) if O =/= O2 .
+  eq find-op( F[EQ] , O ) = find-op(EQ,O) .
   eq find-op(tup(EQ,EQ2) , O ) = append( find-op(EQ,O), find-op(EQ2,O)) .
   eq find-op( TL , O ) = nil .
   
+  eq find-func( O[EQ, EQ2] , F ) = append( find-func(EQ,F), find-func(EQ2,F)) .
+  eq find-func( F[EQ] , F ) = append(F[EQ] , find-func(EQ,F)) .
+  eq find-func( F[EQ], F2 ) = find-func(EQ,F2) [owise].
+  eq find-func(tup(EQ,EQ2) , F ) = append( find-func(EQ,F), find-func(EQ2,F)) .
+  eq find-func( TL , F ) = nil .
+  
+
+  eq evaluate( TL ) = TL .
+  eq evaluate( EQ ) = evaluate-help( EQ , type(EQ) ) . 
+
+  eq map( F , E EL ) = F[E] map(F , EL ) .
+  eq map( F , nil ) = nil .
+
 endfm
 
 
@@ -64,4 +81,5 @@ fmod EQ-TEST is
 
   op t1 : -> Type .
   op o : -> Oper .
+  op f : -> Func .
 endfm

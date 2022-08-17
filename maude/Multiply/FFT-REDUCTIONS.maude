@@ -11,6 +11,11 @@ mod FFT-REDUCTIONS is
   op remove : List{Rat} Rat -> List{Rat} .
   op reduction-space-help : Reduction Type -> List{Rat} .
   
+  op mult-ctl : -> ControllerOid .
+  op mult-red-ctl : -> ControllerOid .
+  op MULT : -> OperatorCid .
+  op MULTRED : -> ReductionCid .
+
   vars Re : Reduction .
   vars n d N : Rat .
   var E : Eq .
@@ -23,6 +28,12 @@ mod FFT-REDUCTIONS is
   eq reduction-space(fft-reduction , E) = reduction-space-help( fft-reduction , type(E) ) .
   eq reduction-space-help( fft-reduction , qr(n,d,N) ) = remove(remove(all-factors(n),n),1) .
   eq apply-reduction( red-inst(fft-reduction,n) , E ) = fft-red( n , E ) .
-  eq GoldenOp = mult .
+  eq prod-class( mult-ctl ) = MULT .
+  eq prod-class( mult-red-ctl ) = MULTRED .
+  eq reduction-body( MULTRED ) = mult .
+  eq redctl( MULT ) = mult-red-ctl .
+  eq opctl( MULTRED ) = mult-ctl .
+  eq num-controllers = 2 .
+  eq all-ctl-init = ctl-init( mult-ctl , 0 ) ctl-init( mult-red-ctl , 1 ) .
 
 endm
