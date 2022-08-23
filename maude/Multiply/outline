@@ -22,11 +22,17 @@ FFT:
   fft-reduction (reduction)
 
 
-
-
 TODO
 
 add more reductions (review berstein reductions)
 add compilation (provide definition for phi)
 
 can we view spiral fft (two recursive calls in one) as a reduction of the fft function?
+
+
+FFT eval
+
+add p to qr
+add range evaluation to fft->phi conversion
+replace qr-coef with ff(p)
+

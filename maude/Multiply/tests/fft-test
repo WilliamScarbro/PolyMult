@@ -19,3 +19,6 @@ red in FFT : replace( fft-red(2, mult( l("a") of qr(4,4,4), l("b") of qr(4,4,4) 
 ***red in FFT : replace( tup( mult(phi(2, 0)(l("a") of qr(4, 4, 4)),phi(2, 0)(l("b") of qr(4, 4, 4)) ) , mult(phi(2, 1)(l("a") of qr(4, 4, 4)),phi(2, 0)(l("b") of qr(4, 4, 4)) ) ),
 ***                     l("c") , 
 ***                     mult(phi(2, 0)(l("a") of qr(4, 4, 4)),phi(2, 0)(l("b") of qr(4, 4, 4)) ) ) . 
+
+
+

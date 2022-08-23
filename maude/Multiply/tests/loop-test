@@ -1,0 +1,16 @@
+
+red evaluate( lambda( l("a") l("b") , MULT[l("a") of rat , l("b") of rat ] )[ list-to-tuple(5 2) ] ) .
+red evaluate( three-to-two[ list-to-tuple( 0 1 2 ) ] ) .
+red select( three-to-two , list-to-tuple( 0 1  ))[ list-to-tuple(0 1 2) ] .
+red select( three-to-two , list-to-tuple( 1 1  ))[ list-to-tuple(0 1 2) ] .
+
+red for-list( l("a") of rat , { 0 } { 1 } { 2 } ) .
+
+red reduce-list( ADD , for-list( l("a") of rat , { 0 } { 1 } { 2 } ) ) .
+
+red reduce( ADD , three-to-two)[ l("a") of ar234 ] @ { 0 1 } .
+
+red f[r(3)] @ point-index .
+
+red enumerate(domain( reduce( ADD , three-to-two )[ l("a") of ar234 ] )) .
+ 

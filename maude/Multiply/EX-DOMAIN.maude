@@ -1,0 +1,176 @@
+load LAMBDA .
+load UNIQ .
+
+fmod INDEX is
+  pr LIST{Rat} .
+  sort Index .
+  op point-index : -> Index .
+  op {_} : List{Rat} -> Index .
+  op index-append : Index Index -> Index [ id: point-index ] .
+  var RL RL2 : List{Rat} .
+  eq index-append( { RL } , { RL2 } ) = { append( RL , RL2 ) } .
+endfm
+
+view Index from TRIV to INDEX is
+  sort Elt to Index .
+endv
+
+fmod INDEX-FUNC is
+  pr LAMBDA-RAT .
+  pr INDEX .
+  
+  sort IndexFunc .
+  sort FuncDef .
+  subsort IndexFunc < Func .
+  subsort FuncDef < Func .
+
+  op _@_ : Func Index -> IndexFunc .
+  op define : Ex -> Ex .
+  op _@_ : Ex Index -> Ex .
+  op append-index : Func Index -> Func .
+  
+  var F : Func .
+  var IF : IndexFunc .
+  var I I2 : Index .
+  var E : Ex .
+  
+  ceq F[E] @ I = define( F[E] ) @ I if not F :: FuncDef and not F :: IndexFunc .
+  ceq F @ I [E] @ I2 = define( F @ I[E] ) @ I2 if not F :: FuncDef .
+  eq append-index( F @ I , I2 ) = F @ index-append( I, I2 ) .
+  ceq append-index( F , I ) = F @ I if not F :: IndexFunc .
+  eq E @ {nil} = E .
+  eq point-index = { NaV } . 
+endfm
+
+
+fmod EX-DOMAIN is
+  pr LAMBDA-RAT .
+  pr LIST{Index} .
+  pr LIST{Ex} .
+  pr INDEX-FUNC .
+  pr UNIQ{Index} .
+
+  sort Domain .
+  sort Range .
+  
+  subsort Range < Domain .
+
+  op <_,_> : Rat Rat -> Range .
+  op point : -> Domain .
+  
+  op _x_ : Domain Domain -> Domain [ id: point ] .
+  op _ + _ : Range Range -> Range .
+  op _ + _ : Domain Domain -> Domain .
+  op _ intersect _ : Domain Domain -> Domain .
+  op _ \ _ : Domain Domain -> Domain .
+  op dimension : Domain -> Rat .
+  op domainMap : Lambda Domain -> Domain .
+
+  op for : Func Domain -> FuncDef .
+  op reduce : Oper Lambda -> Func .
+  op reduce-help : Oper Lambda Rat -> FuncDef .
+  op reduce-tup : Lambda -> FuncDef .
+  op reduceT : Lambda Type -> Type .
+
+  op ARR : Range Type -> Type .
+  op reduce-list : Oper List{Ex} -> Ex .
+  op reduce-list-tup : List{Ex} -> Ex .
+  op for-list : Ex List{Index} -> List{Ex} .
+  ***op split : Lambda -> Func .
+
+  op enumerate : Domain -> List{Index} .
+  op enumerate-help : Index Domain -> List{Index} .
+ 
+  op ident : -> Lambda .
+  op row-major : Rat -> Lambda .
+  op column-major : Rat -> Lambda .
+  op transpose : Rat -> Lambda .
+ 
+  op select : Func Ex -> Func .
+  op select-help : Ex Ex Ex -> Ex .
+  op list-to-tuple : List{Rat} -> Ex .
+  op index-list-to-tuple : List{Index} -> List{Ex} .
+  op tuple-list-to-index : List{Ex} -> List{Index} .
+  *** tuple-to-index can be contructed directly through { evaluate( E ) }
+ 
+  *** domain can be derived from type 
+  op type-domain : Type -> Domain .
+  op domain : Ex -> Domain .
+
+  var F : Func .
+  var E E2 E3 : Ex .
+  var EL : List{Ex} .
+  var NeEL : NeList{Ex} .
+  var O : Oper .
+  var D D2 : Domain .
+  var R R2 : Range .
+  var I : Index .
+  var Y : Lambda .
+  var T T2 : Type .
+  var d i i' j j' z k : Rat .
+  var RL RL2 : List{Rat} .
+  var IL : List{Index} .
+
+  eq domain( E ) = type-domain(type(E) ) . 
+  eq type-domain( Tup( T , T2 ) ) = type-domain(T) + type-domain(T2) .
+  eq (R x D) + (R2 x D2) = R + R2 .
+  eq < i,j > + < i',j' > = < i, j + i' + j' > . *** works even if tup/Tup is associative
+  eq type-domain(ARR( R , T ) ) = R x type-domain( T ) .
+  eq type-domain(reduceT( Y , T ) ) = domainMap( Y , type-domain(T) ) .
+  eq dimension( R x D) = 1 + dimension( D ) .
+  eq dimension( point ) = 0 .
+  
+*** for
+  ceq for( F , < i,j > )[E] @ { z RL } = append-index(F , {z} ) [E] @ {RL} if ( z < j ) and ( z >= i ) . 
+  ceq for( F , < i,j > )[E] @ { z } = define( append-index( F, {z} ) [E] ) if ( z < j ) and ( z >= i ) .
+  eq image-type( for(F , R ) , T ) = ARR(R,T) .
+
+*** enumerate
+  ceq enumerate( < i,j > x D ) = append( enumerate-help( {i} , D ) , enumerate( < i + 1,j > x D ) ) if i + 1 < j .
+  ceq enumerate( < i,j > x D ) = enumerate-help({i} , D ) if i + 1 == j .
+  eq enumerate( point ) = nil .
+  ceq enumerate-help( { RL }, < i,j > x D ) = append( enumerate-help( { append( RL ,i) } , D ) , enumerate-help( { RL }, < i + 1,j > x D ) ) if i + 1 < j .
+  ceq enumerate-help( { RL }, < i,j > x D ) = enumerate-help( { append( RL , i) }, D ) if i + 1 == j .
+  eq enumerate-help( I , point ) = I .
+  eq enumerate( domainMap(Y,D) ) = uniq( tuple-list-to-index(  map( Y , index-list-to-tuple(enumerate(D)) ) ) ) .
+  
+*** reduce-list
+  ceq reduce-list-tup( E EL ) = tup( E, reduce-list-tup( EL ) ) if EL =/= nil .
+  eq reduce-list-tup( E ) = E .
+  ceq reduce-list( O , E EL ) = O[ E , reduce-list( O , EL ) ] if EL =/= nil .
+  eq reduce-list( O , E ) = E .
+
+*** index -> Ex and back
+  eq index-list-to-tuple( { RL } IL ) = list-to-tuple( RL ) index-list-to-tuple( IL ) .
+  eq index-list-to-tuple( nil ) = nil .
+  ceq list-to-tuple( z RL ) = tup( r(z) , list-to-tuple( RL ) ) if RL =/= nil .
+  ceq list-to-tuple( z ) = r(z) if z =/= NaV .
+  eq list-to-tuple( NaV ) = null .
+  eq tuple-list-to-index( E EL ) = { evaluate( E ) } tuple-list-to-index( EL ) .
+  eq tuple-list-to-index( nil ) = nil .
+ 
+  eq for-list( E , I IL ) = append(E @ I, for-list( E , IL )) .
+  eq for-list( E , nil ) = nil .
+
+  eq select( F , E )[ E2 ] = select-help( list-to-tuple(evaluate(F[ E2 ])) , E , E2 ) .
+  eq select-help( E , E , E2 ) = E2 .
+  eq select-help( E , E2 , E3 ) = null [owise] . *** we should do something like tup(E2,true) or tup(E2,false) to make select reusable, this implementation assumes select is only used to contruct lists
+  eq NeEL null  = NeEL .
+  eq null NeEL = NeEL .
+ 
+*** reduce
+  *** this assumes that reduce always decreases the dimension of domain by one (and lambda maps R^(dim(domain(E))) -> R^(dim(domain(E))-1)" )
+  eq define( reduce( O , Y ) [ E ] ) = reduce-help( O , Y , dimension(domain(E)) + - 1 )[E] .
+  ceq reduce-help( O , Y , d )[ E ] @ { z RL } = reduce-help( O , Y , d + - 1 ) @ {z} [ E ] @ {RL} if d > 0 .
+  ceq reduce-help( O , Y , d ) @ { RL } [ E ] @ { z RL2 } = reduce-help( O , Y , d + - 1 ) @ { RL z } [ E ] @ { RL2 } if d > 0 .
+  eq reduce-help( O , Y , 0 ) [ E ] @ { NaV } = reduce-help( O , Y , 0 ) @ { NaV } [ E ] .
+  eq reduce-help( O , Y , 0 ) @ { RL } [ E ] = 
+      reduce-list( O , for-list( E , tuple-list-to-index( map( select( Y , list-to-tuple(RL) ) , 
+        index-list-to-tuple(enumerate( type-domain(type( E )) ) ) 
+      ) ) ) ) .
+  
+  eq image-type( reduce( O , Y ) , T ) = reduceT( Y , T ) .
+
+endfm
+
+

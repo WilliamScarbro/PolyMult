@@ -1,0 +1,52 @@
+load EX-LANG .
+
+fmod LAMBDA is
+  pr EX-LANG .
+  pr LIST{Label} .
+
+  sort Lambda .
+  subsort Lambda < Func .
+
+  op lambda : List{Label} Ex -> Lambda .
+
+  var E E2 E3 : Ex .
+  var L : Label .
+  var EL EL2 : List{Ex} .
+  var LL : List{Label} .
+  var T : Type .
+
+  eq evaluate-help( lambda( L LL , E )[ tup(E2,E3)  ] , T ) = evaluate( lambda( LL , substitute( E, L,  E2 ) )[ E3 ] ) .
+  eq evaluate-help( lambda( L , E )[ E2 ], T ) = evaluate( substitute(E, L, E2 ) ) .
+  
+endfm
+
+fmod LAMBDA-RAT is
+  pr LAMBDA .
+  pr EX-LANG-AM .
+  pr LIST{Rat} .
+  
+  subsort Value < Rat .
+  op rat : -> Type .
+  op r : Rat -> TypedTerminal . 
+  
+
+  var i j : Rat . 
+  vars E E2 : Ex .
+  var L : Label .
+  var RL RL2 : List{Rat} .
+
+*** required by elevating r to typed terminal
+  eq type(r(j)) = rat .
+  eq substitute( r(i) , L , E ) = r(i) . 
+
+  eq evaluate-help( ADD[ E , E2 ] , rat ) = evaluate( E ) + evaluate( E2 ) .
+  eq evaluate-help( MULT[ E , E2 ] , rat ) = evaluate( E ) * evaluate( E2 ) .
+  eq evaluate-help( MULT-INV[ E ] , rat ) = 1 / evaluate(E) .
+  eq evaluate-help( ADD-INV[ E ] , rat ) = - evaluate(E) .
+  eq evaluate(r(i)) = i .
+
+  eq image-type( MULT-INV , rat ) = rat .
+  eq image-type( ADD-INV , rat ) = rat .
+
+  eq value-append(RL,RL2) = append(RL,RL2) . 
+endfm

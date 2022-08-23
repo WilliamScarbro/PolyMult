@@ -38,6 +38,7 @@ fmod FFT is
   op fft : Rat -> Func . *** k
   op fft-inv : QR Rat -> Func . *** Qr, k : saves QR to know what to convert back to
   op phi-loop : Rat Eq -> Func .
+  op inv : -> Func .
   
   op num : -> Type . *** generic number type, for use in range
   op rat : Rat -> Terminal .
@@ -61,9 +62,6 @@ fmod FFT is
   var Qr : QR .
 
 *** Utility
-  ceq range( i , j ) = append( rat(i) of num , range(i + 1, j) ) if i < j - 1 .
-  ceq range( i , j ) = rat(i) of num if i == j - 1 .
-
   eq make-tuple( a EL ) = tup( a , make-tuple( EL ) ) .
   eq make-tuple(nil) = nil .
 
@@ -74,19 +72,28 @@ fmod FFT is
   eq fft-red-help(k, a, Qr ) = fft-inv(Qr,k)[ fft(k)[ a ] ] . 
 
 *** Forward FFT
-  eq fft(k)[a] = tuple( map( phi-loop(k,a), range(0,k) ) .
+  eq fft(k)[a] = make-tuple( for index( phi(k) , a ) on range(0,k) )  .
 
-  phi-loop(k,a)[i] = phi(k,i)[a] .
+  eq phi(k) = 
 
+  eq phi(k){i}[ mult[a,b] ] = mult[phi(k){i}[a], phi(k){i}[b]] .
+  
+  eq image-type( phi(k){i} , qr(p,n,d,N) ) = qr(p,n / k, (d + i * N) / k, N) . 
+
+
+*** Inverse FFT
+  eq fft-inv(qr(p,n,d,N),k)[a] = qr-constr(qr(p,n,d,N),k)[ for index( split(phi-inv(qr(p,n,d,N),k),k) , a) on range(0,n) ) ] .
+
+  eq phi-inv(Qr,k){i}{j}[a] = mult[ inv[k] , sum( make-tuple( for index( phi-inv(Qr,k){i}{j} , a ) on range(0,k) ) ) ] .
+
+  eq phi-inv(Qr,k){i}{j}{z}[a] = mult[ a{z}{j} 
 ***
 ***  eq fft(k)[a] = phi-tup(k,0,k - 1)[a] .
 ***
 ***  ceq phi-tup(k, i, j)[a] = tup(phi(k,i)[a],phi-tup(k,i + 1,j)[a]) if i < j .
 ***  ceq phi-tup(k, i, j)[a] = phi(k,i)[a] if i == j .
 ***  
-***  eq phi(k,i)[ mult[a,b] ] = mult[phi(k,i)[a], phi(k,i)[b]] .
 ***
-***  eq image-type( phi(k,i) , qr(p,n,d,N) ) = qr(p,n / k, (d + i * N) / k, N) . 
 ***  
 ****** Inverse FFT
 ***  eq fft-inv(Qr,k)[ a ] = qr-constr(Qr,k)[phi-inv-tup(k,0,k - 1)[ a ] ] .
@@ -94,28 +101,28 @@ fmod FFT is
 ***  ceq phi-inv-tup(k,i,j)[ a ] = tup( phi-inv(k,i)[ a ] , phi-inv-tup(k,i + 1,j)[ a ] ) if i < j .
 ***  ceq phi-inv-tup(k,i,j)[ a ] = phi-inv(k,i)[ a ] if i == j .
 ***
-***  eq image-type( phi-inv(k,i) , Tup(qr(p,n,d,N),T ) = ff(p) .
+***  eq image-type( phi-inv(k,i) , Tup(qr(p,n,d,N),T ) ) = ff(p) .
 ***
 endfm
 
-fmod FFT-EVAL is
-  pr FFT .
-
-  op lowConv : Eq Eq -> Func .
-  op highConv : Eq Eq -> Func .
-  op convolution : Eq Eq QR -> Func .
-  
-  
-  vars a b c : Eq .
-  vars i j k n d N : Rat .
-  vars F : Func .
-
-  eq evaluate-help( mult[ a , b ] , qr(p,n,d,N) ) = qr-constr(qr(p,n,d,N))[make-tuple( map( convolution( a, b, qr(p,n,d,N)  ) , range(0,n) ) ) ] .
-
-  eq convolution( a , b , qr(n,d,N) )[ r(j) ] = add[ sum( map( lowConv( a , b ) , range(0,j) ) ) , mult[ omega(N,d) , sum( map( highConv( a, b ) , range(j + 1, n ) ) ) ] ] .
- 
-  eq lowConv(a,b)[ rat(i) of num ] = mult[ coef(i)[a] , coef(j - i)[b] ] .
-  eq highConv(a,b,n)[ rat(i) of num] = mult[ coef(i)[a] , coef(n + j - 1)[b] ] .
-
-endfm
-
+***fmod FFT-EVAL is
+***  pr FFT .
+***
+***  op lowConv : Eq Eq -> Func .
+***  op highConv : Eq Eq -> Func .
+***  op convolution : Eq Eq QR -> Func .
+***  
+***  
+***  vars a b c : Eq .
+***  vars i j k n d N : Rat .
+***  vars F : Func .
+***
+***  eq evaluate-help( mult[ a , b ] , qr(p,n,d,N) ) = qr-constr(qr(p,n,d,N))[make-tuple( map( convolution( a, b, qr(p,n,d,N)  ) , range(0,n) ) ) ] .
+***
+***  eq convolution( a , b , qr(n,d,N) )[ r(j) ] = add[ sum( map( lowConv( a , b ) , range(0,j) ) ) , mult[ omega(N,d) , sum( map( highConv( a, b ) , range(j + 1, n ) ) ) ] ] .
+*** 
+***  eq lowConv(a,b)[ rat(i) of num ] = mult[ coef(i)[a] , coef(j - i)[b] ] .
+***  eq highConv(a,b,n)[ rat(i) of num] = mult[ coef(i)[a] , coef(n + j - 1)[b] ] .
+***
+***endfm
+***

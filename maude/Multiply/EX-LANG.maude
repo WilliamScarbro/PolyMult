@@ -1,0 +1,126 @@
+load LABEL .
+
+fmod EX is
+  sort Ex .
+endfm
+
+view Ex from TRIV to EX is
+  sort Elt to Ex .
+endv
+
+fmod EX-LANG is
+  pr LABEL .
+  pr RAT .
+  pr LIST{Ex} .
+
+  sort Oper .
+  sort Func .
+  sort Type .
+  sort Value .
+  sort Terminal .
+  sort TypedTerminal .
+  sort Tup .
+
+  subsort Label < Terminal .
+  subsort TypedTerminal < Ex .
+  subsort Tup < Type .
+
+  op _ of _ : Terminal Type -> TypedTerminal .
+  op _[_,_] : Oper Ex Ex -> Ex .
+  op _[_] : Func Ex -> Ex .
+  op tup : Ex Ex -> Ex .
+  op Tup : Type Type -> Tup .
+  op type : Ex -> Type .
+  op image-type : Func Type -> Type . *** including type arg allows the same function to be defined over different domain types
+  op replace : Ex Label Ex -> Ex .
+  op substitute : Ex Label Ex -> Ex .
+  op find-op : Ex Oper -> List{Ex} .
+  op find-func : Ex Func -> List{Ex} .
+  op evaluate : Ex -> Value .
+  op evaluate-help : Ex Type -> Value .
+  op map : Func List{Ex} -> List{Ex} .
+  ***op value : TypedTerminal -> Rat .
+  op value-append : Value Value -> Value .
+  op null : -> Ex .
+  op nullT : -> Type .
+  op NaV : -> Value .
+
+  vars F F2 : Func .
+  vars O O2 : Oper .
+  vars TT : TypedTerminal .
+  vars Term : Terminal .
+  var L L2 : Label .
+  vars T : Type .
+  vars EX EX2 EX3 : Ex .
+  var EL : List{Ex} .
+  
+  eq type( Term of T ) = T .
+  eq type( O[EX, EX2] ) = type(EX) . *** assumes type EX same as type EX2, should have type check
+  eq type( F[EX] ) = image-type(F,type(EX)) .
+  eq type( tup( EX , EX2 ) ) = Tup( type( EX ), type( EX2 ) ) .
+
+  *** EX -> Label
+  ceq replace( F[EX] , L , EX3 ) = F[replace(EX,L,EX3)] if not (EX3 == F[EX]) .
+  ceq replace( O[ EX, EX2 ] , L , EX3 ) = O[replace(EX,L,EX3),replace(EX2,L,EX3)] if not EX3 == O[EX,EX2] .
+  ceq replace( tup( EX, EX2 ) , L , EX3 ) = tup(replace(EX,L,EX3),replace(EX2,L,EX3)) if not EX3 == tup(EX,EX2) .
+  ceq replace( TT , L , EX ) = TT if not EX == TT .
+  eq replace( EX, L , EX ) = L of type(EX) .
+
+  *** Label -> Eq 
+  eq substitute( F[EX] , L , EX2 ) = F[substitute( EX , L , EX2)] .
+  eq substitute( O[EX,EX2] , L , EX3 ) = O[substitute( EX , L , EX3), substitute( EX2 , L , EX3)] .
+  eq substitute( tup(EX,EX2) , L , EX3 ) = tup(substitute( EX , L , EX3), substitute( EX2 , L , EX3)) .
+  eq substitute( L of T , L , EX2 ) = EX2 .
+  ceq substitute( L of T , L2 , EX2 ) = L of T if L =/= L2 .
+  
+  eq find-op( O[EX, EX2] , O ) = append(append(O[EX,EX2], find-op(EX,O)), find-op(EX2,O)) .
+  ceq find-op( O[EX, EX2] , O2 ) = append( find-op(EX,O2), find-op(EX2,O2)) if O =/= O2 .
+  eq find-op( F[EX] , O ) = find-op(EX,O) .
+  eq find-op(tup(EX,EX2) , O ) = append( find-op(EX,O), find-op(EX2,O)) .
+  eq find-op( TT , O ) = nil .
+  
+  eq find-func( O[EX, EX2] , F ) = append( find-func(EX,F), find-func(EX2,F)) .
+  eq find-func( F[EX] , F ) = append(F[EX] , find-func(EX,F)) .
+  eq find-func( F[EX], F2 ) = find-func(EX,F2) [owise].
+  eq find-func(tup(EX,EX2) , F ) = append( find-func(EX,F), find-func(EX2,F)) .
+  eq find-func( TT , F ) = nil . 
+
+  eq evaluate( F[EX] ) = evaluate-help( F[EX] , type(EX) ) . 
+  eq evaluate( O[EX,EX2] ) = evaluate-help( O[EX,EX2] , type(EX) ) .
+  eq evaluate( tup( EX, EX2 ) ) = value-append( evaluate(EX) , evaluate(EX2) ) .
+
+  
+  eq map( F , EX EL ) = append(F[EX] , map(F , EL ) ) .
+  eq map( F , nil ) = nil .
+
+  eq F[null] = null .
+  eq O[EX,null] = EX .
+  eq O[null,EX] = EX .
+  eq tup( EX, null ) = EX .
+  eq tup( null, EX ) = EX .
+  eq evaluate( null ) = NaV .
+  eq substitute( null, L , EX ) = null .
+  eq type(null) = nullT .
+  eq replace(null, L , EX ) = null .
+  eq find-func(null, F ) = nil .
+  eq find-op(null, O) = nil . 
+endfm
+
+***( l("a") of qr(5,2,2,4) over { [0,2] } )
+
+
+fmod EX-TEST is
+  pr EX-LANG .
+
+  op t1 : -> Type .
+  op o : -> Oper .
+  op f : -> Func .
+endfm
+
+fmod EX-LANG-AM is
+  pr EX-LANG .
+  op MULT : -> Oper .
+  op ADD : -> Oper .
+  op ADD-INV : -> Func .
+  op MULT-INV : -> Func .
+endfm
