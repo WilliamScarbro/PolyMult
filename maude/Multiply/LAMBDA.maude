@@ -28,9 +28,11 @@ fmod LAMBDA-RAT is
   subsort Value < Rat .
   op rat : -> Type .
   op r : Rat -> TypedTerminal . 
-  
+  op TRUNC : -> Func .
+  op REM : -> Oper .
+  op POWER : -> Oper .
 
-  var i j : Rat . 
+  var i j m d : Rat . 
   vars E E2 : Ex .
   var L : Label .
   var RL RL2 : List{Rat} .
@@ -43,10 +45,41 @@ fmod LAMBDA-RAT is
   eq evaluate-help( MULT[ E , E2 ] , rat ) = evaluate( E ) * evaluate( E2 ) .
   eq evaluate-help( MULT-INV[ E ] , rat ) = 1 / evaluate(E) .
   eq evaluate-help( ADD-INV[ E ] , rat ) = - evaluate(E) .
+  eq evaluate-help( TRUNC[ E ] , rat ) = trunc( evaluate(E) ) .
+  eq evaluate-help( REM[ E , E2 ] , rat ) = evaluate(E) rem evaluate(E2) .
   eq evaluate(r(i)) = i .
+  eq evaluate-help( POWER[ E, E2 ] , rat ) = evaluate(E) ^ evaluate(E2) . 
+  
 
   eq image-type( MULT-INV , rat ) = rat .
   eq image-type( ADD-INV , rat ) = rat .
 
   eq value-append(RL,RL2) = append(RL,RL2) . 
+ endfm
+
+fmod LAMBDA-UTIL is
+  pr LIST{Label} .
+  pr LAMBDA-RAT .
+ 
+  op split-lambda : Rat Rat -> Lambda .
+  op concat-lambda : Rat Rat -> Lambda .
+  op label-list : Rat -> List{Label} .
+  op label-list-to-tuple : List{Label} -> Ex .
+
+  vars m d : Rat .
+  var L : Label .
+  var LL : List{Label} .
+  
+  ceq label-list( d ) = l("$" + char(d)) label-list(d + - 1) if 0 < d .
+  eq label-list(0) = nil .
+  eq label-list-to-tuple( L LL ) = tup( L of rat , label-list-to-tuple(LL) ) .
+  eq label-list-to-tuple(nil) = null .
+  
+  *** {i} => {i//m i rem m} 
+  eq split-lambda(m,d) = lambda( l("i") label-list(d + -1 ) , 
+      tup( TRUNC[MULT[l("i") of rat,MULT-INV[r(m)]]] , tup( REM[ l("i") of rat, r(m) ] , label-list-to-tuple(label-list(d + -1) ) ))) .
+  *** {i j} => {i*m + j} 
+  eq concat-lambda(m,d) = lambda( l("i") l("j") label-list(d + -2) , 
+      tup( ADD[ MULT[ l("i") of rat , r(m)] , l("j") of rat] , label-list-to-tuple(label-list(d + -2) ) )) .
+
 endfm

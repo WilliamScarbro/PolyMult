@@ -8,9 +8,9 @@ red for-list( l("a") of rat , { 0 } { 1 } { 2 } ) .
 
 red reduce-list( ADD , for-list( l("a") of rat , { 0 } { 1 } { 2 } ) ) .
 
-red reduce( ADD , three-to-two)[ l("a") of ar234 ] @ { 0 1 } .
+red reduce( ADD , three-to-two) @ { 0 1 } [ l("a") of ar234 ] .
 
-red f[r(3)] @ point-index .
+***red f[r(3)] @ point-index .
 
-red enumerate(domain( reduce( ADD , three-to-two )[ l("a") of ar234 ] )) .
- 
+***red enumerate(domain( reduce( ADD , three-to-two )[ l("a") of ar234 ] )) .
+

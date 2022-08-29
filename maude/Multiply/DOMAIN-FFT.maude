@@ -1,0 +1,64 @@
+*** domain level implementation of FFT
+*** ideally this can be replaced by a more "equational" specification which compiles to this lower level description
+
+load EX-DOMAIN .
+
+fmod QR is
+  pr EX-DOMAIN .
+
+  sort QR .
+  subsort QR < Type .
+  
+  *** QR(p,n,d,N) = F_P[X]/(X^n+w_N^d) (p and N stay constant)
+  op qr : Rat Rat Rat Rat -> QR [ctor] .
+  op ff : Rat -> Type .
+
+  var k p n d N i : Rat .
+  var a b : Ex .
+  var T : Type .
+  var Qr : QR .
+
+  eq type-domain( ff(p) ) = point .
+  eq type-domain( qr(p,n,d,N) ) = < 0,n > .
+  eq index-type( qr(p,n,d,N) , { i } ) = ff(p) .
+
+endfm
+
+
+fmod DOMAIN-FFT is
+  pr EX-DOMAIN .
+  pr QR . 
+  
+  op phi : Rat -> LabelFunc .
+  op phi-inv : Rat -> Func .
+  op omega : Rat Rat -> TypedTerminal . *** TT should be replaced by function, to allow index manipulation in EX-LANG
+
+  var E : Ex .
+  var z j i k p n d N : Rat .
+  var Qr : QR .
+
+  eq type(omega(N,p)) = ff(p) .
+
+
+  eq [phi] : define(phi(k)[E],qr(p,n,d,N)) = for(phi(k),< 0,k >)[E] .
+  eq [phi] : define(phi(k)@{z}[E],qr(p,n,d,N)) = for(phi(k)@{z},< 0,n / k >)[E] .
+  
+  eq [phi] : define(phi(k)@{z j}[E],qr(p,n,d,N)) = reduce(ADD,lambda(l("i"), null ))[ for(phi(k)@{z j},< 0,k >)[E]] .
+  eq [phi-3] : define(phi(k)@{z j i}[E],qr(p,n,d,N)) = MULT[ split(n / k)[E] @ {i j} , omega(N,p) @ { ( d + z * N ) * (i / k) } ] .
+   
+  ***(
+  eq define(phi(k)[E],qr(p,n,d,N)) = 
+    for(
+      for(
+        reduce(ADD,lambda(l("z") l("j") l("i"), tup(l("z") of rat ,l("j") of rat) ))
+      ,< 0,n / k >)
+    , < 0,k >)[
+      for(phi-body(k),< 0,k >)[E]
+    ] .
+
+  eq define(phi-body(k)[E],qr(p,n,d,N)) = MULT[split(n / k)[E] @ {i j}, POWER[omega(N,p),r( ( d + z * N ) * (i / k) )] ] .
+  ***    ]]
+  ***  ] .
+  )
+  
+endfm

@@ -115,7 +115,7 @@ fmod EX-DOMAIN is
   op reduce-list : Oper List{Ex} -> Ex .
   op reduce-list-tup : List{Ex} -> Ex .
   op for-list : Ex List{Index} -> List{Ex} .
-  ***op split : Lambda -> Func .
+  op split : Func Rat -> Func .
 
   op enumerate : Domain -> List{Index} .
   op enumerate-help : Index Domain -> List{Index} .
@@ -145,8 +145,6 @@ fmod EX-DOMAIN is
   var D D2 : Domain .
   var R R2 : Range .
   var I : Index .
-  ***var DS : DomainSig .
-  ***var DM : DomainMap .
   var Y : Lambda .
   var T T2 : Type .
   var d i i' j j' z k : Rat .
@@ -159,8 +157,11 @@ fmod EX-DOMAIN is
   eq < i,j > + < i',j' > = < i, j + i' + j' > . *** works even if tup/Tup is associative
   eq type-domain(ARR( R , T ) ) = R x type-domain( T ) .
   eq type-domain(reduceT( Y , T ) ) = domainMap( Y , type-domain(T) ) .
+
   eq dimension( R x D) = 1 + dimension( D ) .
   eq dimension( point ) = 0 .
+
+  eq split(F,k){i} = F{i rem k}{trunc(i / k)} .
   
 *** for
   ceq for( F , < i,j > )[E] @ { z RL } = append-index(F , {z} ) [E] @ {RL} if ( z < j ) and ( z >= i ) . 

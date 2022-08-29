@@ -1,0 +1,9 @@
+***red phi(2 , qr(5,4,1,4) )[l("a") of qr(5,4,1,4) ] @ {3} .
+***red reduce(ADD,lambda(l("z") l("j") l("i"), tup(l("z") of rat ,l("j") of rat) ))[ for(phi(2,qr(5,4,1,4))@{1 1},< 0,2 >)[l("a") of qr(5,4,1,4)]] @ {1} .
+***red domain(for(phi(2,qr(5,4,1,4))@{1 1},< 0,2 >)[l("a") of qr(5,4,1,4)]) .
+red phi(3)[l("a") of qr(7,6,6,6)] @ {0 0} .
+red phi(3)[l("a") of qr(7,6,6,6)] @ {1 0} .
+red phi(3)[l("a") of qr(7,6,6,6)] @ {2 0} .
+red phi(3)[l("a") of qr(7,6,6,6)] @ {0 1} .
+red phi(3)[l("a") of qr(7,6,6,6)] @ {1 1} .
+red phi(3)[l("a") of qr(7,6,6,6)] @ {2 1} .

@@ -1,5 +1,12 @@
-fmod TEST is
-  pr STRING .
-  op con : -> String [ctor] .
-  eq con = "abc" .
-endfm
+mod TEST is
+  pr LIST{Rat} .
+  pr RAT .
+  sort Count .
+  op count-a : List{Rat} Rat -> Count .
+
+  var IL IL2 : List{Rat} .
+  var n : Rat .
+  
+  rl [remove] : IL 1 IL2 => IL IL2 .
+  crl [count] : count-a( IL , n ) => count-a( IL2 , n + 1 ) if IL => IL2 .
+endm

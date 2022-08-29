@@ -74,7 +74,7 @@ fmod FFT is
 *** Forward FFT
   eq fft(k)[a] = make-tuple( for index( phi(k) , a ) on range(0,k) )  .
 
-  eq phi(k) = 
+  eq phi(k) =  
 
   eq phi(k){i}[ mult[a,b] ] = mult[phi(k){i}[a], phi(k){i}[b]] .
   

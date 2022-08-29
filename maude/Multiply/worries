@@ -1,0 +1,28 @@
+Things i am worried about
+
+
+# What does the end language look like?
+  how do we extend to other reductions algorithms
+    domain vs reducible descriptions
+solution:
+  meta maude may solve language interface
+  compilation path from reducible to domain
+
+# Is there any advantage to using obj language to search reductions
+  cons: 
+    rule applications are already cached by maude
+    a lot more machinery
+    strategies are supported by maude
+  pros:
+    strategy language may not be complex enough to do optimization
+    makes code reuse more clear
+
+# how do we handle constants?
+  possible: search and replace
+  depends on final language
+
+# can we reduce FFT ?
+  specifically: can we use FFT subcalls at sinlge FFT level (like spiral)
+
+
+  
