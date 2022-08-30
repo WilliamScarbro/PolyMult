@@ -36,26 +36,34 @@ fmod INDEX-FUNC is
   var IF : IndexFunc .
   var LF : LabelFunc .
   var I I2 : Index .
-  var E : Ex .
+  var E E2 : Ex .
   var T : Type .
   var L : Label .
+  var z : Rat .
+  var RL : List{Rat} .
+  var O : Oper .
+  var TT : TypedTerminal .
   
   ***ceq F[E] @ I = define( F[E] ) @ I if not F :: FuncDef .
   ***ceq F @ I [E] @ I2 = define( F @ I[E] ) @ I2 if not F :: FuncDef .
-  eq LF [E] @ I = define( LF[E],type(E) ) @ I .
-  eq LF @ I [E] @ I2 = define(LF @ I [E],type(E)) @ I2 .
+  eq [define-trigger] : LF [E] @ {z RL} = define( LF[E],type(E) ) @ {z RL}  .
+  eq [define-trigger] : LF @ I [E] @ {z RL} = define(LF @ I [E],type(E)) @ {z RL} .
   
   *** For image type synthesis the definition of a LabelFunc can only depend on the type of its argument
   *** result of using "cannonical" label below
   eq image-type(LF,T) = type(define(LF[l("canonical") of T],T)) .
   eq image-type(LF @ I,T) = type(define(LF @ I[l("cannonical") of T],T)) .
 
+*** index manipulation
   eq append-index( F @ I , I2 ) = F @ index-append( I, I2 ) .
   ceq append-index( F , I ) = F @ I if not F :: IndexFunc .
+  eq O[E,E2] @ I = O[E @ I,E2 @ I] .
   eq E @ {nil} = E .
   eq point-index = { NaV } . 
-
+  eq TT @ I @ { NaV } = TT @ I .
+  eq TT @ { NaV } = TT .
   eq type(L of T @ I) = index-type(T,I) . 
+
 endfm
 
 
@@ -141,6 +149,7 @@ fmod EX-DOMAIN is
   eq < i,j > + < i',j' > = < i, j + i' + j' > . *** works even if tup/Tup is associative
   
   eq type-domain(ARR( R , T ) ) = R x type-domain( T ) .
+  eq index-type(ARR(R,T) , {z RL}) = index-type(T,{RL}) .
 
   eq image-type( reduce( O , Y ) , T ) = reduceT( Y , T ) .
   eq image-type( reduce-help( O , Y , d , I ) , T ) = reduceT( Y , T ) .

@@ -1,0 +1,6 @@
+ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {0},omega(6, 7) @ {0}],ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {2},omega(6, 7) @ {2}],MULT[l("a") of qr(7, 6, 6, 6) @ {4},omega(6, 7) @ {4}]]]
+ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {0},omega(6, 7) @ {0}],ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {2},omega(6, 7) @ {4}],MULT[l("a") of qr(7, 6, 6, 6) @ {4},omega(6, 7) @ {8}]]]
+ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {0},omega(6, 7) @ {0}],ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {2},omega(6, 7) @ {6}],MULT[l("a") of qr(7, 6, 6, 6) @ {4},omega(6, 7) @ {12}]]]
+ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {1},omega(6, 7) @ {0}],ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {3},omega(6, 7) @ {2}],MULT[l("a") of qr(7, 6, 6, 6) @ {5},omega(6, 7) @ {4}]]]
+ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {1},omega(6, 7) @ {0}],ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {3},omega(6, 7) @ {4}],MULT[l("a") of qr(7, 6, 6, 6) @ {5},omega(6, 7) @ {8}]]]
+ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {1},omega(6, 7) @ {0}],ADD[MULT[l("a") of qr(7, 6, 6, 6) @ {3},omega(6, 7) @ {6}],MULT[l("a") of qr(7, 6, 6, 6) @ {5},omega(6, 7) @ {12}]]]
