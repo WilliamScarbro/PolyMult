@@ -82,7 +82,7 @@ fmod DOMAIN-FFT-TEST is
   eq evaluate(omega(6,7) @ {P}) = evaluate(POWER[ff-ctor(7,generator(7)),ff-ctor(7,P)]) .
   eq generator(7) = 3 .
 
-  eq evaluate-help( ADD[ E , E2 ] , ff(p) ) = evaluate( E ) + evaluate( E2 ) rem p .
+  eq evaluate-help( ADD[ E , E2 ] , ff(p) ) = (evaluate( E ) + evaluate( E2 )) rem p .
   eq evaluate-help( MULT[ E , E2 ] , ff(p) ) = (evaluate( E ) * evaluate( E2 )) rem p .
   eq evaluate-help( ADD-INV[ E ] , ff(p) ) = - evaluate(E) rem p .
   eq evaluate(ff-ctor(p,i))= i .

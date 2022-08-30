@@ -1,0 +1,6 @@
+red evaluate(omega(6,7) @ { 0 } ) .
+red evaluate(omega(6,7) @ { 1 } ) .
+red evaluate(omega(6,7) @ { 2 } ) .
+red evaluate(omega(6,7) @ { 3 } ) .
+red evaluate(omega(6,7) @ { 4 } ) .
+red evaluate(omega(6,7) @ { 5 } ) .

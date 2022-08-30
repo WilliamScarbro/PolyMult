@@ -1,0 +1,6 @@
+red evaluate(phi(3)[l("a") of qr(7,6,6,6)] @ {0 0} @ point-index ) .
+red evaluate(phi(3)[l("a") of qr(7,6,6,6)] @ {1 0} @ point-index ) .
+red evaluate(phi(3)[l("a") of qr(7,6,6,6)] @ {2 0} @ point-index ) .
+red evaluate(phi(3)[l("a") of qr(7,6,6,6)] @ {0 1} @ point-index ) .
+red evaluate(phi(3)[l("a") of qr(7,6,6,6)] @ {1 1} @ point-index ) .
+red evaluate(phi(3)[l("a") of qr(7,6,6,6)] @ {2 1} @ point-index ) .
