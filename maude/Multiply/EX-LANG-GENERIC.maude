@@ -1,0 +1,235 @@
+load LABEL .
+
+fmod OPER-FUNC is
+  sort Oper .
+  sort Func .
+  op MULT : -> Oper .
+  op ADD : -> Oper .
+endfm
+
+fth ALGEBRA is
+  sort Type .
+  sort Elt .
+  sort Oper .
+  sort Func .
+endfth
+
+fmod EX-LIST{A :: ALGEBRA} is
+  sort Ex{A} .
+  sort ExList{A} .
+  
+  subsort Ex{A} < ExList{A} .
+  op _ _ : ExList{A} ExList{A} -> ExList{A} [assoc id: nil] .
+  op append : ExList{A} ExList{A} -> ExList{A} .
+  op nil : -> ExList{A} .
+  var EL EL2 : ExList{A} .
+  eq append(EL,EL2) = EL EL2 .
+endfm
+
+fmod EX-LANG{A :: ALGEBRA} is
+  pr LABEL .
+  pr RAT .
+  pr EX-LIST{A} .
+
+  sort Terminal{A} .
+  sort TypedTerminal{A} .
+  sort Tup{A} .
+
+  subsort Label < Terminal{A} .
+  subsort A$Elt < TypedTerminal{A} < Ex{A} .
+  subsort Tup{A} < A$Type .
+
+  op _ of _ : Terminal{A} A$Type -> TypedTerminal{A} .
+  op tup : Ex{A} Ex{A} -> Ex{A} . 
+  op Tup : A$Type A$Type -> A$Type .
+  op type : Ex{A} -> A$Type .
+  op _[_,_] : A$Oper Ex{A} Ex{A} -> Ex{A} .
+  op _[_] : A$Func Ex{A} -> Ex{A} .
+  op image-type : A$Func A$Type -> A$Type .
+  op evaluate : Ex{A} -> A$Elt .
+  op replace : Ex{A} Label Ex{A} -> Ex{A} .
+  op substitute : Ex{A} Label Ex{A} -> Ex{A} .
+  op find-op : Ex{A} A$Oper -> ExList{A} .
+  op find-func : Ex{A} A$Func -> ExList{A} .
+  op evaluate : Ex{A} -> A$Elt .
+  op evaluate-help : Ex{A} A$Type -> A$Elt .
+  op map : A$Func ExList{A} -> ExList{A} .
+  op value-append : A$Elt A$Elt -> A$Elt .
+  op null : -> Ex{A} .
+  op nullT : -> A$Type .
+  op NaV : -> A$Elt .
+
+  vars F F2 : A$Func .
+  vars O O2 : A$Oper .
+  vars TT : TypedTerminal{A} .
+  vars Term : Terminal{A} .
+  var L L2 : Label .
+  vars T : A$Type .
+  vars EX EX2 EX3 : Ex{A} .
+  var EL : ExList{A} .
+  
+  eq type( Term of T ) = T .
+  eq type( O[EX, EX2] ) = type(EX) . *** assumes type EX same as type EX2, should have type check
+  eq type( F[EX] ) = image-type(F,type(EX)) .
+  eq type( tup( EX , EX2 ) ) = Tup( type( EX ), type( EX2 ) ) .
+
+  *** EX -> Label
+  ceq replace( F[EX] , L , EX3 ) = F[replace(EX,L,EX3)] if not (EX3 == F[EX]) .
+  ceq replace( O[ EX, EX2 ] , L , EX3 ) = O[replace(EX,L,EX3),replace(EX2,L,EX3)] if not EX3 == O[EX,EX2] .
+  ceq replace( tup( EX, EX2 ) , L , EX3 ) = tup(replace(EX,L,EX3),replace(EX2,L,EX3)) if not EX3 == tup(EX,EX2) .
+  ceq replace( TT , L , EX ) = TT if not EX == TT .
+  eq replace( EX, L , EX ) = L of type(EX) .
+
+  *** Label -> Eq 
+  eq substitute( F[EX] , L , EX2 ) = F[substitute( EX , L , EX2)] .
+  eq substitute( O[EX,EX2] , L , EX3 ) = O[substitute( EX , L , EX3), substitute( EX2 , L , EX3)] .
+  eq substitute( tup(EX,EX2) , L , EX3 ) = tup(substitute( EX , L , EX3), substitute( EX2 , L , EX3)) .
+  eq substitute( L of T , L , EX2 ) = EX2 .
+  ceq substitute( L of T , L2 , EX2 ) = L of T if L =/= L2 .
+  eq substitute( TT , L , EX ) = TT . *** doesn't allow L of T to change type, probably a good thing
+  
+  eq find-op( O[EX, EX2] , O ) = append(append(O[EX,EX2], find-op(EX,O)), find-op(EX2,O)) .
+  ceq find-op( O[EX, EX2] , O2 ) = append( find-op(EX,O2), find-op(EX2,O2)) if O =/= O2 .
+  eq find-op( F[EX] , O ) = find-op(EX,O) .
+  eq find-op(tup(EX,EX2) , O ) = append( find-op(EX,O), find-op(EX2,O)) .
+  eq find-op( TT , O ) = nil .
+  
+  eq find-func( O[EX, EX2] , F ) = append( find-func(EX,F), find-func(EX2,F)) .
+  eq find-func( F[EX] , F ) = append(F[EX] , find-func(EX,F)) .
+  eq find-func( F[EX], F2 ) = find-func(EX,F2) [owise].
+  eq find-func(tup(EX,EX2) , F ) = append( find-func(EX,F), find-func(EX2,F)) .
+  eq find-func( TT , F ) = nil . 
+
+  eq evaluate( F[EX] ) = evaluate-help( F[EX] , type(EX) ) . 
+  eq evaluate( O[EX,EX2] ) = evaluate-help( O[EX,EX2] , type(EX) ) .
+  eq evaluate( tup( EX, EX2 ) ) = value-append( evaluate(EX) , evaluate(EX2) ) .
+  eq evaluate( ae:A$Elt ) = ae:A$Elt .
+
+  
+  eq map( F , EX EL ) = append(F[EX] , map(F , EL ) ) .
+  eq map( F , nil ) = nil .
+
+  eq F[null] = null .
+  eq O[EX,null] = EX .
+  eq O[null,EX] = EX .
+  eq tup( EX, null ) = EX .
+  eq tup( null, EX ) = EX .
+  eq evaluate( null ) = NaV .
+  eq substitute( null, L , EX ) = null .
+  eq type(null) = nullT .
+  eq replace(null, L , EX ) = null .
+  eq find-func(null, F ) = nil .
+  eq find-op(null, O) = nil . 
+endfm
+
+***-------- SPECULATIVE -------------
+***(fmod FFIELD is
+  pr RAT .
+  pr OPER-FUNC .
+  sort FF-Type .
+  sort FF-Elt .
+
+  op FF : Rat -> FF-Type .
+  op ff : Rat -> FF-Elt .
+endfm
+  
+view FField from ALGEBRA to FFIELD is
+  sort Type to FF-Type .
+  sort Elt to FF-Elt .
+endv
+
+fmod QUO-RING is
+  pr RAT .
+  pr OPER-FUNC .
+  sort QR-Type .
+  sort QR-Elt .
+  
+  op qr : Rat Rat Rat Rat -> QR-Type .
+endfm
+view Quo-Ring from ALGEBRA to QUO-RING is
+  sort Type to QR-Type .
+  sort Elt to QR-Elt .
+endv
+
+fmod TRANSLATION{A1 :: ALGEBRA, A2 :: ALGEBRA} is
+  pr EX-LANG{A1} .
+  pr EX-LANG{A2} .
+  op translate : Ex{A1}  -> Ex{A2} .
+  op translate-help : Ex{A1} A1$Type -> Ex{A2} .
+  eq translate( E:Ex{A1} ) = translate-help(E:Ex{A1},type(E:Ex{A1})) .
+endfm
+
+
+fmod FFT is
+  pr EX-LANG{Quo-Ring} .
+  pr EX-LANG{FField} .
+ 
+  op qr-gamma : -> Func .
+  op ff-gamma : QR-Type -> Func .
+endfm
+
+fmod COMPILE is
+  pr FFT .
+  pr TRANSLATION{Quo-Ring,FField} .
+  
+  op f : -> Func .
+  op gamma : -> Func .
+
+  vars p n d N : Rat .
+  var E : Ex{Quo-Ring} .
+  eq image-type(qr-gamma, qr(p,n,d,N)) = qr(p,n,N,N) .
+  eq translate-help(qr-gamma[E], qr(p,n,d,N)) = ff-gamma(qr(p,n,d,N))[translate(E)] .
+endfm)
+***------------------------------
+
+*** ----------TEST HANDLE--------------
+fmod RAT-ALG is
+  pr RAT .
+  pr OPER-FUNC .
+  sort Rat-Type .
+  sort Rat-Elt .
+  
+  op r : Rat -> Rat-Elt .
+  op rat : -> Rat-Type .
+  op & _ : Rat-Elt -> Rat .
+  var i j : Rat .
+  eq & r(i) = i .
+endfm
+
+
+view Rat-Alg from ALGEBRA to RAT-ALG is
+  sort Type to Rat-Type .
+  sort Elt to Rat-Elt .
+endv
+
+fmod FFIELD is
+  pr RAT .
+  pr OPER-FUNC .
+  sort FF-Type .
+  sort FF-Elt .
+
+  op FF : Rat -> FF-Type .
+  op ff : Rat Rat -> FF-Elt .
+  op & _ : FF-Elt -> Rat .
+  eq & ff(i:Rat,p:Rat) = i:Rat rem p:Rat .
+endfm
+  
+view FField from ALGEBRA to FFIELD is
+  sort Type to FF-Type .
+  sort Elt to FF-Elt .
+endv
+
+fmod EX-LANG-GEN-TEST is
+  pr EX-LANG{Rat-Alg} .
+  pr EX-LANG{FField} .
+  op add3 : -> Func .
+  op expand : -> Func .
+  var i j p : Rat .
+  var Er Er2 : Ex{Rat-Alg} .
+  
+  eq evaluate-help(MULT[Er,Er2],rat ) = r(& evaluate(Er) * & evaluate(Er2) ) .
+  ***eq define(add3[r(i)]) = MULT[r(3),r(i)] .
+  ***eq define(expand[ff(i,p)]) = ff(i,p * 3) .
+  eq type(ff(i:Rat,p:Rat)) = FF(p:Rat) .
+  eq type(r(i)) = rat .
+endfm

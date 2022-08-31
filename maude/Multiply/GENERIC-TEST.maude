@@ -1,0 +1,49 @@
+
+
+fth F1 is
+  sort Type .
+  sort Elt .
+endfth
+
+fmod EX is
+  sort Ex .
+endfm
+
+view Ex from TRIV to EX is
+  sort Elt to Ex .
+endv
+
+fmod MOD{F :: F1} is
+  pr EX * (sort Ex to Ex{F}) .
+  subsort F$Elt < Ex{F} .
+endfm
+
+fmod MOD2 is
+  pr RAT .
+  sort QR .
+  sort qr .
+  
+  op qr : Rat Rat -> qr .
+endfm
+
+fmod MOD3 is
+  pr RAT .
+  sort R-Elt .
+  sort R-Type .
+endfm
+
+view Mod2 from F1 to MOD2 is
+  sort Type to QR .
+  sort Elt to qr .
+endv
+
+view Mod3 from F1 to MOD3 is
+  sort Type to R-Type .
+  sort Elt to R-Elt .
+endv
+
+
+fmod MOD-Mod2-3 is
+  pr MOD{Mod2} .
+  pr MOD{Mod3} .
+endfm

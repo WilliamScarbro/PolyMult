@@ -41,6 +41,8 @@ fmod DOMAIN-FFT is
   op phi : Rat -> LabelFunc .
   op phi-inv : Rat QR -> LabelFunc .
   op omega : Rat Rat -> TypedTerminal . *** TT should be replaced by function, to allow index manipulation in EX-LANG
+  op gamma : -> LabelFunc .
+  op gamma-inv : QR -> LabelFunc .
 
   var E : Ex .
   var z j i k p n d N m : Rat .
@@ -61,6 +63,15 @@ fmod DOMAIN-FFT is
     MULT[MULT-INV[ff-ctor(p,k)], reduce(ADD,lambda(l("z"),null))[for(phi-inv(k,qr(p,n,d,N))@{i j},< 0,k >)[E]]] .
   eq [phi-inv] : define(phi-inv(k,qr(p,n,d,N))@{i j z}[E],ARR(< 0,k >,ARR(< 0,m >, ff(p)))) =
     MULT[ E @ {z j}, omega(N,p)@{ (-1) * ( d + z * N ) * (i / k) } ] .
+
+*** gamma
+  eq [gamma] : define(gamma[E],qr(p,n,d,N)) = for(gamma,< 0,n >)[E] .
+  eq [gamma] : define(gamma @{i}[E],qr(p,n,d,N)) = MULT[ E @ {i} , omega(p,N) @ { ((N + - d) * i) / n  } ] .
+
+*** gamma-inv
+  eq [gamma] : define(gamma-inv(qr(p,n,d,N))[E],ARR(< 0,n >,ff(p))) = for(gamma-inv(qr(p,n,d,N)),< 0,n >)[E] .
+  eq [gamma] : define(gamma-inv(qr(p,n,d,N)) @{i}[E],ARR(< 0,n >,ff(p))) = MULT[ E @ {i} , omega(p,N) @ { ((N + - d) * (N + - i)) / n } ] .
+
 endfm
 
 fmod DOMAIN-FFT-TEST is

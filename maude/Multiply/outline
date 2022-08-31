@@ -36,3 +36,8 @@ add p to qr
 add range evaluation to fft->phi conversion
 replace qr-coef with ff(p)
 
+
+8/31
+TODO
+  extend EX-LANG-GEN to EX-DOMAIN
+  Write translation rules

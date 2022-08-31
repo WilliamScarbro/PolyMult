@@ -1,0 +1,27 @@
+***type
+red type( l("a") of FF(7)) .
+red type( ff(2,5) ) .
+red type( MULT[ff(2,5),ff(4,5)]) .
+red type( expand[l("a") of FF(5)] ) .
+red type(tup(ff(2,5),ff(3,7))) .
+
+***replace
+red replace( expand[ff(2,3)] , l("a"), ff(2,3) ) .
+red replace( MULT[l("a") of FF(3),ff(2,3)] , l("a"), ff(2,3)) .
+red replace( ff(2,3) , l("a") , ff(4,3) ) .
+
+*** substitute
+red substitute( expand[l("a") of FF(3)] , l("a"), ff(2,3)) .
+red substitute( MULT[l("a") of FF(3),l("b") of FF(3)] , l("a"), ff(2,3)) .
+red substitute( ff(2,3) , l("a") , ff(4,3) ) .
+
+*** find-op
+red find-op( expand[MULT[ff(2,3),ff(1,3)]] , MULT ) .
+
+*** evaluate
+red evaluate( MULT[r(1),r(3)] ) .
+red evaluate( tup(r(1), r(2)) ) .
+
+*** map
+red map( add3, r(1) r(2) r(3) ) .
+
