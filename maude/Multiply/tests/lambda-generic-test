@@ -1,0 +1,9 @@
+red evaluate( lambda( append(l("a"),l("b")) , l("a") of rat )[tup(r(0),r(1))] ) .
+red evaluate( lambda( append(l("a"),l("b")) , MULT[ ADD[ l("a") of rat , r(10) ] , M-INV[l("b") of rat] ] )[tup(r(0),r(2))] ) .
+red evaluate( lambda( append(l("a"),l("b")) , tup( l("b") of rat, l("a") of rat) )[tup(r(1),r(2))] ) .
+red split-lambda(2,3) .
+red evaluate(split-lambda(3,3)[tup(r(5),tup(r(5),r(5)))] ) .
+red concat-lambda(3,4) .
+red evaluate(concat-lambda(3,4)[tup(r(1),tup(r(2),tup(r(5),r(5))))] ) .
+red map( lambda( append(l("a"),l("b")) , tup( l("b") of rat, l("a") of rat) ), tup(r(1),r(2)) tup(r(1),r(2)) ) .
+red evaluate( lambda( l("a") , null )[r(1)] ) .

@@ -57,12 +57,26 @@ mkdir -p $th
 maude-pipe.sh -m $m < $mh$t > $th/$tn-result 
 
 if [[ "$i" == "i" ]]; then
+  if [[ -f $c ]]; then
+    echo ---
+    diff $c $th/$tn-result
+    echo ---
+    while true; do
+      read -p "Correct file already exists, confirm changes (above) (Y/N):" yn
+      case $yn in 
+	      [yY] )  break;;
+	      [nN] ) echo exiting...;
+		        exit;;
+	      * ) echo invalid response;;
+      esac
+    done
+  fi
   cat $th/$tn-result > $c
   echo "Populated correct file $c"
   exit 0;
 fi
 
-diff $th/$tn-result $c | tee $th/$tn-diff
+diff $c $th/$tn-result | tee $th/$tn-diff
 
 if [[ ! -z "`cat $th/$tn-diff`" ]]; then
   echo "Test fail on input $mh$t" 1>&2

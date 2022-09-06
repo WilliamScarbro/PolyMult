@@ -1,0 +1,7 @@
+r(0)
+r(5)
+r(2) r(1)
+lambda(l("i") l("$\002") l("$\001"), tup(TRUNC[MULT[l("i") of rat,M-INV[r(2)]]], tup(REM[l("i") of rat,r(2)], tup(l("$\002") of rat, l("$\001") of rat))))
+r(1) r(2) r(5) r(5)
+lambda(l("i") l("j") l("$\002") l("$\001"), tup(ADD[MULT[l("i") of rat,r(3)],l("j") of rat], tup(l("$\002") of rat, l("$\001") of rat)))
+r(5) r(5) r(5)

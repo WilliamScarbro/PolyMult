@@ -5,6 +5,8 @@ fmod OPER-FUNC is
   sort Func .
   op MULT : -> Oper .
   op ADD : -> Oper .
+  op NEG : -> Func .
+  op M-INV : -> Func .
 endfm
 
 fth ALGEBRA is
@@ -34,10 +36,13 @@ fmod EX-LANG{A :: ALGEBRA} is
   sort Terminal{A} .
   sort TypedTerminal{A} .
   sort Tup{A} .
+  sort NullElt{A} .
 
   subsort Label < Terminal{A} .
   subsort A$Elt < TypedTerminal{A} < Ex{A} .
   subsort Tup{A} < A$Type .
+  subsort NullElt{A} < A$Elt .
+  
 
   op _ of _ : Terminal{A} A$Type -> TypedTerminal{A} .
   op tup : Ex{A} Ex{A} -> Ex{A} . 
@@ -54,10 +59,12 @@ fmod EX-LANG{A :: ALGEBRA} is
   op evaluate : Ex{A} -> A$Elt .
   op evaluate-help : Ex{A} A$Type -> A$Elt .
   op map : A$Func ExList{A} -> ExList{A} .
+  op select : A$Func Ex{A} -> A$Func .
+  op select-help : Ex{A} Ex{A} Ex{A} -> Ex{A} .
   op value-append : A$Elt A$Elt -> A$Elt .
   op null : -> Ex{A} .
   op nullT : -> A$Type .
-  op NaV : -> A$Elt .
+  op NaE : -> NullElt{A} .
 
   vars F F2 : A$Func .
   vars O O2 : A$Oper .
@@ -102,24 +109,98 @@ fmod EX-LANG{A :: ALGEBRA} is
 
   eq evaluate( F[EX] ) = evaluate-help( F[EX] , type(EX) ) . 
   eq evaluate( O[EX,EX2] ) = evaluate-help( O[EX,EX2] , type(EX) ) .
-  eq evaluate( tup( EX, EX2 ) ) = value-append( evaluate(EX) , evaluate(EX2) ) .
+  eq evaluate( tup( EX, EX2 ) ) = tup( evaluate(EX) , evaluate(EX2) ) .
   eq evaluate( ae:A$Elt ) = ae:A$Elt .
 
   
   eq map( F , EX EL ) = append(F[EX] , map(F , EL ) ) .
   eq map( F , nil ) = nil .
+  
+  eq select( F , EX )[ EX2 ] = select-help( evaluate(F[ EX2 ]) , EX , EX2 ) .
+  eq select-help( EX , EX , EX2 ) = EX2 .
+  eq select-help( EX , EX2 , EX3 ) = null [owise] . *** we should do something like tup(E2,true) or tup(E2,false) to make select reusable, this implementation assumes select is only used to contruct lists
+  ***eq NeEL null  = NeEL .
+  ***eq null NeEL = NeEL .
+ 
 
   eq F[null] = null .
   eq O[EX,null] = EX .
   eq O[null,EX] = EX .
   eq tup( EX, null ) = EX .
   eq tup( null, EX ) = EX .
-  eq evaluate( null ) = NaV .
+  eq evaluate( null ) = NaE .
   eq substitute( null, L , EX ) = null .
   eq type(null) = nullT .
   eq replace(null, L , EX ) = null .
   eq find-func(null, F ) = nil .
   eq find-op(null, O) = nil . 
+endfm
+
+***------------ RAT-EX-LANG----------------
+fmod RAT-ALG is
+  pr RAT .
+  pr OPER-FUNC * ( sort Oper to Rat-Oper , sort Func to Rat-Func ) .
+  sort Rat-Type .
+  sort Rat-Elt .
+  
+  op r : Rat -> Rat-Elt .
+  op rat : -> Rat-Type .
+  op & _ : Rat-Elt -> Rat .
+  op REM : -> Rat-Oper .
+  op TRUNC : -> Rat-Func .
+  var i j : Rat .
+  eq & r(i) = i .
+endfm
+
+view Rat-Alg from ALGEBRA to RAT-ALG is
+  sort Type to Rat-Type .
+  sort Elt to Rat-Elt .
+  sort Func to Rat-Func .
+  sort Oper to Rat-Oper .
+endv
+
+fmod RAT-EX-LANG is
+  pr EX-LANG{Rat-Alg} .
+  var i : Rat .
+  var E E2 : Ex{Rat-Alg} . 
+  eq type(r(i)) = rat .
+  eq evaluate-help(MULT[E,E2],rat) = r(& evaluate(E) * & evaluate(E2)) .
+  eq evaluate-help(ADD[E,E2],rat) = r(& evaluate(E) + & evaluate(E2)) .
+  eq evaluate-help(NEG[E],rat) = r( - & evaluate(E)) .
+  eq evaluate-help(M-INV[E],rat) = r( 1 / & evaluate(E) ) .
+  eq evaluate-help(REM[E,E2],rat) = r( & evaluate(E) rem & evaluate(E2) ) . 
+  eq evaluate-help(TRUNC[E],rat) = r( trunc( & evaluate(E) ) ) .
+endfm
+
+***----------- FField --------------
+fmod FFIELD is
+  pr RAT .
+  pr OPER-FUNC * ( sort Func to FF-Func , sort Oper to FF-Oper ) .
+  sort FF-Type .
+  sort FF-Elt .
+
+  op FF : Rat -> FF-Type .
+  op ff : Rat Rat -> FF-Elt .
+  op & _ : FF-Elt -> Rat .
+  eq & ff(i:Rat,p:Rat) = i:Rat rem p:Rat .
+endfm
+  
+view FField from ALGEBRA to FFIELD is
+  sort Type to FF-Type .
+  sort Elt to FF-Elt .
+  sort Oper to FF-Oper .
+  sort Func to FF-Func .
+endv
+
+fmod FF-EX-LANG is
+  pr EX-LANG{FField} .
+  var r s p : Rat .
+  var E E2 : Ex{FField} .
+  eq evaluate-help(MULT[E,E2],FF(p)) = ff(& evaluate(E) * & evaluate(E2), p) .
+  eq evaluate-help(ADD[E,E2],FF(p)) = ff(& evaluate(E) + & evaluate(E2), p) .
+  eq evaluate-help(NEG[E],FF(p)) = ff( - & evaluate(E), p) .
+  eq evaluate-help(M-INV[E],FF(p)) = ff( 1 / & evaluate(E), p) .
+  eq type( ff(r,p) ) = FF(p) . 
 endfm
 
 ***-------- SPECULATIVE -------------
@@ -179,57 +260,21 @@ fmod COMPILE is
   var E : Ex{Quo-Ring} .
   eq image-type(qr-gamma, qr(p,n,d,N)) = qr(p,n,N,N) .
   eq translate-help(qr-gamma[E], qr(p,n,d,N)) = ff-gamma(qr(p,n,d,N))[translate(E)] .
-endfm)
+endfm
+)
 ***------------------------------
 
 *** ----------TEST HANDLE--------------
-fmod RAT-ALG is
-  pr RAT .
-  pr OPER-FUNC .
-  sort Rat-Type .
-  sort Rat-Elt .
-  
-  op r : Rat -> Rat-Elt .
-  op rat : -> Rat-Type .
-  op & _ : Rat-Elt -> Rat .
-  var i j : Rat .
-  eq & r(i) = i .
-endfm
-
-
-view Rat-Alg from ALGEBRA to RAT-ALG is
-  sort Type to Rat-Type .
-  sort Elt to Rat-Elt .
-endv
-
-fmod FFIELD is
-  pr RAT .
-  pr OPER-FUNC .
-  sort FF-Type .
-  sort FF-Elt .
-
-  op FF : Rat -> FF-Type .
-  op ff : Rat Rat -> FF-Elt .
-  op & _ : FF-Elt -> Rat .
-  eq & ff(i:Rat,p:Rat) = i:Rat rem p:Rat .
-endfm
-  
-view FField from ALGEBRA to FFIELD is
-  sort Type to FF-Type .
-  sort Elt to FF-Elt .
-endv
 
 fmod EX-LANG-GEN-TEST is
-  pr EX-LANG{Rat-Alg} .
-  pr EX-LANG{FField} .
-  op add3 : -> Func .
-  op expand : -> Func .
-  var i j p : Rat .
-  var Er Er2 : Ex{Rat-Alg} .
-  
-  eq evaluate-help(MULT[Er,Er2],rat ) = r(& evaluate(Er) * & evaluate(Er2) ) .
-  ***eq define(add3[r(i)]) = MULT[r(3),r(i)] .
-  ***eq define(expand[ff(i,p)]) = ff(i,p * 3) .
-  eq type(ff(i:Rat,p:Rat)) = FF(p:Rat) .
-  eq type(r(i)) = rat .
+  pr RAT-EX-LANG .
+  pr FF-EX-LANG .
+  op add3 : -> Rat-Func .
+  op expand : -> FF-Func .
+
+  var Eff : Ex{FField} .
+  var Er : Ex{Rat-Alg} .
+  var p : Rat .
+  eq image-type( expand, FF(p) ) = FF(p * 2) . 
+  eq evaluate-help(add3[Er], rat) = r( & evaluate(Er) + 3 ) .
 endfm
