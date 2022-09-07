@@ -1,0 +1,9 @@
+< 0,2 > x < 0,3 > x < 0,2 > x < 0,3 >
+< 0,6 > x < 0,2 > x < 0,3 >
+splitDM(3)[reduceDM(lambda(l("i") l("j"), ADD[l("i") of rat,l("j") of rat]))[< 0,2 > x < 0,3 >]]
+{0 0} {0 1} {1 0} {1 1}
+reduceDM(lambda(l("i") l("j"), ADD[l("i") of rat,l("j") of rat]))[< 0,2 > x < 0,3 >]
+< 0,3 >
+{0} {1} {2}
+{0} {1} {2} {3}
+ADD[MULT[l("a") of ar23 @ {0 0},r(0)],ADD[MULT[l("a") of ar23 @ {1 0},r(0)],MULT[l("a") of ar23 @ {2 0},r(0)]]]

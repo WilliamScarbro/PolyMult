@@ -43,13 +43,13 @@ fmod INDEX-FUNC{A :: ALGEBRA} is
   var O : A$Oper .
   var TT : TypedTerminal{A} .
   
-  eq [define-trigger] : LF [E] @ {z RL} = define( LF[E],type(E) ) @ {z RL}  .
-  eq [define-trigger] : LF @ I [E] @ {z RL} = define(LF @ I [E],type(E)) @ {z RL} .
+  eq [define-trigger] : LF [E] @ I = define( LF[E],type(E) ) @ I  .
+  eq [define-trigger] : LF @ I [E] @ I2 = define(LF @ I [E],type(E)) @ I2 .
   
   *** For image type synthesis, the definition of a LabelFunc can only depend on the type of its argument
   *** result of using "cannonical" label below
-  eq image-type(LF,T) = type(define(LF[l("canonical") of T],T)) .
-  eq image-type(LF @ I,T) = type(define(LF @ I[l("cannonical") of T],T)) .
+  eq [type] : image-type(LF,T) = type(define(LF[l("canonical") of T],T)) .
+  eq [type] : image-type(LF @ I,T) = type(define(LF @ I[l("cannonical") of T],T)) .
 
 *** index manipulation
   eq append-index( F @ I , I2 ) = F @ index-append( I, I2 ) .
@@ -67,6 +67,7 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   pr LIST{Index} .
   pr INDEX-FUNC{A} .
   pr UNIQ{Index} .
+  pr STRING .
 
   sort Domain .
   sort Range .
@@ -135,19 +136,30 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   var d i i' j j' z k m n : Rat .
   var RL RL2 : List{Rat} .
   var IL : List{Index} .
+  var LL : List{Label} .
 
   
   eq domain( E ) = type-domain(type(E)) .
+
   eq type-domain( Tup( T , T2 ) ) = type-domain(T) + type-domain(T2) .
   eq (R x D) + (R2 x D2) = (R + R2) x D .
   eq < i,j > + < i',j' > = < i, j + i' + j' > . *** works even if tup/Tup is associative
-  
+  ceq index-type( Tup( T , T2 ) , { z RL } ) = index-type(T2,{(z + -1) RL} ) if z > 0 .
+  eq index-type( Tup( T , T2 ) , { 0 RL } ) = index-type(T,{RL} ) .
+
+ 
   eq type-domain(ARR( R , T ) ) = R x type-domain( T ) .
   eq index-type(ARR(R,T) , {z RL}) = index-type(T,{RL}) .
+  eq index-type(T,{ nil }) = T .
+  eq type-check(ARR(R,T)) = ARR(R,T) .
+ 
 
   eq image-type( reduce( O , Y ) , T ) = reduceT( Y , T ) .
   eq image-type( reduce-help( O , Y , d , I ) , T ) = reduceT( Y , T ) .
   eq type-domain(reduceT( Y , T ) ) = reduceDM(Y)[type-domain(T)] .
+  eq type-check(reduceT(Y,T)) = reduceT(Y,T) .
+  ***ceq type-check(reduceT(lambda(LL,Er),T) ) =  reduceT(lambda(LL,Er),T) if dimension(Er) + 1 == dimension(T) .
+  ***eq type-check(reduceT(lambda(LL,Er),T) ) = Type-Error(reduceT(lambda(LL,Er),T),"Reduce does not decrease dimension of argument by one") [owise] .
 
   eq dimension( R x D) = 1 + dimension( D ) .
   eq dimension( point ) = 0 .
@@ -166,9 +178,14 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   ceq concatDM(m)[ R x R2 x D ] = (concatDM(m)[R x R2]) x D if D =/= point .
   eq [split] : splitDM(m)[< 0,n >] = < 0, n / m  > x < 0,m > .
   eq concatDM(m)[ < 0,k > x < 0,m > ] = < 0,k * m > .
+  ceq type-check(concatT(m,T)) = concatT(m,T) if dimension(type-domain(T)) >= 2 .
+  eq type-check(concatT(m,T)) = Type-Error(concatT(m,T),"concat argument has dimension < 2") [owise] .
+  ceq type-check(splitT(m,T)) = splitT(m,T) if dimension(type-domain(T)) >= 1 .
+  eq type-check(splitT(m,T)) = Type-Error(splitT(m,T),"split argument has dimension < 1") [owise] .
 
 *** for
-  eq [index] : for( F , < i,j > ) [E] @ { z RL } = for(F, < i,j > ) @ {z} [E] @ { RL } .
+  ceq [index] : for( F , < i,j > ) [E] @ { z RL } = for(F, < i,j > ) @ {z} [E] @ { RL } if RL =/= nil .
+  eq [index] : for( F , < i,j > ) [E] @ { z } = for(F, < i,j > ) @ {z} [E] .
   ceq [index] : for( F , < i,j > ) @ {z} [E]  = append-index(F,{ z }) [E] if ( z < j ) and ( z >= i ) .
   *** the type returned by a function cannot depend on the indeces it is evaluated at 
   eq image-type( for(F , < i,j > ) , T ) = ARR(< i,j >,image-type(append-index(F,{i}),T)) . 
@@ -196,10 +213,11 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
 *** list{Rat} -> Ex{Rat-Alg}
   ceq list-to-tuple( z RL ) = tup( r(z) , list-to-tuple( RL ) ) if RL =/= nil .
   eq list-to-tuple( z ) = r(z) .
-  eq list-to-tuple( nil ) = null .
+  eq list-to-tuple( nil ) = NaE .
   ***eq list-to-tuple( NaE ) = null .
 *** ExList{Rat-Alg} -> List{Index}
-  eq tuple-list-to-index( Er ErL ) = { & evaluate( Er ) } tuple-list-to-index( ErL ) .
+  ceq tuple-list-to-index( Er ErL ) = { & evaluate( Er ) } tuple-list-to-index( ErL ) if Er =/= null .
+  eq tuple-list-to-index( null ErL ) = tuple-list-to-index(ErL) .
   eq tuple-list-to-index( nil ) = nil .
  
   eq for-list( E , I IL ) = append(E @ I, for-list( E , IL )) .
@@ -215,13 +233,14 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   eq [index] : define(reduce( O , Y ) @ I [ E ],T) = reduce-help( O , Y , dimension(type-domain(T)) + - 1 , {nil}) @ I [E] .
   
   *** reduce-help read index, if underspecified (d>0) 
-  ceq [index] : reduce-help( O , Y , d , I )[E] @ {z RL} = reduce-help(O ,Y, d, I) @ {z}[ E ] @ {RL} if d > 0 .
+  ceq [index] : reduce-help( O , Y , d , I )[E] @ {z RL} = reduce-help(O ,Y, d, I) @ {z}[ E ] @ {RL} if d > 0 and RL =/= nil .
+  ceq [index] : reduce-help( O , Y , d , I )[E] @ {z} = reduce-help(O ,Y, d, I) @ {z}[ E ] if d > 0 .
   
   *** reduce-help absorbs index, if underspecified (d>0) 
   ceq [index] : reduce-help( O , Y , d , { RL } ) @ { z RL2 } [ E ] = reduce-help( O , Y , d + - 1 , {RL z} ) @ {RL2} [ E ] if d > 0 .
 
   *** reduce-help absorbs point-index, only when Y maps to point (d==0 and I=={nil}) .
-  eq [index] : reduce-help( O , Y , 0 , { nil }) @ { NaV } [ E ] = reduce-help( O , Y , 0 , { NaV }) [ E ] .
+  eq [index] : reduce-help( O , Y , 0 , { nil }) @ point-index [ E ] = reduce-help( O , Y , 0 , point-index ) [ E ] .
 
   *** eliminate empty index
   eq reduce-help( O , Y , d , I ) @ { nil } [E] = reduce-help( O , Y , d , I ) [ E ] .
@@ -235,4 +254,42 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
 
 endfm
 
+
+
+fmod DOMAIN-TEST is
+  pr EX-DOMAIN{Rat-Alg} .
+
+  op myf : -> LabelFunc{Rat-Alg} .
+  op myf2 : -> LabelFunc{Rat-Alg} .
+
+  op three-to-two : -> Lambda .
+  eq three-to-two = lambda( l("z") l("j") l("i") , tup( l("z") of rat , l("j") of rat ) ) . 
+  op ipj : -> Lambda .
+  eq ipj = lambda( l("i") l("j") , ADD[ l("i") of rat , l("j") of rat ] ) .
+  op two-to-one : -> Lambda .
+  eq two-to-one = lambda( l("i") l("j"), l("j") of rat) .  
+
+  op ar234 : -> Rat-Type .
+  eq type-domain( ar234 ) = < 0,2 > x ( < 0,3 > x < 0,4 > ) .
+  eq type-check(ar234) = ar234 .
+  
+  op ar23 : -> Rat-Type .
+  eq type-domain( ar23 ) =  < 0,2 > x < 0,3 > .
+  eq type-check(ar23) = ar23 .
+  
+  eq type-domain(rat) = point .
+
+   
+  var E : Ex{Rat-Alg} .
+  var z i j n n' : Rat .
+
+  eq index-type(ar23,{z j}) = rat .
+  eq index-type(ar234,{z j i}) = rat .
+  ***eq define( f[E] ) = for(f,< 0,2 >)[E] .
+  ***eq define( f @ {z}[E] ) = reduce(ADD,two-to-one)[split(3)[E]] @ {z} .
+  eq define( myf[E],ARR(< 0,n >,rat) ) = for(myf, < 0,n >)[E] .
+  eq define( myf @{i}[E], ARR( < 0,n >, rat)) = reduce(ADD,lambda(l("a"),null))[E] .
+  eq define( myf2 @{z j i}[E],ar23 ) = MULT[E @ {i j},r(z)] .
+
+endfm
 

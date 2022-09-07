@@ -1,0 +1,18 @@
+***set trace on .
+***set trace select on .
+***trace select index .
+red in FF-EX-DOM : CONV[ tup(l("a") of ARR(< 0,3 >,FF(7)) , l("b") of ARR(< 0,3 >, FF(7) ) ) ] @ point-index .
+red in FF-EX-DOM : CONV[ tup(l("a") of ARR(< 0,3 >,FF(7)) , l("b") of ARR(< 0,3 >, FF(7) ) ) ] @ {0} .
+red in FF-EX-DOM : CONV[ tup(l("a") of ARR(< 0,3 >,FF(7)) , l("b") of ARR(< 0,3 >, FF(7) ) ) ] @ {0 0} .
+
+
+
+
+
+***red in FFT-DOMAIN : phi(3,6,6)[ l("a") of ARR(< 0,6 >,FF(7))] @ point-index .
+***red in FFT-DOMAIN : phi(3,6,6)[ l("a") of ARR(< 0,6 >,FF(7))] @ { 0 } .
+***red in FFT-DOMAIN : phi(3,6,6)[ l("a") of ARR(< 0,6 >,FF(7))] @ { 0 0 } .
+***red in FFT-DOMAIN : phi(3,6,6) @ { 0 0 }[ l("a") of ARR(< 0,6 >,FF(7))] @ point-index .
+***red in FFT-DOMAIN : reduce(ADD,lambda(l("i"), null ))[ for(phi(2,6,6)@{0 0},< 0,2 >)[l("a") of ARR(< 0,6 >,FF(7))]] @ point-index .
+***red in FFT-DOMAIN : type(phi(3,6,6)[ l("a") of ARR(< 0,6 >,FF(7))]) . 
+***red in FFT-DOMAIN : dimension(domain(phi(3,6,6)[ l("a") of ARR(< 0,6 >,FF(7))])) . 

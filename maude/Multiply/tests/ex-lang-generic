@@ -32,3 +32,6 @@ red map( add3, r(1) r(2) r(3) ) .
 red select(add3,r(6))[r(3)] .
 red select(add3,r(6))[r(4)] .
 
+*** dereference
+red & r(2) .
+red & tup(r(2),r(3)) .

@@ -31,16 +31,19 @@ endfm
 fmod EX-LANG{A :: ALGEBRA} is
   pr LABEL .
   pr RAT .
+  pr STRING .
   pr EX-LIST{A} .
 
   sort Terminal{A} .
   sort TypedTerminal{A} .
   sort Tup{A} .
   sort NullElt{A} .
+  sort TypeError{A} .
 
   subsort Label < Terminal{A} .
   subsort A$Elt < TypedTerminal{A} < Ex{A} .
   subsort Tup{A} < A$Type .
+  subsort TypeError{A} < A$Type .
   subsort NullElt{A} < A$Elt .
   
 
@@ -65,20 +68,24 @@ fmod EX-LANG{A :: ALGEBRA} is
   op null : -> Ex{A} .
   op nullT : -> A$Type .
   op NaE : -> NullElt{A} .
+  op type-check : A$Type -> A$Type .
+  op Type-Error : A$Type String -> TypeError{A} .
 
   vars F F2 : A$Func .
   vars O O2 : A$Oper .
   vars TT : TypedTerminal{A} .
   vars Term : Terminal{A} .
   var L L2 : Label .
-  vars T : A$Type .
+  vars T T2 : A$Type .
   vars EX EX2 EX3 : Ex{A} .
   var EL : ExList{A} .
   
   eq type( Term of T ) = T .
-  eq type( O[EX, EX2] ) = type(EX) . *** assumes type EX same as type EX2, should have type check
-  eq type( F[EX] ) = image-type(F,type(EX)) .
-  eq type( tup( EX , EX2 ) ) = Tup( type( EX ), type( EX2 ) ) .
+  eq type( O[EX, EX2] ) = type-check(type(EX)) . *** assumes type EX same as type EX2, should have type check
+  eq type( F[EX] ) = image-type(F,type-check(type(EX))) .
+  eq type( tup( EX , EX2 ) ) = Tup( type-check(type( EX )), type-check(type( EX2 )) ) .
+  eq type-check( Tup(T,T2) ) = Tup(type-check(T),type-check(T2)) .
+
 
   *** EX -> Label
   ceq replace( F[EX] , L , EX3 ) = F[replace(EX,L,EX3)] if not (EX3 == F[EX]) .
@@ -145,11 +152,8 @@ fmod RAT-ALG is
   
   op r : Rat -> Rat-Elt .
   op rat : -> Rat-Type .
-  op & _ : Rat-Elt -> Rat .
   op REM : -> Rat-Oper .
   op TRUNC : -> Rat-Func .
-  var i j : Rat .
-  eq & r(i) = i .
 endfm
 
 view Rat-Alg from ALGEBRA to RAT-ALG is
@@ -161,15 +165,20 @@ endv
 
 fmod RAT-EX-LANG is
   pr EX-LANG{Rat-Alg} .
+  pr LIST{Rat} .
+  op & _ : Rat-Elt -> List{Rat} .
   var i : Rat .
   var E E2 : Ex{Rat-Alg} . 
   eq type(r(i)) = rat .
+  eq type-check(rat) = rat .
   eq evaluate-help(MULT[E,E2],rat) = r(& evaluate(E) * & evaluate(E2)) .
   eq evaluate-help(ADD[E,E2],rat) = r(& evaluate(E) + & evaluate(E2)) .
   eq evaluate-help(NEG[E],rat) = r( - & evaluate(E)) .
   eq evaluate-help(M-INV[E],rat) = r( 1 / & evaluate(E) ) .
   eq evaluate-help(REM[E,E2],rat) = r( & evaluate(E) rem & evaluate(E2) ) . 
   eq evaluate-help(TRUNC[E],rat) = r( trunc( & evaluate(E) ) ) .
+  eq & r(i) = i .
+  eq & tup(E,E2) = & E & E2 .
 endfm
 
 ***----------- FField --------------
@@ -201,6 +210,7 @@ fmod FF-EX-LANG is
   eq evaluate-help(NEG[E],FF(p)) = ff( - & evaluate(E), p) .
   eq evaluate-help(M-INV[E],FF(p)) = ff( 1 / & evaluate(E), p) .
   eq type( ff(r,p) ) = FF(p) . 
+  eq type-check(FF(p)) = FF(p) .
 endfm
 
 ***-------- SPECULATIVE -------------

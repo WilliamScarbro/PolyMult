@@ -1,0 +1,20 @@
+***red myf[l("a") of ARR(< 0,3 >,rat)] @ point-index .
+***red myf[l("a") of ARR(< 0,3 >,rat)] @ {0} @ point-index .
+***set trace on .
+***set trace select on .
+***trace select index .
+***red myf[l("a") of ARR(< 0,3 >,rat)] @ {0 0} .
+
+***red index-list-to-tuple(enumerate(domain(split(3)[l("a") of ARR(< 0,6 >, rat)]))) .
+***
+***red map(select(lambda(l("i") l("j"), l("j") of rat), list-to-tuple(0)), index-list-to-tuple(enumerate(domain(split(3)[l("a") of
+***    ARR(< 0,6 >, rat)])))) .
+***
+red tuple-list-to-index(map(select(lambda(l("i") l("j"), l("j") of rat), list-to-tuple(0)), index-list-to-tuple(enumerate(domain(split(3)[l("a") of
+    ARR(< 0,6 >, rat)]))))) .
+
+***set trace on .
+***set trace select on .
+***trace select image-type splitT .
+red type(myf[l("a") of ARR(< 0,3 >,rat)]) .
+
