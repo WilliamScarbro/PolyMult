@@ -9,9 +9,9 @@ fmod FF-EX-DOM is
   var E : Ex{FField} . 
   var n p i j : Rat .
   eq type-domain(FF(p)) = point .
-  eq define( CONV[E] , Tup(ARR(< 0,n >,FF(p) ), ARR(< 0,n >,FF(p) ) ) ) = for( CONV,  < 0,n >)[ E ] .
-  eq define( CONV @{i}[E], Tup(ARR(< 0,n >,FF(p) ), ARR(< 0,n >,FF(p) ) ) ) = reduce(ADD,lambda(l("j"),null))[for(CONV @{i} , < 0,n > )[E] ] .
-  eq define( CONV @{i j}[E], Tup(ARR(< 0,n >,FF(p) ), ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j} , E @ {1 (i + - j) } ] . 
+  eq [ conv ] : define( CONV[E] , ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = for( CONV,  < 0,n >)[ E ] .
+  eq [ conv ] : define( CONV @{i}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = simple-reduce(ADD,< 0,n >)[for(CONV @{i} , < 0,n > )[E] ] .
+  eq [ conv ] : define( CONV @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j} , E @ {1 (i + - j) } ] . 
 endfm
 
 fmod FFT-DOMAIN is
@@ -26,8 +26,8 @@ fmod FFT-DOMAIN is
 *** phi
   eq [phi] : define(phi(k,d,N)[E],ARR(< 0,n >,FF(p))) = for(phi(k,d,N),< 0,k >)[E] .
   eq [phi] : define(phi(k,d,N)@{z}[E],ARR(< 0,n >,FF(p))) = for(phi(k,d,N)@{z},< 0,n / k >)[E] .
-  eq [phi] : define(phi(k,d,N)@{z j}[E],ARR(< 0,n >,FF(p))) = reduce(ADD,lambda(l("i"), null ))[ for(phi(k,d,N)@{z j},< 0,k >)[E]] .
-  eq [phi-3] : define(phi(k,d,N)@{z j i}[E],ARR(< 0,n >,FF(p))) = MULT[ split(n / k)[E] @ {i j} , omega(N,p) @ { ( d + z * N ) * (i / k) } ] .
+  eq [phi] : define(phi(k,d,N)@{z j}[E],ARR(< 0,n >,FF(p))) = simple-reduce(ADD,< 0,k >)[ for(phi(k,d,N)@{z j},< 0,k >)[E]] .
+  eq [phi-3] : define(phi(k,d,N)@{z j i}[E],ARR(< 0,n >,FF(p))) = MULT[ split(n / k)[E] @ {i j} , l("omega") of ARR(< 0,N >,FF(p)) @ { ( d + z * N ) * (i / k) } ] .
   
 endfm  
 
@@ -170,3 +170,12 @@ fmod DOMAIN-FFT-TEST is
   eq MULT-INV[E] @ {NaV} = MULT-INV[E] .
 endfm
 )
+
+fmod FFT-TEST is
+  pr FF-EX-DOM .
+  pr FFT-DOMAIN .
+  
+  op con-ff-tup : -> Ex{FField} .
+
+  eq con-ff-tup = tup(l("a") of ARR(< 0,3 >,FF(7)) , l("b") of ARR(< 0,3 >, FF(7) ) ) .
+endfm

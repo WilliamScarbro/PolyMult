@@ -8,13 +8,22 @@ red domain( split(3)[ reduce( ADD , ipj )[l("a") of ar23 ]] ) .
 red enumerate( domain( split(2)[ reduce( ADD , ipj )[l("a") of ar23 ]] ) ) .
 red domain( reduce( ADD , ipj )[l("a") of ar23 ] ) .
 
-***red myf[l("a") of ARR(< 0,6 >,rat)] @ {0} .
-red domain(for(myf2 @ {0 0},< 0,3 >)[ l("a") of ar23 ]) .
-red enumerate(domain(for(myf2 @ {0 0},< 0,3 >)[ l("a") of ar23 ])) .
-red select(lambda(l("i"),null),list-to-tuple(nil)) .
-red tuple-list-to-index(map(select(lambda(l("i"),null),NaE), index-list-to-tuple({0} {1} {2} {3}) ) ) . 
+red myf[l("a") of ARR(< 0,6 >,rat)] @ {2} @ point-index .
 
-red tuple-list-to-index(map(select(lambda(l("i"), null), list-to-tuple(nil)), index-list-to-tuple(enumerate(domain(for(myf2 @ {0 0}, < 0,3 >)[l(
-    "a") of ar23]))))) .
+***red simple-reduce(ADD,< 0,2 > )[ l("a") of ar23 ] @ {0} .
+***red simple-reduce(ADD,< 0,2 > )[ l("a") of ar23 ] @ {0 1} .
+***red dimension(domain(simple-reduce(ADD,< 0,2 > )[ l("a") of ar23 ] )) .
 
-red reduce(ADD,lambda(l("i"), null ))[ for(myf2 @ {0 0},< 0,3 >)[ l("a") of ar23 ]]  @ point-index .
+
+*** tests for full reduce
+***red domain(for(myf2 @ {0 0},< 0,3 >)[ l("a") of ar23 ]) .
+***red enumerate(domain(for(myf2 @ {0 0},< 0,3 >)[ l("a") of ar23 ])) .
+***red select(lambda(l("i"),null),list-to-tuple(nil)) .
+***red tuple-list-to-index(map(select(lambda(l("i"),null),NaE), index-list-to-tuple({0} {1} {2} {3}) ) ) . 
+***
+***red tuple-list-to-index(map(select(lambda(l("i"), null), list-to-tuple(nil)), index-list-to-tuple(enumerate(domain(for(myf2 @ {0 0}, < 0,3 >)[l(
+***    "a") of ar23]))))) .
+***
+***red reduce(ADD,lambda(l("i"), null ))[ for(myf2 @ {0 0},< 0,3 >)[ l("a") of ar23 ]]  @ point-index .
+
+

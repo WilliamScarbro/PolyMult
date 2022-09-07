@@ -8,6 +8,7 @@ do
     o) o=o;;
     f) f=f;;
     p) p=p;;
+    x) x=x;;
     ?) echo "invalid option: ${OPTARG}";;
   esac
 done
@@ -19,6 +20,7 @@ function usage {
   echo "  -f      : display functions pretty"
   echo "  -o      : display objects pretty"
   echo "  -p      : turn on printing"
+  echo "  -x      : pretty print algebra"
 }
 
 function update_out {

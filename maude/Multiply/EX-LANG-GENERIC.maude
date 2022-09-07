@@ -84,7 +84,7 @@ fmod EX-LANG{A :: ALGEBRA} is
   eq type( O[EX, EX2] ) = type-check(type(EX)) . *** assumes type EX same as type EX2, should have type check
   eq type( F[EX] ) = image-type(F,type-check(type(EX))) .
   eq type( tup( EX , EX2 ) ) = Tup( type-check(type( EX )), type-check(type( EX2 )) ) .
-  eq type-check( Tup(T,T2) ) = Tup(type-check(T),type-check(T2)) .
+  eq type-check( Tup(T,T2) ) = Tup(type-check(T),type-check(T2)) . 
 
 
   *** EX -> Label

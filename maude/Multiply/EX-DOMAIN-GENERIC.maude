@@ -30,7 +30,11 @@ fmod INDEX-FUNC{A :: ALGEBRA} is
   op _@_ : Ex{A} Index -> Ex{A} .
   op append-index : A$Func Index -> A$Func .
   op index-type : A$Type Index -> A$Type .
- 
+  op dim-check : Ex{A} Index -> Ex{A} .
+  op Dimension-Error : Ex{A} Index String -> Ex{A} .
+  op index : Ex{A} Index -> Ex{A} .
+  op length : Index -> Rat .
+
   var F : A$Func .
   var IF : IndexFunc{A} .
   var LF : LabelFunc{A} .
@@ -43,8 +47,15 @@ fmod INDEX-FUNC{A :: ALGEBRA} is
   var O : A$Oper .
   var TT : TypedTerminal{A} .
   
-  eq [define-trigger] : LF [E] @ I = define( LF[E],type(E) ) @ I  .
-  eq [define-trigger] : LF @ I [E] @ I2 = define(LF @ I [E],type(E)) @ I2 .
+  ceq E @ { RL } = dim-check(E,{ RL }) if RL =/= nil .
+  eq E @ point-index = index(E,point-index) .
+  eq E @ {nil} = E .
+
+  eq length( { z RL } ) = 1 + length( { RL } ) .
+  eq length( { nil } ) = 0 .
+
+  eq [define-trigger] : index(LF [E], I) = index(define( LF[E],type(E) ), I)  .
+  eq [define-trigger] : index(LF @ I [E], I2) = index(define(LF @ I [E],type(E)), I2) .
   
   *** For image type synthesis, the definition of a LabelFunc can only depend on the type of its argument
   *** result of using "cannonical" label below
@@ -54,11 +65,11 @@ fmod INDEX-FUNC{A :: ALGEBRA} is
 *** index manipulation
   eq append-index( F @ I , I2 ) = F @ index-append( I, I2 ) .
   ceq append-index( F , I ) = F @ I if not F :: IndexFunc{A} . 
-  eq O[E,E2] @ I = O[E @ I,E2 @ I] .
-  eq E @ {nil} = E .
-  eq TT @ I @ point-index = TT @ I .
-  eq TT @ point-index = TT .
-  eq type(L of T @ I) = index-type(T,I) .
+  eq index( O[E,E2] , I) = O[E @ I,E2 @ I] .
+  eq index(index(TT, I) , point-index ) = index(TT, I) .
+  eq index( TT , point-index ) = TT .
+  eq type(index(L of T , I)) = index-type(T,I) .
+
 endfm
 
 
@@ -92,6 +103,10 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   op reduce-tup : Lambda -> A$Func .
   op reduceT : Lambda A$Type -> A$Type .
   op reduceDM : Lambda -> DomainMap .
+  op simple-reduce : A$Oper Range -> A$Func .
+  op sreduceT : Range A$Type -> A$Type .
+  op sreduceDM : Range -> DomainMap .
+
 
   op ARR : Range A$Type -> A$Type .
   op reduce-list : A$Oper ExList{A}-> Ex{A} .
@@ -120,6 +135,7 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   *** domain can be derived from type 
   op type-domain : A$Type -> Domain .
   op domain : Ex{A} -> Domain .
+  op dim-check-help : Ex{A} Index Rat Rat -> Ex{A} .
 
   var F : A$Func .
   var E E2 E3 : Ex{A} .
@@ -140,9 +156,14 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
 
   
   eq domain( E ) = type-domain(type(E)) .
+  eq [ dim ] : dim-check( E , I ) = dim-check-help( E , I , length(I) , dimension(domain(E)) ) .
+  ceq [ dim ] : dim-check-help( E , I , i , j ) = index( E , I ) if i <= j .
+  eq [ dim ] : dim-check-help( E , I , i , j ) = Dimension-Error( E , I, "length of index is larger than dimension of expression" ) [owise] .
 
-  eq type-domain( Tup( T , T2 ) ) = type-domain(T) + type-domain(T2) .
-  eq (R x D) + (R2 x D2) = (R + R2) x D .
+ 
+  *** don't support finding domain of tuples 
+  ***ceq type-check(Tup(T,T2)) = Tup(T,T2) if type-domain(T) == type-domain(T2) . 
+  ***eq type-domain( Tup( T , T2 ) ) = < 0 , 2 > + type-domain(T) . 
   eq < i,j > + < i',j' > = < i, j + i' + j' > . *** works even if tup/Tup is associative
   ceq index-type( Tup( T , T2 ) , { z RL } ) = index-type(T2,{(z + -1) RL} ) if z > 0 .
   eq index-type( Tup( T , T2 ) , { 0 RL } ) = index-type(T,{RL} ) .
@@ -161,6 +182,12 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   ***ceq type-check(reduceT(lambda(LL,Er),T) ) =  reduceT(lambda(LL,Er),T) if dimension(Er) + 1 == dimension(T) .
   ***eq type-check(reduceT(lambda(LL,Er),T) ) = Type-Error(reduceT(lambda(LL,Er),T),"Reduce does not decrease dimension of argument by one") [owise] .
 
+  eq image-type(simple-reduce(O,R),T) = sreduceT(R,T) .
+  eq type-domain(sreduceT(R,T)) = sreduceDM(R)[type-domain(T)] .
+  ceq type-check(sreduceT(R,T)) = sreduceT(R,T) if dimension(type-domain(T)) >= 1 .
+  eq type-check(sreduceT(R,T)) = Type-Error(sreduceT(R,T),"simple-reduce argument has dimension less then 1") . *** should also check that range is subset of argument domain .
+  eq sreduceDM(R)[ R2 x D ] = D . *** works if Ranges don't match, may want to change
+
   eq dimension( R x D) = 1 + dimension( D ) .
   eq dimension( point ) = 0 .
   eq dimension( reduceDM(Y)[ D ] ) = dimension(D) + -1 .
@@ -168,8 +195,8 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   eq dimension( splitDM(m)[D] ) = dimension(D) + 1 .
 
 *** split/concat
-  eq concat(m)[E] @ {i RL} = E @ {trunc(i / m) (i rem m) RL } .
-  eq [split] : split(m)[E] @ {i j RL } = E @ {i * m + j } .
+  eq index( concat(m)[E] , {i RL} ) = E @ {trunc(i / m) (i rem m) RL } .
+  eq [split] : index( split(m)[E] , {i j RL } ) = E @ {i * m + j } .
   eq [split] : image-type(split(m),T) = splitT(m,T) .
   eq image-type(concat(m),T) = concatT(m,T) .
   eq [split] : type-domain(splitT(m,T)) = splitDM(m)[type-domain(T)] .
@@ -184,14 +211,16 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   eq type-check(splitT(m,T)) = Type-Error(splitT(m,T),"split argument has dimension < 1") [owise] .
 
 *** for
-  ceq [index] : for( F , < i,j > ) [E] @ { z RL } = for(F, < i,j > ) @ {z} [E] @ { RL } if RL =/= nil .
-  eq [index] : for( F , < i,j > ) [E] @ { z } = for(F, < i,j > ) @ {z} [E] .
+  eq [index] : index( for( F , < i,j > ) [E] , { z RL } ) = for(F, < i,j > ) @ {z} [E] @ { RL } .
+  eq [index] : index( for( F , < i,j > ) [E] , point-index ) = for(F, < i,j > ) [E] .
   ceq [index] : for( F , < i,j > ) @ {z} [E]  = append-index(F,{ z }) [E] if ( z < j ) and ( z >= i ) .
   *** the type returned by a function cannot depend on the indeces it is evaluated at 
   eq image-type( for(F , < i,j > ) , T ) = ARR(< i,j >,image-type(append-index(F,{i}),T)) . 
 
 *** enumerate
   ceq enumerate( < i,j > x D ) = append( enumerate-help( {i} , D ) , enumerate( < i + 1,j > x D ) ) if i + 1 < j .
+  ***ceq enumerate( < i,j > ) = append( {i} , enumerate( < i + 1, j > ) ) if i + 1 < j .
+
   ceq enumerate( < i,j > x D ) = enumerate-help({i} , D ) if i + 1 == j .
   eq enumerate( point ) = nil .
   ceq enumerate-help( { RL }, < i,j > x D ) = append( enumerate-help( { append( RL ,i) } , D ) , enumerate-help( { RL }, < i + 1,j > x D ) ) if i + 1 < j .
@@ -251,9 +280,11 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
         index-list-to-tuple(enumerate( domain( E )) ) 
       ) ) ) ) .
   
+  *** simple-reduce 
+  *** reduces along dimension using operator
+  eq [index] : index( simple-reduce(O,R)[E] , I ) = index( reduce-list( O , for-list( E, enumerate( R ) ) ), I ) .
 
 endfm
-
 
 
 fmod DOMAIN-TEST is
@@ -275,6 +306,7 @@ fmod DOMAIN-TEST is
   
   op ar23 : -> Rat-Type .
   eq type-domain( ar23 ) =  < 0,2 > x < 0,3 > .
+  eq index-type(ar23,I) = index-type(ARR(< 0,2 > ,ARR(< 0,3 >,rat)),I) .
   eq type-check(ar23) = ar23 .
   
   eq type-domain(rat) = point .
@@ -282,13 +314,13 @@ fmod DOMAIN-TEST is
    
   var E : Ex{Rat-Alg} .
   var z i j n n' : Rat .
+  var I : Index .
 
-  eq index-type(ar23,{z j}) = rat .
   eq index-type(ar234,{z j i}) = rat .
   ***eq define( f[E] ) = for(f,< 0,2 >)[E] .
   ***eq define( f @ {z}[E] ) = reduce(ADD,two-to-one)[split(3)[E]] @ {z} .
   eq define( myf[E],ARR(< 0,n >,rat) ) = for(myf, < 0,n >)[E] .
-  eq define( myf @{i}[E], ARR( < 0,n >, rat)) = reduce(ADD,lambda(l("a"),null))[E] .
+  eq define( myf @{i}[E], ARR( < 0,n >, rat)) = MULT[ simple-reduce(ADD,< 0,n >)[E] , r(i) ] .
   eq define( myf2 @{z j i}[E],ar23 ) = MULT[E @ {i j},r(z)] .
 
 endfm
