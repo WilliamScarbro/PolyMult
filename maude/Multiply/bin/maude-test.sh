@@ -33,11 +33,11 @@ if [[ -z $m ]] || [[ -z $t ]] ; then
 fi
 
 
-if [[ ! -f $mh$m ]] || [[ ! -f $mh$t ]]; then
+if [[ ! -f $mh/$m ]] || [[ ! -f $mh/$t ]]; then
   usage
   echo "Error: one of inputs is not a file"
-  echo "> $mh$m"
-  echo "> $mh$t"
+  echo "> $mh/$m"
+  echo "> $mh/$t"
   exit 1;
 fi
 
@@ -54,7 +54,7 @@ th=/tmp/maude-test
 
 mkdir -p $th
 
-maude-pipe.sh -m $m < $mh$t > $th/$tn-result 
+maude-pipe.sh -m $m < $mh/$t > $th/$tn-result 
 
 if [[ "$i" == "i" ]]; then
   if [[ -f $c ]]; then
@@ -79,6 +79,6 @@ fi
 diff $c $th/$tn-result | tee $th/$tn-diff
 
 if [[ ! -z "`cat $th/$tn-diff`" ]]; then
-  echo "Test fail on input $mh$t" 1>&2
+  echo "Test fail on input $mh/$t" 1>&2
   exit 1;
 fi

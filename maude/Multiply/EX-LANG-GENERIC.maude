@@ -16,6 +16,8 @@ fth ALGEBRA is
   sort Func .
   op ADD : -> Oper .
   op MULT : -> Oper .
+  op NEG : -> Func .
+  op M-INV : -> Func .
 endfth
 
 
@@ -148,12 +150,15 @@ fmod EX-LANG{A :: ALGEBRA} is
   eq find-func(null, F ) = nil .
   eq find-op(null, O) = nil . 
 
+  *** ADD/MULT 
   eq O[EX,ident(O,T)] = EX .
   eq O[ident(O,T),EX] = EX .
   eq MULT[EX,ident(ADD,T)] = ident(ADD,T) .
   eq MULT[ident(ADD,T),EX] = ident(ADD,T) .
   eq type(ident(O,T)) = T .
   eq evaluate(ident(O,T)) = ident(O,T) .
+  eq image-type(M-INV,T) = T .
+  eq image-type(NEG,T) = T .
 endfm
 
 ***------------ RAT-EX-LANG----------------
@@ -236,67 +241,6 @@ fmod FF-EX-LANG is
   eq ff(1,p) = ident(MULT,FF(p)) .
   eq & ident(MULT,FF(p)) = 1 .
 endfm
-
-***-------- SPECULATIVE -------------
-***(fmod FFIELD is
-  pr RAT .
-  pr OPER-FUNC .
-  sort FF-Type .
-  sort FF-Elt .
-
-  op FF : Rat -> FF-Type .
-  op ff : Rat -> FF-Elt .
-endfm
-  
-view FField from ALGEBRA to FFIELD is
-  sort Type to FF-Type .
-  sort Elt to FF-Elt .
-endv
-
-fmod QUO-RING is
-  pr RAT .
-  pr OPER-FUNC .
-  sort QR-Type .
-  sort QR-Elt .
-  
-  op qr : Rat Rat Rat Rat -> QR-Type .
-endfm
-view Quo-Ring from ALGEBRA to QUO-RING is
-  sort Type to QR-Type .
-  sort Elt to QR-Elt .
-endv
-
-fmod TRANSLATION{A1 :: ALGEBRA, A2 :: ALGEBRA} is
-  pr EX-LANG{A1} .
-  pr EX-LANG{A2} .
-  op translate : Ex{A1}  -> Ex{A2} .
-  op translate-help : Ex{A1} A1$Type -> Ex{A2} .
-  eq translate( E:Ex{A1} ) = translate-help(E:Ex{A1},type(E:Ex{A1})) .
-endfm
-
-
-fmod FFT is
-  pr EX-LANG{Quo-Ring} .
-  pr EX-LANG{FField} .
- 
-  op qr-gamma : -> Func .
-  op ff-gamma : QR-Type -> Func .
-endfm
-
-fmod COMPILE is
-  pr FFT .
-  pr TRANSLATION{Quo-Ring,FField} .
-  
-  op f : -> Func .
-  op gamma : -> Func .
-
-  vars p n d N : Rat .
-  var E : Ex{Quo-Ring} .
-  eq image-type(qr-gamma, qr(p,n,d,N)) = qr(p,n,N,N) .
-  eq translate-help(qr-gamma[E], qr(p,n,d,N)) = ff-gamma(qr(p,n,d,N))[translate(E)] .
-endfm
-)
-***------------------------------
 
 *** ----------TEST HANDLE--------------
 
