@@ -14,7 +14,10 @@ fth ALGEBRA is
   sort Elt .
   sort Oper .
   sort Func .
+  op ADD : -> Oper .
+  op MULT : -> Oper .
 endfth
+
 
 fmod EX-LIST{A :: ALGEBRA} is
   sort Ex{A} .
@@ -46,7 +49,6 @@ fmod EX-LANG{A :: ALGEBRA} is
   subsort TypeError{A} < A$Type .
   subsort NullElt{A} < A$Elt .
   
-
   op _ of _ : Terminal{A} A$Type -> TypedTerminal{A} .
   op tup : Ex{A} Ex{A} -> Ex{A} . 
   op Tup : A$Type A$Type -> A$Type .
@@ -70,6 +72,8 @@ fmod EX-LANG{A :: ALGEBRA} is
   op NaE : -> NullElt{A} .
   op type-check : A$Type -> A$Type .
   op Type-Error : A$Type String -> TypeError{A} .
+  op ident : A$Oper A$Type -> Ex{A} .
+
 
   vars F F2 : A$Func .
   vars O O2 : A$Oper .
@@ -93,6 +97,7 @@ fmod EX-LANG{A :: ALGEBRA} is
   ceq replace( tup( EX, EX2 ) , L , EX3 ) = tup(replace(EX,L,EX3),replace(EX2,L,EX3)) if not EX3 == tup(EX,EX2) .
   ceq replace( TT , L , EX ) = TT if not EX == TT .
   eq replace( EX, L , EX ) = L of type(EX) .
+  ceq replace( ident(O,T), L, EX) = ident(O,T) if ident(O,T) =/= EX .
 
   *** Label -> Eq 
   eq substitute( F[EX] , L , EX2 ) = F[substitute( EX , L , EX2)] .
@@ -100,8 +105,9 @@ fmod EX-LANG{A :: ALGEBRA} is
   eq substitute( tup(EX,EX2) , L , EX3 ) = tup(substitute( EX , L , EX3), substitute( EX2 , L , EX3)) .
   eq substitute( L of T , L , EX2 ) = EX2 .
   ceq substitute( L of T , L2 , EX2 ) = L of T if L =/= L2 .
-  eq substitute( TT , L , EX ) = TT . *** doesn't allow L of T to change type, probably a good thing
-  
+  eq substitute( TT , L , EX ) = TT . *** doesn't allow L of T to change type, probably a good thing  
+  eq substitute(ident(O,T), L , EX) = ident(O,T) . 
+
   eq find-op( O[EX, EX2] , O ) = append(append(O[EX,EX2], find-op(EX,O)), find-op(EX2,O)) .
   ceq find-op( O[EX, EX2] , O2 ) = append( find-op(EX,O2), find-op(EX2,O2)) if O =/= O2 .
   eq find-op( F[EX] , O ) = find-op(EX,O) .
@@ -130,9 +136,9 @@ fmod EX-LANG{A :: ALGEBRA} is
   ***eq null NeEL = NeEL .
  
 
-  eq F[null] = null .
-  eq O[EX,null] = EX .
-  eq O[null,EX] = EX .
+  ***eq F[null] = null .
+  ***eq O[EX,null] = EX .
+  ***eq O[null,EX] = EX .
   eq tup( EX, null ) = EX .
   eq tup( null, EX ) = EX .
   eq evaluate( null ) = NaE .
@@ -141,6 +147,13 @@ fmod EX-LANG{A :: ALGEBRA} is
   eq replace(null, L , EX ) = null .
   eq find-func(null, F ) = nil .
   eq find-op(null, O) = nil . 
+
+  eq O[EX,ident(O,T)] = EX .
+  eq O[ident(O,T),EX] = EX .
+  eq MULT[EX,ident(ADD,T)] = ident(ADD,T) .
+  eq MULT[ident(ADD,T),EX] = ident(ADD,T) .
+  eq type(ident(O,T)) = T .
+  eq evaluate(ident(O,T)) = ident(O,T) .
 endfm
 
 ***------------ RAT-EX-LANG----------------
@@ -161,6 +174,8 @@ view Rat-Alg from ALGEBRA to RAT-ALG is
   sort Elt to Rat-Elt .
   sort Func to Rat-Func .
   sort Oper to Rat-Oper .
+  ***op MULT to MULT .
+  ***op ADD to ADD .
 endv
 
 fmod RAT-EX-LANG is
@@ -179,6 +194,10 @@ fmod RAT-EX-LANG is
   eq evaluate-help(TRUNC[E],rat) = r( trunc( & evaluate(E) ) ) .
   eq & r(i) = i .
   eq & tup(E,E2) = & E & E2 .
+  eq r(0) = ident(ADD,rat) .
+  eq & ident(ADD,rat) = 0 .
+  eq r(1) = ident(MULT,rat) .
+  eq & ident(MULT,rat) = 1 .
 endfm
 
 ***----------- FField --------------
@@ -190,6 +209,7 @@ fmod FFIELD is
 
   op FF : Rat -> FF-Type .
   op ff : Rat Rat -> FF-Elt .
+  op POWER : -> FF-Oper .
   op & _ : FF-Elt -> Rat .
   eq & ff(i:Rat,p:Rat) = i:Rat rem p:Rat .
 endfm
@@ -211,6 +231,10 @@ fmod FF-EX-LANG is
   eq evaluate-help(M-INV[E],FF(p)) = ff( 1 / & evaluate(E), p) .
   eq type( ff(r,p) ) = FF(p) . 
   eq type-check(FF(p)) = FF(p) .
+  eq ff(0,p) = ident(ADD,FF(p)) .
+  eq & ident(ADD,FF(p)) = 0 .
+  eq ff(1,p) = ident(MULT,FF(p)) .
+  eq & ident(MULT,FF(p)) = 1 .
 endfm
 
 ***-------- SPECULATIVE -------------

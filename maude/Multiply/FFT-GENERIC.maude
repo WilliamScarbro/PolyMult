@@ -4,14 +4,19 @@ fmod FF-EX-DOM is
   pr EX-DOMAIN{FField} .
   pr FF-EX-LANG .
   
-  op CONV : -> LabelFunc{FField} .
+  op conv : Rat Rat -> LabelFunc{FField} .
+  op conv-wrap : Rat Rat -> LabelFunc{FField} .
  
   var E : Ex{FField} . 
-  var n p i j : Rat .
+  var n p i j d N : Rat .
   eq type-domain(FF(p)) = point .
-  eq [ conv ] : define( CONV[E] , ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = for( CONV,  < 0,n >)[ E ] .
-  eq [ conv ] : define( CONV @{i}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = simple-reduce(ADD,< 0,n >)[for(CONV @{i} , < 0,n > )[E] ] .
-  eq [ conv ] : define( CONV @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j} , E @ {1 (i + - j) } ] . 
+  eq [ conv ] : define( conv(d,N)[E] , ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = for( conv(d,N),  < 0,n >)[ E ] .
+  eq [ conv ] : define( conv(d,N) @{i}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) 
+    = ADD[ simple-reduce(ADD,< 0,i + 1 >)[for(conv(d,N) @{i} , < 0,i + 1 > )[E] ] , 
+        MULT[ l("omega") of ARR(< 0,N >,FF(p)) @ { d } , 
+              simple-reduce(ADD,< i + 1,n >)[for(conv-wrap(d,N) @{i}, < 0,i >)[E] ] ] ] .
+  eq [ conv ] : define( conv(d,N) @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j} , E @ {1 (i + - j) } ] . 
+  eq [ conv ] : define( conv-wrap(d,N) @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j}, E @ {1 (n + i + - j) } ] .
 endfm
 
 fmod FFT-DOMAIN is
@@ -62,120 +67,48 @@ endfm
 )
 
 
-***(
-fmod QR is
-  pr EX-DOMAIN .
-
-  sort QR .
-  subsort QR < Type .
+fmod FFT-GENERIC-TEST is
+  pr FF-EX-DOM .
   
-  *** QR(p,n,d,N) = F_P[X]/(X^n+w_N^d) (p and N stay constant)
-  op qr : Rat Rat Rat Rat -> QR [ctor] .
-  op ff : Rat -> Type .
-  op qr-constr : QR -> Func .
-  op ff-ctor : Rat Rat -> TypedTerminal .
-  
-  var k p n d N i : Rat .
-  var a b : Ex .
-  var T : Type .
-  var Qr : QR .
-  var L : Label .
-
-  eq type-domain( ff(p) ) = point .
-  eq type-domain( qr(p,n,d,N) ) = < 0,n > .
-  eq index-type( qr(p,n,d,N) , { i } ) = ff(p) .
-  eq index-type( ff(p) , { nil } ) = ff(p) .
-
-  eq image-type(qr-constr(qr(p,n,d,N)),ARR(< 0,n >,ff(p))) = qr(p,n,d,N) .
-
-  eq type(ff-ctor(p,i)) = ff(p) .
-  eq substitute( ff-ctor(p,i) , L , a ) = ff-ctor(p,i) . 
-
-endfm
-
-
-
-fmod DOMAIN-FFT is
-  pr EX-DOMAIN{FField} .
-  pr QR . 
- 
-  op phi : Rat -> LabelFunc{FField} .
-  op phi-inv : Rat QR -> LabelFunc{FField} .
-  op omega : Rat Rat -> TypedTerminal . *** TT should be replaced by function, to allow index manipulation in EX-LANG
-  op gamma : -> LabelFunc{FField} .
-  op gamma-inv : QR -> LabelFunc{FField} .
-
-  var E : Ex .
-  var z j i k p n d N m : Rat .
-  var Qr : QR .
-
-  eq type(omega(N,p)) = ARR(< 0,N >, FF(p)) .
-
-*** phi
-  eq [phi] : define(phi(k)[E],qr(p,n,d,N)) = for(phi(k),< 0,k >)[E] .
-  eq [phi] : define(phi(k)@{z}[E],qr(p,n,d,N)) = for(phi(k)@{z},< 0,n / k >)[E] .
-  eq [phi] : define(phi(k)@{z j}[E],qr(p,n,d,N)) = reduce(ADD,lambda(l("i"), null ))[ for(phi(k)@{z j},< 0,k >)[E]] .
-  eq [phi-3] : define(phi(k)@{z j i}[E],qr(p,n,d,N)) = MULT[ split(n / k)[E] @ {i j} , omega(N,p) @ { ( d + z * N ) * (i / k) } ] .
-   
-*** phi-inv
-  eq [phi-inv] : define(phi-inv(k,qr(p,n,d,N))[E],ARR(< 0,k >,ARR(< 0,m >, ff(p)))) = concat(m)[for(phi-inv(k,qr(p,n,d,N)),< 0,k >)[E]] .
-  eq [phi-inv] : define(phi-inv(k,qr(p,n,d,N))@{i}[E],ARR(< 0,k >,ARR(< 0,m >, ff(p)))) = for(phi-inv(k,qr(p,n,d,N))@{i},< 0,n / k >)[E].
-  eq [phi-inv] : define(phi-inv(k,qr(p,n,d,N))@{i j}[E],ARR(< 0,k >,ARR(< 0,m >, ff(p)))) = 
-    MULT[MULT-INV[ff-ctor(p,k)], reduce(ADD,lambda(l("z"),null))[for(phi-inv(k,qr(p,n,d,N))@{i j},< 0,k >)[E]]] .
-  eq [phi-inv] : define(phi-inv(k,qr(p,n,d,N))@{i j z}[E],ARR(< 0,k >,ARR(< 0,m >, ff(p)))) =
-    MULT[ E @ {z j}, omega(N,p)@{ (-1) * ( d + z * N ) * (i / k) } ] .
-
-*** gamma
-  eq [gamma] : define(gamma[E],qr(p,n,d,N)) = for(gamma,< 0,n >)[E] .
-  eq [gamma] : define(gamma @{i}[E],qr(p,n,d,N)) = MULT[ E @ {i} , omega(p,N) @ { ((N + - d) * i) / n  } ] .
-
-*** gamma-inv
-  eq [gamma] : define(gamma-inv(qr(p,n,d,N))[E],ARR(< 0,n >,ff(p))) = for(gamma-inv(qr(p,n,d,N)),< 0,n >)[E] .
-  eq [gamma] : define(gamma-inv(qr(p,n,d,N)) @{i}[E],ARR(< 0,n >,ff(p))) = MULT[ E @ {i} , omega(p,N) @ { ((N + - d) * (N + - i)) / n } ] .
-
-endfm
-
-fmod DOMAIN-FFT-TEST is
-  pr DOMAIN-FFT .
-  
-  op ff-mult-inv : Rat Rat -> Rat .
+  op ff-mult-inv : Rat Rat -> FF-Elt .
   op generator : Rat -> Rat .
 
-  eq evaluate(l("a") of qr(7,6,6,6) @ {0}) = 0 .
-  eq evaluate(l("a") of qr(7,6,6,6) @ {1}) = 1 .
-  eq evaluate(l("a") of qr(7,6,6,6) @ {2}) = 2 .
-  eq evaluate(l("a") of qr(7,6,6,6) @ {3}) = 3 .
-  eq evaluate(l("a") of qr(7,6,6,6) @ {4}) = 4 .
-  eq evaluate(l("a") of qr(7,6,6,6) @ {5}) = 5 .
+  var i p n : Rat .
+  eq evaluate(l("a") of ARR(< 0,2 >,ARR(< 0,n >,FF(p))) @ {i} = ff(i,p) .
+  eq evaluate(l("b") of ARR(< 0,2 >,ARR(< 0,6 >,FF(7))) @ {0}) = ff(0,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {1}) = ff(1,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {2}) = ff(2,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {3}) = ff(3,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {4}) = ff(4,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {5}) = ff(5,7) .
 
-  var P p i : Rat .
-  var E E2 : Ex .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {0}) = ff(0,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {1}) = ff(1,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {2}) = ff(2,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {3}) = ff(3,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {4}) = ff(4,7) .
+  eq evaluate(l("b") of ARR(< 0,2 >,AARR(< 0,6 >,FF(7)) @ {5}) = ff(5,7) .
+
+
+  var P p n i : Rat .
+  var E E2 : Ex{FField} .
  
-  eq evaluate(omega(6,7) @ {P}) = evaluate(POWER[ff-ctor(7,generator(7)),ff-ctor(7,P)]) .
+  eq evaluate(index( l("omega(n,p)") of ARR(< 0,n >, FF(p)), {P} )) = evaluate(POWER[ff(n,generator(p)),ff(p,P)]) .
   eq generator(7) = 3 .
 
-  eq evaluate-help( ADD[ E , E2 ] , ff(p) ) = (evaluate( E ) + evaluate( E2 )) rem p .
-  eq evaluate-help( MULT[ E , E2 ] , ff(p) ) = (evaluate( E ) * evaluate( E2 )) rem p .
-  eq evaluate-help( ADD-INV[ E ] , ff(p) ) = - evaluate(E) rem p .
-  eq evaluate(ff-ctor(p,i))= i .
-  eq evaluate-help( POWER[ E, E2 ] , ff(p) ) = modExp( evaluate(E) , evaluate(E2) , p ). 
-
+***  eq evaluate-help( ADD[ E , E2 ] , FF(p) ) = (evaluate( E ) + evaluate( E2 )) rem p .
+***  eq evaluate-help( MULT[ E , E2 ] , FF(p) ) = (evaluate( E ) * evaluate( E2 )) rem p .
+***  eq evaluate-help( ADD-INV[ E ] , FF(p) ) = - evaluate(E) rem p .
+***  eq evaluate(ff-ctor(p,i))= i .
+***  eq evaluate-help( POWER[ E, E2 ] , FF(p) ) = modExp( evaluate(E) , evaluate(E2) , p ). 
+***
   *** there is probably a better method, this method is O(p), may need to hardcode for larger values of p
-  eq evaluate-help( MULT-INV[ E ], ff(p) ) = ff-mult-inv(evaluate(E),p) .
-  ceq ff-mult-inv(i,p) = (generator(p) * ff-mult-inv((i * generator(p)) rem p,p)) rem p if i =/= 1 and i =/= p + - 1 .
-  ceq ff-mult-inv(i,p) = i if i == p + - 1 . 
-  eq ff-mult-inv(1,p) = 1 .
+  eq evaluate-help( M-INV[ E ], FF(p) ) = ff-mult-inv(& evaluate(E),p) .
+  ceq ff-mult-inv(i,p) = ff(generator(p) * & ff-mult-inv((i * generator(p)) rem p,p) rem p ,p)  if i =/= 1 and i =/= p + - 1 .
+  ceq ff-mult-inv(i,p) = ff(i,p) if i == p + - 1 . 
+  eq ff-mult-inv(1,p) = ff(1,p) .
 
   *** temporary fix
-  eq MULT-INV[E] @ {NaV} = MULT-INV[E] .
+  ***eq M-INV[E] @ {NaV} = MULT-INV[E] .
 endfm
-)
 
-fmod FFT-TEST is
-  pr FF-EX-DOM .
-  pr FFT-DOMAIN .
-  
-  op con-ff-tup : -> Ex{FField} .
-
-  eq con-ff-tup = tup(l("a") of ARR(< 0,3 >,FF(7)) , l("b") of ARR(< 0,3 >, FF(7) ) ) .
-endfm

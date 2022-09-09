@@ -31,7 +31,7 @@ fmod INDEX-FUNC{A :: ALGEBRA} is
   op append-index : A$Func Index -> A$Func .
   op index-type : A$Type Index -> A$Type .
   op dim-check : Ex{A} Index -> Ex{A} .
-  op Dimension-Error : Ex{A} Index String -> Ex{A} .
+  op Index-Error : Ex{A} Index String -> Ex{A} .
   op index : Ex{A} Index -> Ex{A} .
   op length : Index -> Rat .
 
@@ -68,6 +68,7 @@ fmod INDEX-FUNC{A :: ALGEBRA} is
   eq index( O[E,E2] , I) = O[E @ I,E2 @ I] .
   eq index(index(TT, I) , point-index ) = index(TT, I) .
   eq index( TT , point-index ) = TT .
+  eq index( null , point-index ) = null .
   eq type(index(L of T , I)) = index-type(T,I) .
 
 endfm
@@ -158,7 +159,7 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   eq domain( E ) = type-domain(type(E)) .
   eq [ dim ] : dim-check( E , I ) = dim-check-help( E , I , length(I) , dimension(domain(E)) ) .
   ceq [ dim ] : dim-check-help( E , I , i , j ) = index( E , I ) if i <= j .
-  eq [ dim ] : dim-check-help( E , I , i , j ) = Dimension-Error( E , I, "length of index is larger than dimension of expression" ) [owise] .
+  eq [ dim ] : dim-check-help( E , I , i , j ) = Index-Error( E , I, "length of index is larger than dimension of expression" ) [owise] .
 
  
   *** don't support finding domain of tuples 
@@ -168,7 +169,8 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   ceq index-type( Tup( T , T2 ) , { z RL } ) = index-type(T2,{(z + -1) RL} ) if z > 0 .
   eq index-type( Tup( T , T2 ) , { 0 RL } ) = index-type(T,{RL} ) .
 
- 
+   
+
   eq type-domain(ARR( R , T ) ) = R x type-domain( T ) .
   eq index-type(ARR(R,T) , {z RL}) = index-type(T,{RL}) .
   eq index-type(T,{ nil }) = T .
@@ -214,6 +216,7 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   eq [index] : index( for( F , < i,j > ) [E] , { z RL } ) = for(F, < i,j > ) @ {z} [E] @ { RL } .
   eq [index] : index( for( F , < i,j > ) [E] , point-index ) = for(F, < i,j > ) [E] .
   ceq [index] : for( F , < i,j > ) @ {z} [E]  = append-index(F,{ z }) [E] if ( z < j ) and ( z >= i ) .
+  ceq [index] : for( F , < i,j > ) @ {z} [E]  = ident(ADD,type(E)) if ( z < i ) or ( z >= j ) . *** Index-Error(  for( F , < i,j > ) [E] , {z} , "index outside range of for loop") if ( z < i ) or ( z >= j ) .
   *** the type returned by a function cannot depend on the indeces it is evaluated at 
   eq image-type( for(F , < i,j > ) , T ) = ARR(< i,j >,image-type(append-index(F,{i}),T)) . 
 

@@ -1,0 +1,10 @@
+***red in FF-EX-DOM : conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ point-index .
+***red in FF-EX-DOM : conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0} .
+***red in FF-EX-DOM : conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0} @ point-index .
+***red in FF-EX-DOM : conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0 0} .
+
+red in FF-EX-DOM : evaluate(conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0}) .
+red in FF-EX-DOM : evaluate(conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {1}) .
+red in FF-EX-DOM : evaluate(conv(7,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {2}) .
+
+

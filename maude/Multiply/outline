@@ -41,3 +41,14 @@ replace qr-coef with ff(p)
 TODO
   extend EX-LANG-GEN to EX-DOMAIN
   Write translation rules
+
+extended EX-LANG-GEN to EX-DOMAIN-GEN
+added loose type and dimension checking
+
+9/7
+TODO
+  implement convolution
+  add tests for convolution / phi / inv-phi / gamma / inv-gamma in generic implementation
+  separate generic implementation to own branch
+  write translation rules
+  

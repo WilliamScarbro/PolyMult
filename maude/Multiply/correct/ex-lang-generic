@@ -9,14 +9,18 @@ ff(2, 3)
 expand[ff(2, 3)]
 (MULT).FF-Oper[ff(2, 3),l("b") of FF(3)]
 ff(2, 3)
-(MULT).FF-Oper[ff(2, 3),ff(1, 3)]
+(nil).ExList{FField}
 r(3)
-tup(r(1), r(2))
+tup(ident((MULT).Rat-Oper, rat), r(2))
 r(-5)
-r(1)
+ident((MULT).Rat-Oper, rat)
 r(3)
-(add3[r(1)]) (add3[r(2)]) add3[r(3)]
+(add3[ident((MULT).Rat-Oper, rat)]) (add3[r(2)]) add3[r(3)]
 r(3)
 (null).Ex{Rat-Alg}
 2
 2 3
+ident((MULT).Rat-Oper, rat)
+ident((ADD).Rat-Oper, rat)
+r(2)
+r(2)

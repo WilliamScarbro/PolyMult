@@ -35,3 +35,10 @@ red select(add3,r(6))[r(4)] .
 *** dereference
 red & r(2) .
 red & tup(r(2),r(3)) .
+
+*** identities
+red r(1) .
+red MULT[r(0),r(2)] .
+red ADD[r(0),r(2)] .
+red MULT[r(1),r(2)] .
+
