@@ -1,0 +1,16 @@
+load ../util/dependencies
+
+fmod DEP-TEST is
+  pr DEPS .
+  eq dep(f("LABEL")) = nil .
+  eq dep(f("UNIQ")) = nil .
+  eq dep(f("FACTOR")) = nil .
+  eq dep(f("UNIQ")) = nil .
+  eq dep(f("EX-LANG")) = expand(f("LABEL")) .
+  eq dep(f("FField")) = expand(f("EX-LANG")) .
+  eq dep(f("RAT-ALG")) = expand(f("EX-LANG")) .
+  eq dep(f("EX-DOMAIN")) = expand(f("LAMBDA")) expand(f("UNIQ")) .
+  eq dep(f("LAMBDA")) = expand(f("EX-LANG")) expand(f("RAT-ALG")) .
+  eq dep(f("FFIELD-DOMAIN")) = expand(f("FField")) expand(f("EX-DOMAIN")) .
+  eq dep(f("FFT")) = expand(f("FFIELD-DOMAIN")) .
+endfm

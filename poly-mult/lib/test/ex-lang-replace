@@ -1,0 +1,6 @@
+***replace
+red replace( expand[ff(2,3)] , l("a"), ff(2,3) ) .
+red replace( MULT[l("a") of FF(3),ff(2,3)] , l("a"), ff(2,3)) .
+red replace( ff(2,3) , l("a") , ff(4,3) ) .
+
+

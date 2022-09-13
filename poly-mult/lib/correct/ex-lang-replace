@@ -1,0 +1,3 @@
+expand[l("a") of FF(3)]
+(MULT).FF-Oper[l("a") of FF(3),l("a") of FF(3)]
+ff(2, 3)

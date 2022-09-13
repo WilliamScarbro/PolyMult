@@ -1,0 +1,21 @@
+
+
+fmod UNIQ{T :: TRIV} is
+  pr LIST{T} .
+  
+  op uniq : List{T} -> List{T} .
+  op uniq-help : List{T} List{T} -> List{T} .
+  
+  vars L L2 : List{T} .
+  var E : T$Elt .
+
+  eq uniq( L ) = uniq-help( L , nil ) .
+  ceq uniq-help( E L , L2 ) = uniq-help( L, L2 ) if occurs(E,L2) .
+  ceq uniq-help( E L , L2 ) = uniq-help( L , E L2 ) if not occurs(E,L2) .
+  eq uniq-help( nil , L ) = L .
+
+endfm
+
+fmod UNIQ-INT is
+  pr UNIQ{Int} .
+endfm

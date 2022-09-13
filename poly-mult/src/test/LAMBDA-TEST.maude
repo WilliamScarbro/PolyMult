@@ -1,0 +1,10 @@
+load ../util/LABEL
+load ../lang/EX-LANG
+load ../types/RAT-ALG
+load ../lang/LAMBDA
+
+
+
+fmod LAMBDA-TEST is
+  pr LAMBDA .
+endfm

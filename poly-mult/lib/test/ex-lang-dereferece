@@ -1,0 +1,5 @@
+*** dereference
+red & r(2) .
+red & tup(r(2),r(3)) .
+
+

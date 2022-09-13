@@ -1,0 +1,14 @@
+
+
+fmod LABEL is
+  pr STRING .
+  pr INT .
+  sort Label .
+  op l : String -> Label [ctor] .
+  op l : Int -> Label [ctor] .
+  var s : String .
+endfm
+
+view Label from TRIV to LABEL is
+  sort Elt to Label .
+endv

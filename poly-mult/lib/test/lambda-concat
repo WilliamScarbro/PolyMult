@@ -1,0 +1,2 @@
+red split-lambda(2,3) .
+red evaluate(split-lambda(3,3)[tup(r(5),tup(r(5),r(5)))] ) .

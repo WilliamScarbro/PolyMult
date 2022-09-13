@@ -1,0 +1,32 @@
+
+
+red f("LABEL") .    
+red DEP(f("LABEL")) .
+
+red f("UNIQ") .
+red DEP(f("UNIQ")) .
+
+red f("FACTOR") . 
+red DEP(f("FACTOR")) .
+
+red f("RAT-ALG") .
+red DEP(f("RAT-ALG")) .
+
+red f("FField") .
+red DEP(f("FField")) .
+
+red f("EX-LANG") .
+red DEP(f("EX-LANG")) .
+
+red f("LAMBDA") .
+red DEP(f("LAMBDA")) .
+
+red f("EX-DOMAIN") .
+red DEP(f("EX-DOMAIN")) .
+
+red f("FFIELD-DOMAIN") .
+red DEP(f("FFIELD-DOMAIN")) .
+
+red f("FFT") .
+red DEP(f("FFT")) .
+

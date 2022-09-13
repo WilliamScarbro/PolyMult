@@ -1,0 +1,3 @@
+red simple-reduce(ADD,< 0,2 > )[ l("a") of ar23 ] @ {0} .
+red simple-reduce(ADD,< 0,2 > )[ l("a") of ar23 ] @ {0 1} .
+red dimension(domain(simple-reduce(ADD,< 0,2 > )[ l("a") of ar23 ] )) .

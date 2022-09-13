@@ -1,0 +1,3 @@
+red myf[l("a") of ARR(< 0,6 >,rat)] @ {2} .
+red myf[l("a") of ARR(< 0,6 >,rat)] @ {2} @ point-index .
+

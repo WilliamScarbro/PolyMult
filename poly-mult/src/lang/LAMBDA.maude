@@ -1,0 +1,46 @@
+***load EX-LANG .
+***load ../types/RAT-ALG .
+
+fmod LAMBDA is
+  pr RAT-EX-LANG .
+  pr LIST{Label} .
+
+  sort Lambda .
+  subsort Lambda < Rat-Func .
+
+  op lambda : List{Label} Ex{Rat-Alg} -> Lambda .
+
+  var E E2 E3 : Ex{Rat-Alg} .
+  var L : Label .
+  var EL EL2 : ExList{Rat-Alg} .
+  var LL : List{Label} .
+  var T : Rat-Type .
+
+  eq evaluate-help( lambda( L LL , E )[ tup(E2,E3)  ] , T ) = evaluate( lambda( LL , substitute( E, L,  E2 ) )[ E3 ] ) .
+  eq evaluate-help( lambda( L , E )[ E2 ], T ) = evaluate( substitute(E, L, E2 ) ) .
+  
+  eq value-append(EL,EL2) = append(EL,EL2) . 
+
+*** split/concat lambda 
+  op split-lambda : Rat Rat -> Lambda .
+  op concat-lambda : Rat Rat -> Lambda .
+  op label-list : Rat -> List{Label} .
+  op label-list-to-tuple : List{Label} -> Ex{Rat-Alg} .
+
+  vars m d : Rat .
+ 
+  ceq label-list( d ) = l("$" + char(d)) label-list(d + - 1) if 0 < d .
+  eq label-list(0) = nil .
+  eq label-list-to-tuple( L LL ) = tup( L of rat , label-list-to-tuple(LL) ) .
+  eq label-list-to-tuple(nil) = null .
+  
+  *** {i} => {i//m i rem m} 
+  eq split-lambda(m,d) = lambda( l("i") label-list(d + -1 ) , 
+      tup( TRUNC[MULT[l("i") of rat,M-INV[r(m)]]] , tup( REM[ l("i") of rat, r(m) ] , label-list-to-tuple(label-list(d + -1) ) ))) .
+  *** {i j} => {i*m + j} 
+  eq concat-lambda(m,d) = lambda( l("i") l("j") label-list(d + -2) , 
+      tup( ADD[ MULT[ l("i") of rat , r(m)] , l("j") of rat] , label-list-to-tuple(label-list(d + -2) ) )) .
+
+
+endfm
+

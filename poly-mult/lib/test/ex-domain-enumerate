@@ -1,0 +1,1 @@
+red enumerate( domain( split(2)[ simple-reduce( ADD , < 0,3 > )[l("a") of ARR( < 0,4 >,ARR( < 0,3 >, rat ) ) ]] ) ) .

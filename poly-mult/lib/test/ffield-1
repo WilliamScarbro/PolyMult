@@ -1,0 +1,6 @@
+red type(ff(3,4)) .
+red type-check(FF(7)) .
+red ff(0,3) .
+red & ident(ADD,FF(4)) .
+red ff(1,5) .
+red & ident(MULT,FF(5)) .

@@ -1,0 +1,16 @@
+load ../util/UNIQ .
+load ../util/LABEL .
+load ../lang/EX-LANG .
+load ../types/RAT-ALG .
+load ../lang/LAMBDA .
+load ../lang/EX-DOMAIN .
+load ../types/FField .
+load ../ops/CONV .
+
+
+fmod CONV-TEST is
+  pr CONV .
+  
+  var i j : Rat .
+  eq evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >, FF(7))) , { i j } )) = ff(j + 1,7) .
+endfm

@@ -1,0 +1,50 @@
+***----------- FField --------------
+fmod FFIELD is
+  pr RAT .
+  pr OPER-FUNC * ( sort Func to FF-Func , sort Oper to FF-Oper ) .
+  sort FF-Type .
+  sort FF-Elt .
+
+  op FF : Rat -> FF-Type .
+  op ff : Rat Rat -> FF-Elt .
+  op POWER : -> FF-Oper .
+  op & _ : FF-Elt -> Rat .
+  eq & ff(i:Rat,p:Rat) = i:Rat rem p:Rat .
+endfm
+  
+view FField from ALGEBRA to FFIELD is
+  sort Type to FF-Type .
+  sort Elt to FF-Elt .
+  sort Oper to FF-Oper .
+  sort Func to FF-Func .
+endv
+
+fmod FF-EX-LANG is
+  pr EX-LANG{FField} .
+
+  op ff-mult-inv : Rat Rat -> Ex{FField} .
+  var i r s p : Rat .
+  var E E2 : Ex{FField} .
+  eq evaluate-help(MULT[E,E2],FF(p)) = ff(& evaluate(E) * & evaluate(E2), p) .
+  eq evaluate-help(ADD[E,E2],FF(p)) = ff(& evaluate(E) + & evaluate(E2), p) .
+  eq evaluate-help(NEG[E],FF(p)) = ff( - & evaluate(E), p) .
+  eq type( ff(r,p) ) = FF(p) . 
+  eq type-check(FF(p)) = FF(p) .
+  eq ff(0,p) = ident(ADD,FF(p)) .
+  eq & ident(ADD,FF(p)) = 0 .
+  eq ff(1,p) = ident(MULT,FF(p)) .
+  eq & ident(MULT,FF(p)) = 1 .
+
+  *** always hardcode generator
+  op generator : Rat -> Rat .
+
+  *** there is probably a better method, this method is O(p), may need to hardcode for larger values of p
+  eq evaluate-help( M-INV[ E ], FF(p) ) = ff-mult-inv(& evaluate(E),p) .
+  ceq ff-mult-inv(i,p) = ff(generator(p) * (& ff-mult-inv((i * generator(p)) rem p,p) rem p) ,p)  if (i =/= 1) and (i =/= p + - 1) .
+  ceq ff-mult-inv(i,p) = ff(i,p) if i == p + - 1 . 
+  eq ff-mult-inv(1,p) = ff(1,p) .
+
+
+endfm
+
+

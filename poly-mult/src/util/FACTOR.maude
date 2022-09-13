@@ -1,0 +1,37 @@
+load UNIQ .
+
+fmod PRIMES is
+  pr RAT .  
+  pr LIST{Rat} .
+
+  op primes : -> List{Rat} .
+
+  eq primes = 2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 .
+endfm
+
+fmod FACTOR is
+  pr RAT .
+  pr PRIMES .
+  pr UNIQ{Rat} .
+  
+  op factor : Rat -> List{Rat} .
+  op uniq-factor : Rat -> List{Rat} .
+  op factor-help : Rat List{Rat} -> List{Rat} .
+  op all-factors : Rat -> List{Rat} .
+  op all-factors-help : Rat List{Rat} -> List{Rat} .
+
+  vars n p : Rat .
+  vars pl : List{Rat} .
+  
+  eq factor(n) = factor-help(n,primes) .
+  ceq [div-check] : factor-help(n, p pl) = factor-help(n / p, p pl) p if p divides n .
+  ceq [div-check] : factor-help(n, p pl) = factor-help(n , pl) if not (p divides n) .
+  eq factor-help(1, pl) = nil .
+  eq factor-help(n, nil) = n [print "!!!! ran out of primes: " n ] .
+
+  eq uniq-factor( n ) = uniq( factor(n) ) .
+  
+  eq all-factors( n ) = uniq( all-factors-help( 1,factor(n) ) ) .
+  eq all-factors-help( n, p pl ) = all-factors-help( n * p, pl ) all-factors-help( n, pl ) .
+  eq all-factors-help( n, nil ) = n .
+endfm

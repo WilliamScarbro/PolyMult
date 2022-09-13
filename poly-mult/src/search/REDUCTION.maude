@@ -1,0 +1,225 @@
+load EQ-LANG .
+load UNIQ .
+
+fmod REDUCTION is
+  sort Reduction .
+endfm
+
+view Reduction from TRIV to REDUCTION is
+  sort Elt to Reduction .
+endv
+
+fmod REDUCTION-INSTANCE is
+  pr REDUCTION .
+  pr EQ .
+  pr INT .
+  sort ReductionInstance .
+  op red-inst : Reduction Int -> ReductionInstance [ctor] .
+endfm
+
+view ReductionInstance from TRIV to REDUCTION-INSTANCE is
+  sort Elt to ReductionInstance .
+endv
+ 
+mod REDUCTION-SEARCH is
+  pr EQ-LANG .
+  pr LIST{Eq} .
+  pr LIST{Label} .
+  pr LIST{Rat} .
+  pr MAP{Eq,Label} .
+  pr MAP{ReductionInstance,Label} .
+  pr LIST{Reduction} .
+  pr CONFIGURATION .
+  pr UNIQ{Eq} .
+
+  sort ReductionCid .
+  sort OperatorCid .
+  sort ControllerOid .
+  sort Reducible .
+
+  subsort ReductionCid < Cid .
+  subsort OperatorCid < Cid .
+  subsort ControllerOid < Oid .
+  subsort Label < Oid .
+  subsort Func < Reducible .
+  subsort Oper < Reducible .
+
+  op OPER : -> Cid .
+  op CTL : -> Cid .
+  op opctl : -> Oid .
+  op redctl : -> Oid .
+  op REDUC : -> Cid .
+  
+  op EQ :_ : Eq -> Attribute [ctor gather (&)] .
+  op ChildLabels :_ : List{Label} -> Attribute [ctor gather (&)] .
+  op ReductionLabels :_ : Map{ReductionInstance,Label} -> Attribute [ctor gather (&)] .
+  op ReductionList :_ : List{Rat} -> Attribute [ctor gather (&)] .
+  op Type :_ : Type -> Attribute [ctor gather (&)] .
+  op State :_ : String -> Attribute [ctor gather (&)] .
+  op ELMap :_ : Map{Eq,Label} -> Attribute [ctor gather (&)] .
+  op CurrentEq :_ : Eq -> Attribute [ctor gather (&)] .
+  op CurrentRed :_ : Reduction -> Attribute [ctor gather (&)] .
+  op CurrentOid :_ : Oid -> Attribute [ctor gather (&)] .
+  op CurrentRat :_ : Rat -> Attribute [ctor gather (&)] .
+  op CurrentChild :_ : Eq -> Attribute [ctor gather (&)] .
+  op OidCounter :_ : Int -> Attribute [ctor gather (&)] .
+  op ProdClass :_ : Cid -> Attribute [ctor gather (&)] .
+ 
+
+  op reduce-oper-req : Oid Oid Reduction -> Msg .
+  op reduce-oper-resp : Oid Oid List{Label} -> Msg .
+  op initialize-req : Oid Oid -> Msg .
+  op initialize-resp : Oid Oid Eq -> Msg .
+  op eq-to-label-req : Oid Oid Eq -> Msg .
+  op eq-to-label-resp : Oid Oid Label -> Msg .
+  
+  op ctl-init : ControllerOid Int -> Configuration .
+
+*** helper funcs
+  op find-labels : List{Eq} -> List{Label} .
+  op lookup-by-red : Map{ReductionInstance,Label} Reduction -> List{Label} .
+  op find : Eq Reducible -> List{Eq} .
+
+
+*** to be implemented by importer
+  op reduction-space : Reduction Eq -> List{Rat} .
+  op apply-reduction : ReductionInstance Eq -> Eq .
+  op prod-class : ControllerOid -> Cid .
+  op reduction-body : ReductionCid -> Reducible .
+  op redctl : OperatorCid -> ControllerOid .
+  op opctl : ReductionCid -> ControllerOid .
+  op num-controllers : -> Int .
+  op all-ctl-init : -> Configuration .
+
+  vars L L2 : Label .
+  vars E E2 E3 : Eq .
+  var F : Func .
+  var O : Oper .
+  vars T : Type .
+  vars Re Re2 : Reduction .
+  vars Ra : Rat .
+  vars LL LL2 : List{Label} .
+  vars RLM : Map{ReductionInstance,Label} .
+  vars RaL : List{Rat} .
+  vars ReL : List{Reduction} .
+  vars EL EL2 : List{Eq} .
+  vars ELM : Map{Eq,Label} .
+  vars OID : Oid . 
+  vars CID : Cid .
+  var OPERCID : OperatorCid .
+  var REDCID : ReductionCid .
+  vars A : AttributeSet .
+  var i : Int .
+
+*** helpers
+  eq lookup-by-red( (red-inst(Re, Ra ) |-> L , RLM) , Re ) = L lookup-by-red( RLM , Re ) .
+  ceq lookup-by-red( (red-inst(Re2 , Ra) |-> L , RLM) , Re ) = lookup-by-red( RLM , Re ) if Re =/= Re2 .
+  eq lookup-by-red( empty , Re ) = nil .
+
+  eq find( E , F ) = find-func( E , F ) .
+  eq find( E , O ) = find-op( E , O ) .
+
+*** constructors
+  eq ctl-init(OID,i) = < OID : CTL | ELMap : empty , OidCounter : i , State : "Free" > .
+
+*** OPERCID
+  *** Free -> CheckingReductions
+  rl < L : OPERCID | A , EQ : E , ReductionLabels : RLM , State : "Free" >
+      reduce-oper-req(L , OID , Re) 
+    => < L : OPERCID | A , EQ : E , ReductionLabels : RLM , ReductionList : reduction-space( Re,E ) , CurrentRed : Re , CurrentOid : OID , State : "CheckingReductions" > 
+    [print "INFO: " L ": Free -> CheckingReductions "] . 
+  
+  *** CheckingReductions -> CheckingReductions
+  crl < L : OPERCID | A , CurrentRed : Re , ReductionLabels : RLM , ReductionList : Ra RaL , State : "CheckingReductions" >
+     => < L : OPERCID | A , CurrentRed : Re , ReductionLabels : RLM , ReductionList : RaL , State : "CheckingReductions" >
+    if $hasMapping( RLM , red-inst( Re , Ra ) ) 
+    [print "INFO: " L ": CheckingReductions -> CheckingReductions "] . 
+  
+  *** CheckingReductions -> FindingReduction
+  crl < L : OPERCID | A , EQ : E , CurrentRed : Re , ReductionLabels : RLM , ReductionList : Ra RaL , State : "CheckingReductions" >
+     => < L : OPERCID | A , EQ : E , CurrentRed : Re , CurrentRat : Ra , ReductionLabels : RLM , ReductionList : RaL , State : "FindingReduction" >
+      eq-to-label-req(redctl(OPERCID), L , apply-reduction(red-inst(Re,Ra) , E ))
+    if not $hasMapping(RLM , red-inst( Re,Ra ) ) 
+    [print "INFO: " L ": CheckingReductions -> FindingReductions "] . 
+
+  *** FindingReduction -> CheckingReductions
+  rl < L : OPERCID | A , CurrentRed : Re , CurrentRat : Ra , ReductionLabels : RLM , State : "FindingReduction" >
+      eq-to-label-resp( L , OID , L2 ) 
+     => < L : OPERCID | A , CurrentRed : Re , ReductionLabels : insert(red-inst(Re,Ra),L2,RLM) ,  State : "CheckingReductions" > 
+    [print "INFO: " L ": FindingReductions -> CheckingReductions "] . 
+
+  *** CheckingReductions -> Free
+  rl < L : OPERCID | A , CurrentRed : Re , CurrentOid : OID , ReductionLabels : RLM , ReductionList : nil , State : "CheckingReductions" >
+    => < L : OPERCID | A , ReductionLabels : RLM , State : "Free" >
+      reduce-oper-resp(OID, L , lookup-by-red(RLM,Re) ) 
+    [print "INFO: " L ": CheckingReductions -> Free "] . 
+
+  *** Created -> Free
+  rl < L : OPERCID | A , EQ : E , State : "Created" >
+      initialize-req(L , OID ) 
+    => < L : OPERCID | A , EQ : E , ReductionLabels : empty , State : "Free" >
+      initialize-resp(OID, L , E ) 
+    [print "INFO: " L ": Created -> Free "] . 
+
+*** REDCID
+  *** Labeled -> Labeled
+  rl < L : REDCID | A , EQ : E , State : "Labeled" > 
+      initialize-req( L , OID ) 
+    => < L : REDCID | A , EQ : E , State : "Labeled" > 
+      initialize-resp( OID, L , E ) 
+    [print "INFO: " L ": Labeled -> Labeled " ] .
+   
+  *** finding neighbors
+  *** Created -> FindChildren
+  rl < L : REDCID | EQ : E , Type : T , State : "Created" >
+        initialize-req(L , OID) 
+     => < L : REDCID | EQ : E , Type : T , State : "FindChildren" , CurrentOid : OID , ChildLabels : find-labels( uniq(find(E,reduction-body(REDCID)) ) ) > 
+     [print "INFO: " L ": Created -> FindChildren " ] .
+ 
+  *** FindChildren -> LabelChild
+  rl < L : REDCID | A ,  State : "FindChildren" , ChildLabels : LL find-labels( E2 EL ) > 
+      => < L : REDCID | A , State : "LabelChild", ChildLabels : LL find-labels( EL ), CurrentChild : E2 >
+        eq-to-label-req( opctl(REDCID), L, E2 ) 
+      [print "INFO: " L ": FindChildren -> LabelChild " ] .
+  
+  *** LabelChild -> FindChildren
+  rl < L : REDCID | A , EQ : E, State : "LabelChild" , ChildLabels : LL find-labels( EL ), CurrentChild : E2 >
+        eq-to-label-resp( L, OID , L2 )
+      => < L : REDCID | A , EQ : replace(E, L2, E2 ), State : "FindChildren" , ChildLabels : LL L2 find-labels( EL ) >
+      [print "INFO: " L ": LabelChild -> FindChildren " ] .
+
+  *** FindChildren -> Labeled
+  rl < L : REDCID | A, EQ : E , State : "FindChildren", CurrentOid : OID , ChildLabels : LL find-labels( nil ) > 
+      => < L : REDCID | A, EQ : E , State : "Labeled", ChildLabels : LL > 
+        initialize-resp( OID, L , E ) 
+      [print "INFO: " L ": FindChildren -> Labeled " ] .
+
+*** CTL
+
+  *** Free -> Free
+  crl < OID : CTL | ELMap : ELM , OidCounter : i , State : "Free" > 
+        eq-to-label-req( OID , L , E )
+      => < OID : CTL | ELMap : ELM , OidCounter : i , State : "Free" >
+        eq-to-label-resp( L , OID , ELM[E] )
+      if $hasMapping(ELM,E) 
+     [print "INFO: " OID ": Free -> Free " ] .
+   
+  
+  *** Free -> ServingReq
+  crl < OID : CTL | A , ELMap : ELM , OidCounter : i, State : "Free" >
+        eq-to-label-req( OID , L , E )
+      => < OID : CTL | A , ELMap : ELM , OidCounter : i + num-controllers, State : "ServingReq" , CurrentOid : L >
+        < l(i) : prod-class(OID) | EQ : E , Type : type(E) , State : "Created" > 
+        initialize-req(l(i),OID)
+      if not $hasMapping(ELM,E) 
+     [print "INFO: " OID ": Free -> ServingReq "] .
+    
+
+  *** ServingReq -> Free
+  rl < OID : CTL | A , ELMap : ELM , State : "ServingReq" , CurrentOid : L >
+        initialize-resp(OID,L2,E)
+      => < OID : CTL | A , ELMap : insert(E,L2,ELM) , State : "Free" >
+        eq-to-label-resp( L , OID , L2 ) 
+     [print "INFO: " OID ": ServingReq -> Free " ] .
+
+endm

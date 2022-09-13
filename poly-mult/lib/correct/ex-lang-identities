@@ -1,0 +1,4 @@
+ident((MULT).Rat-Oper, rat)
+ident((ADD).Rat-Oper, rat)
+r(2)
+r(2)

@@ -1,0 +1,4 @@
+red & evaluate( M-INV[ ff(2,7) ] ) .
+red & evaluate( M-INV[ ff(3,7) ] ) .
+red & evaluate( M-INV[ ff(4,7) ] ) .
+red & evaluate( M-INV[ ff(6,7) ] ) .

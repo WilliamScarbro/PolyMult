@@ -1,0 +1,6 @@
+*** identities
+red r(1) .
+red MULT[r(0),r(2)] .
+red ADD[r(0),r(2)] .
+red MULT[r(1),r(2)] .
+

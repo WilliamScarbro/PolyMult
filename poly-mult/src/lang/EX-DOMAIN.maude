@@ -1,0 +1,261 @@
+***( 
+dependencies
+  EX-LANG
+  RAT-ALG
+  LAMBDA 
+  UNIQ
+) 
+
+fmod INDEX is
+  pr LIST{Rat} .
+  sort Index .
+  op point-index : -> Index .
+  op {_} : List{Rat} -> Index .
+  op index-append : Index Index -> Index . ***[ id: point-index ] .
+  var RL RL2 : List{Rat} .
+  eq index-append( { RL } , { RL2 } ) = { append( RL , RL2 ) } .
+endfm
+
+view Index from TRIV to INDEX is
+  sort Elt to Index .
+endv
+
+fmod INDEX-FUNC{A :: ALGEBRA} is
+  pr LAMBDA .
+  pr EX-LANG{A} .
+  pr INDEX .
+  
+  sort IndexFunc{A} .
+  sort LabelFunc{A} .
+  subsort IndexFunc{A} < A$Func .
+  subsort LabelFunc{A} < A$Func .
+
+  op _@_ : A$Func Index -> IndexFunc{A} .
+  op define : Ex{A} A$Type -> Ex{A} .
+  op _@_ : Ex{A} Index -> Ex{A} .
+  op append-index : A$Func Index -> A$Func .
+  op index-type : A$Type Index -> A$Type .
+  op dim-check : Ex{A} Index -> Ex{A} .
+  op Index-Error : Ex{A} Index String -> Ex{A} .
+  op index : Ex{A} Index -> Ex{A} .
+  op length : Index -> Rat .
+
+  var F : A$Func .
+  var IF : IndexFunc{A} .
+  var LF : LabelFunc{A} .
+  var I I2 : Index .
+  var E E2 : Ex{A} .
+  var T : A$Type .
+  var L : Label .
+  var z : Rat .
+  var RL : List{Rat} .
+  var O : A$Oper .
+  var TT : TypedTerminal{A} .
+  
+  ceq E @ { RL } = dim-check(E,{ RL }) if RL =/= nil .
+  eq E @ point-index = index(E,point-index) .
+  eq E @ {nil} = E .
+
+  eq length( { z RL } ) = 1 + length( { RL } ) .
+  eq length( { nil } ) = 0 .
+
+  eq [define-trigger] : index(LF [E], I) = index(define( LF[E],type(E) ), I)  .
+  eq [define-trigger] : index(LF @ I [E], I2) = index(define(LF @ I [E],type(E)), I2) .
+  
+  *** For image type synthesis, the definition of a LabelFunc can only depend on the type of its argument
+  *** result of using "cannonical" label below
+  eq [type] : image-type(LF,T) = type(define(LF[l("canonical") of T],T)) .
+  eq [type] : image-type(LF @ I,T) = type(define(LF @ I[l("cannonical") of T],T)) .
+
+*** index manipulation
+  eq append-index( F @ I , I2 ) = F @ index-append( I, I2 ) .
+  ceq append-index( F , I ) = F @ I if not F :: IndexFunc{A} . 
+  eq index( O[E,E2] , I) = O[E @ I,E2 @ I] .
+  eq index(index(TT, I) , point-index ) = index(TT, I) .
+  eq index( TT , point-index ) = TT .
+  eq index( ident(O,T) , point-index ) = ident(O,T) .
+  eq index( null , point-index ) = null .
+  eq type(index(L of T , I)) = index-type(T,I) .
+
+endfm
+
+fmod EX-DOMAIN{A :: ALGEBRA} is
+  pr LAMBDA .
+  pr LIST{Index} .
+  pr INDEX-FUNC{A} .
+  pr UNIQ{Index} .
+  pr STRING .
+
+  sort Domain .
+  sort Range .
+  sort DomainMap .
+  
+  subsort Range < Domain .
+
+  op <_,_> : Rat Rat -> Range .
+  op point : -> Domain .
+  
+  op _x_ : Domain Domain -> Domain [ id: point assoc ] .
+  op _ + _ : Range Range -> Range .
+  op _ + _ : Domain Domain -> Domain .
+  op _ intersect _ : Domain Domain -> Domain .
+  op _ \ _ : Domain Domain -> Domain .
+  op dimension : Domain -> Rat .
+  op _[_] : DomainMap Domain -> Domain .
+
+  op for : A$Func Domain -> A$Func .
+  op reduce : A$Oper Lambda -> LabelFunc{A} .
+  op reduce-help : A$Oper Lambda Rat Index -> A$Func .
+  op reduce-tup : Lambda -> A$Func .
+  op reduceT : Lambda A$Type -> A$Type .
+  op reduceDM : Lambda -> DomainMap .
+  op simple-reduce : A$Oper Range -> A$Func .
+  op sreduceT : Range A$Type -> A$Type .
+  op sreduceDM : Range -> DomainMap .
+
+
+  op ARR : Range A$Type -> A$Type .
+  op reduce-list : A$Oper ExList{A}-> Ex{A} .
+  op reduce-list-tup : ExList{A} -> Ex{A} .
+  op for-list : Ex{A} List{Index} -> ExList{A}.
+  op split : Rat -> A$Func .
+  op concat : Rat -> A$Func .
+  op splitT : Rat A$Type -> A$Type .
+  op concatT : Rat A$Type -> A$Type .
+  op splitDM : Rat -> DomainMap . 
+  op concatDM : Rat -> DomainMap .
+
+  op enumerate : Domain -> List{Index} .
+  op enumerate-help : Index Domain -> List{Index} .
+ 
+  op ident : -> Lambda .
+  op row-major : Rat -> Lambda .
+  op column-major : Rat -> Lambda .
+  op transpose : Rat -> Lambda .
+ 
+  op list-to-tuple : List{Rat} -> Ex{Rat-Alg} .
+  op index-list-to-tuple : List{Index} -> ExList{Rat-Alg}.
+  op tuple-list-to-index : ExList{Rat-Alg}-> List{Index} .
+  *** tuple-to-index can be contructed directly through { evaluate( E ) }
+ 
+  *** domain can be derived from type 
+  op type-domain : A$Type -> Domain .
+  op domain : Ex{A} -> Domain .
+  op dim-check-help : Ex{A} Index Rat Rat -> Ex{A} .
+
+  var F : A$Func .
+  var E E2 E3 : Ex{A} .
+  var Er : Ex{Rat-Alg} .
+  var EL : ExList{A} .
+  var ErL : ExList{Rat-Alg} .
+  ***var NeEL : NeList{Ex} .
+  var O : A$Oper .
+  var D D2 : Domain .
+  var R R2 : Range .
+  var I : Index .
+  var Y : Lambda .
+  var T T2 : A$Type .
+  var d i i' j j' z k m n : Rat .
+  var RL RL2 : List{Rat} .
+  var IL : List{Index} .
+  var LL : List{Label} .
+
+  
+  eq domain( E ) = type-domain(type(E)) .
+  eq [ dim ] : dim-check( E , I ) = dim-check-help( E , I , length(I) , dimension(domain(E)) ) .
+  ceq [ dim ] : dim-check-help( E , I , i , j ) = index( E , I ) if i <= j .
+  eq [ dim ] : dim-check-help( E , I , i , j ) = Index-Error( E , I, "length of index is larger than dimension of expression" ) [owise] .
+
+ 
+  *** don't support finding domain of tuples 
+  eq < i,j > + < i',j' > = < i, j + i' + j' > . *** works even if tup/Tup is associative
+  ceq index-type( Tup( T , T2 ) , { z RL } ) = index-type(T2,{(z + -1) RL} ) if z > 0 .
+  eq index-type( Tup( T , T2 ) , { 0 RL } ) = index-type(T,{RL} ) .
+
+  eq type-domain(ARR( R , T ) ) = type-domain( T ) x R .
+  eq index-type(ARR(R,T) , {z RL}) = index-type(T,{RL}) .
+  eq index-type(T,{ nil }) = T .
+  eq type-check(ARR(R,T)) = ARR(R,T) .
+
+  eq image-type( reduce( O , Y ) , T ) = reduceT( Y , T ) .
+  eq image-type( reduce-help( O , Y , d , I ) , T ) = reduceT( Y , T ) .
+  eq type-domain(reduceT( Y , T ) ) = reduceDM(Y)[type-domain(T)] .
+  eq type-check(reduceT(Y,T)) = reduceT(Y,T) .
+
+  eq image-type(simple-reduce(O,R),T) = sreduceT(R,T) .
+  eq type-domain(sreduceT(R,T)) = sreduceDM(R)[type-domain(T)] .
+  ceq type-check(sreduceT(R,T)) = sreduceT(R,T) if dimension(type-domain(T)) >= 1 .
+  eq type-check(sreduceT(R,T)) = Type-Error(sreduceT(R,T),"simple-reduce argument has dimension less then 1") . *** should also check that range is subset of argument domain .
+  eq sreduceDM(R)[ R2 x D ] = D . *** works if Ranges don't match, may want to change
+
+  eq dimension( R x D) = 1 + dimension( D ) .
+  eq dimension( point ) = 0 .
+  eq dimension( reduceDM(Y)[ D ] ) = dimension(D) + -1 .
+  eq dimension( concatDM(m)[D] ) = dimension(D) + -1 .
+  eq dimension( splitDM(m)[D] ) = dimension(D) + 1 .
+
+*** split/concat
+  eq index( concat(m)[E] , {i RL} ) = E @ {trunc(i / m) (i rem m) RL } .
+  eq [split] : index( split(m)[E] , {i j RL } ) = E @ {i * m + j } .
+  eq [split] : image-type(split(m),T) = splitT(m,T) .
+  eq image-type(concat(m),T) = concatT(m,T) .
+  eq [split] : type-domain(splitT(m,T)) = splitDM(m)[type-domain(T)] .
+  eq type-domain(concatT(m,T)) = concatDM(m)[type-domain(T)] .
+  ceq [split] : splitDM(m)[ R x D ] = (splitDM(m)[R]) x D if D =/= point .
+  ceq concatDM(m)[ R x R2 x D ] = (concatDM(m)[R x R2]) x D if D =/= point .
+  eq [split] : splitDM(m)[< 0,n >] = < 0, n / m  > x < 0,m > .
+  eq concatDM(m)[ < 0,k > x < 0,m > ] = < 0,k * m > .
+  ceq type-check(concatT(m,T)) = concatT(m,T) if dimension(type-domain(T)) >= 2 .
+  eq type-check(concatT(m,T)) = Type-Error(concatT(m,T),"concat argument has dimension < 2") [owise] .
+  ceq type-check(splitT(m,T)) = splitT(m,T) if dimension(type-domain(T)) >= 1 .
+  eq type-check(splitT(m,T)) = Type-Error(splitT(m,T),"split argument has dimension < 1") [owise] .
+
+*** for
+  eq [index] : index( for( F , < i,j > ) [E] , { z RL } ) = for(F, < i,j > ) @ {z} [E] @ { RL } .
+  eq [index] : index( for( F , < i,j > ) [E] , point-index ) = for(F, < i,j > ) [E] .
+  ceq [index] : for( F , < i,j > ) @ {z} [E]  = append-index(F,{ z }) [E] if ( z < j ) and ( z >= i ) .
+  ceq [index] : for( F , < i,j > ) @ {z} [E]  = Index-Error(  for( F , < i,j > ) [E] , {z} , "index outside range of for loop") if ( z < i ) or ( z >= j ) .
+  *** the type returned by a function cannot depend on the indeces it is evaluated at 
+  eq image-type( for(F , < i,j > ) , T ) = ARR(< i,j >,image-type(append-index(F,{i}),T)) . 
+
+*** enumerate
+  ceq enumerate( < i,j > x D ) = append( enumerate-help( {i} , D ) , enumerate( < i + 1,j > x D ) ) if i + 1 < j .
+  ceq enumerate( < i,j > x D ) = enumerate-help({i} , D ) if i + 1 == j .
+  ceq enumerate( < i,j > x D ) = nil if i >= j .
+  eq enumerate( point ) = nil .
+  ceq enumerate-help( { RL }, < i,j > x D ) = append( enumerate-help( { append( RL ,i) } , D ) , enumerate-help( { RL }, < i + 1,j > x D ) ) if i + 1 < j .
+  ceq enumerate-help( { RL }, < i,j > x D ) = enumerate-help( { append( RL , i) }, D ) if i + 1 == j .
+  eq enumerate-help( I , point ) = I .
+  eq enumerate( reduceDM(Y)[D] ) = uniq( tuple-list-to-index(  map( Y , index-list-to-tuple(enumerate(D)) ) ) ) .
+  eq enumerate( splitDM(m)[D] ) = uniq( tuple-list-to-index( map( split-lambda(m,dimension(D)) , index-list-to-tuple(enumerate(D) ) ) ) ) .
+  eq enumerate( concatDM(m)[D] ) = uniq( tuple-list-to-index( map( concat-lambda(m,dimension(D)) , index-list-to-tuple(enumerate(D) ) ) ) ) .
+     
+*** reduce-list
+  ceq reduce-list-tup( E EL ) = tup( E, reduce-list-tup( EL ) ) if EL =/= nil .
+  eq reduce-list-tup( E ) = E .
+  ceq reduce-list( O , E EL ) = O[ E , reduce-list( O , EL ) ] if EL =/= nil .
+  eq reduce-list( O , E ) = E .
+  eq reduce-list( O , nil ) = null .
+
+*** index -> Ex{Rat-Alg}
+  eq index-list-to-tuple( { RL } IL ) = list-to-tuple( RL ) index-list-to-tuple( IL ) .
+  eq index-list-to-tuple( nil ) = nil .
+*** list{Rat} -> Ex{Rat-Alg}
+  ceq list-to-tuple( z RL ) = tup( r(z) , list-to-tuple( RL ) ) if RL =/= nil .
+  eq list-to-tuple( z ) = r(z) .
+  eq list-to-tuple( nil ) = NaE .
+  ***eq list-to-tuple( NaE ) = null .
+*** ExList{Rat-Alg} -> List{Index}
+  ceq tuple-list-to-index( Er ErL ) = { & evaluate( Er ) } tuple-list-to-index( ErL ) if Er =/= null .
+  eq tuple-list-to-index( null ErL ) = tuple-list-to-index(ErL) .
+  eq tuple-list-to-index( nil ) = nil .
+ 
+  eq for-list( E , I IL ) = append(E @ I, for-list( E , IL )) .
+  eq for-list( E , nil ) = nil .
+  
+  *** simple-reduce 
+  *** reduces along dimension using operator
+  eq [index] : index( simple-reduce(O,R)[E] , I ) = index( reduce-list( O , for-list( E, enumerate( R ) ) ), I ) .
+
+endfm
+

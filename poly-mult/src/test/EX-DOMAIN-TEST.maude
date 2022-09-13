@@ -1,0 +1,45 @@
+load ../util/UNIQ .
+load ../util/LABEL .
+load ../lang/EX-LANG .
+load ../types/RAT-ALG .
+load ../lang/LAMBDA .
+load ../lang/EX-DOMAIN .
+
+fmod DOMAIN-TEST is
+  pr EX-DOMAIN{Rat-Alg} .
+
+  op myf : -> LabelFunc{Rat-Alg} .
+  op myf2 : -> LabelFunc{Rat-Alg} .
+
+  op three-to-two : -> Lambda .
+  eq three-to-two = lambda( l("z") l("j") l("i") , tup( l("z") of rat , l("j") of rat ) ) . 
+  op ipj : -> Lambda .
+  eq ipj = lambda( l("i") l("j") , ADD[ l("i") of rat , l("j") of rat ] ) .
+  op two-to-one : -> Lambda .
+  eq two-to-one = lambda( l("i") l("j"), l("j") of rat) .  
+
+  op ar234 : -> Rat-Type .
+  eq type-domain( ar234 ) = < 0,2 > x ( < 0,3 > x < 0,4 > ) .
+  eq type-check(ar234) = ar234 .
+  
+  op ar23 : -> Rat-Type .
+  eq type-domain( ar23 ) =  < 0,2 > x < 0,3 > .
+  eq index-type(ar23,I) = index-type(ARR(< 0,2 > ,ARR(< 0,3 >,rat)),I) .
+  eq type-check(ar23) = ar23 .
+  
+  eq type-domain(rat) = point .
+
+   
+  var E : Ex{Rat-Alg} .
+  var z i j n n' : Rat .
+  var I : Index .
+
+  eq index-type(ar234,{z j i}) = rat .
+  ***eq define( f[E] ) = for(f,< 0,2 >)[E] .
+  ***eq define( f @ {z}[E] ) = reduce(ADD,two-to-one)[split(3)[E]] @ {z} .
+  eq define( myf[E],ARR(< 0,n >,rat) ) = for(myf, < 0,n >)[E] .
+  eq define( myf @{i}[E], ARR( < 0,n >, rat)) = MULT[ simple-reduce(ADD,< 0,n >)[E] , r(i)  ] .
+  eq define( myf2 @{z j i}[E],ar23 ) = MULT[E @ {i j},r(z)] .
+
+endfm
+

@@ -1,0 +1,5 @@
+r(3)
+tup(ident((MULT).Rat-Oper, rat), r(2))
+r(-5)
+ident((MULT).Rat-Oper, rat)
+r(3)

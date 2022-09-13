@@ -1,0 +1,167 @@
+***(
+dependencies
+  LABEL
+)
+
+fmod OPER-FUNC is
+  sort Oper .
+  sort Func .
+  op MULT : -> Oper .
+  op ADD : -> Oper .
+  op NEG : -> Func .
+  op M-INV : -> Func .
+endfm
+
+fth ALGEBRA is
+  sort Type .
+  sort Elt .
+  sort Oper .
+  sort Func .
+  op ADD : -> Oper .
+  op MULT : -> Oper .
+  op NEG : -> Func .
+  op M-INV : -> Func .
+endfth
+
+
+fmod EX-LIST{A :: ALGEBRA} is
+  sort Ex{A} .
+  sort ExList{A} .
+  
+  subsort Ex{A} < ExList{A} .
+  op _ _ : ExList{A} ExList{A} -> ExList{A} [assoc id: nil] .
+  op append : ExList{A} ExList{A} -> ExList{A} .
+  op nil : -> ExList{A} .
+  var EL EL2 : ExList{A} .
+  eq append(EL,EL2) = EL EL2 .
+endfm
+
+fmod EX-LANG{A :: ALGEBRA} is
+  pr LABEL .
+  pr RAT .
+  pr STRING .
+  pr EX-LIST{A} .
+
+  sort Terminal{A} .
+  sort TypedTerminal{A} .
+  sort Tup{A} .
+  sort NullElt{A} .
+  sort TypeError{A} .
+
+  subsort Label < Terminal{A} .
+  subsort A$Elt < TypedTerminal{A} < Ex{A} .
+  subsort Tup{A} < A$Type .
+  subsort TypeError{A} < A$Type .
+  subsort NullElt{A} < A$Elt .
+  
+  op _ of _ : Terminal{A} A$Type -> TypedTerminal{A} .
+  op tup : Ex{A} Ex{A} -> Ex{A} . 
+  op Tup : A$Type A$Type -> A$Type .
+  op type : Ex{A} -> A$Type .
+  op _[_,_] : A$Oper Ex{A} Ex{A} -> Ex{A} .
+  op _[_] : A$Func Ex{A} -> Ex{A} .
+  op image-type : A$Func A$Type -> A$Type .
+  op evaluate : Ex{A} -> A$Elt .
+  op replace : Ex{A} Label Ex{A} -> Ex{A} .
+  op substitute : Ex{A} Label Ex{A} -> Ex{A} .
+  op find-op : Ex{A} A$Oper -> ExList{A} .
+  op find-func : Ex{A} A$Func -> ExList{A} .
+  op evaluate : Ex{A} -> A$Elt .
+  op evaluate-help : Ex{A} A$Type -> A$Elt .
+  op map : A$Func ExList{A} -> ExList{A} .
+  op select : A$Func Ex{A} -> A$Func .
+  op select-help : Ex{A} Ex{A} Ex{A} -> Ex{A} .
+  op value-append : A$Elt A$Elt -> A$Elt .
+  op null : -> Ex{A} .
+  op nullT : -> A$Type .
+  op NaE : -> NullElt{A} .
+  op type-check : A$Type -> A$Type .
+  op Type-Error : A$Type String -> TypeError{A} .
+  op ident : A$Oper A$Type -> Ex{A} .
+
+
+  vars F F2 : A$Func .
+  vars O O2 : A$Oper .
+  vars TT : TypedTerminal{A} .
+  vars Term : Terminal{A} .
+  var L L2 : Label .
+  vars T T2 : A$Type .
+  vars EX EX2 EX3 : Ex{A} .
+  var EL : ExList{A} .
+  
+  eq type( Term of T ) = T .
+  eq type( O[EX, EX2] ) = type-check(type(EX)) . *** assumes type EX same as type EX2, should have type check
+  eq type( F[EX] ) = image-type(F,type-check(type(EX))) .
+  eq type( tup( EX , EX2 ) ) = Tup( type-check(type( EX )), type-check(type( EX2 )) ) .
+  eq type-check( Tup(T,T2) ) = Tup(type-check(T),type-check(T2)) . 
+
+
+  *** EX -> Label
+  ceq replace( F[EX] , L , EX3 ) = F[replace(EX,L,EX3)] if not (EX3 == F[EX]) .
+  ceq replace( O[ EX, EX2 ] , L , EX3 ) = O[replace(EX,L,EX3),replace(EX2,L,EX3)] if not EX3 == O[EX,EX2] .
+  ceq replace( tup( EX, EX2 ) , L , EX3 ) = tup(replace(EX,L,EX3),replace(EX2,L,EX3)) if not EX3 == tup(EX,EX2) .
+  ceq replace( TT , L , EX ) = TT if not EX == TT .
+  eq replace( EX, L , EX ) = L of type(EX) .
+  ceq replace( ident(O,T), L, EX) = ident(O,T) if ident(O,T) =/= EX .
+
+  *** Label -> Eq 
+  eq substitute( F[EX] , L , EX2 ) = F[substitute( EX , L , EX2)] .
+  eq substitute( O[EX,EX2] , L , EX3 ) = O[substitute( EX , L , EX3), substitute( EX2 , L , EX3)] .
+  eq substitute( tup(EX,EX2) , L , EX3 ) = tup(substitute( EX , L , EX3), substitute( EX2 , L , EX3)) .
+  eq substitute( L of T , L , EX2 ) = EX2 .
+  ceq substitute( L of T , L2 , EX2 ) = L of T if L =/= L2 .
+  eq substitute( TT , L , EX ) = TT . *** doesn't allow L of T to change type, probably a good thing  
+  eq substitute(ident(O,T), L , EX) = ident(O,T) . 
+
+  eq find-op( O[EX, EX2] , O ) = append(append(O[EX,EX2], find-op(EX,O)), find-op(EX2,O)) .
+  ceq find-op( O[EX, EX2] , O2 ) = append( find-op(EX,O2), find-op(EX2,O2)) if O =/= O2 .
+  eq find-op( F[EX] , O ) = find-op(EX,O) .
+  eq find-op(tup(EX,EX2) , O ) = append( find-op(EX,O), find-op(EX2,O)) .
+  eq find-op( TT , O ) = nil .
+  
+  eq find-func( O[EX, EX2] , F ) = append( find-func(EX,F), find-func(EX2,F)) .
+  eq find-func( F[EX] , F ) = append(F[EX] , find-func(EX,F)) .
+  eq find-func( F[EX], F2 ) = find-func(EX,F2) [owise].
+  eq find-func(tup(EX,EX2) , F ) = append( find-func(EX,F), find-func(EX2,F)) .
+  eq find-func( TT , F ) = nil . 
+
+  eq evaluate( F[EX] ) = evaluate-help( F[EX] , type(EX) ) . 
+  eq evaluate( O[EX,EX2] ) = evaluate-help( O[EX,EX2] , type(EX) ) .
+  eq evaluate( tup( EX, EX2 ) ) = tup( evaluate(EX) , evaluate(EX2) ) .
+  eq evaluate( ae:A$Elt ) = ae:A$Elt .
+
+  
+  eq map( F , EX EL ) = append(F[EX] , map(F , EL ) ) .
+  eq map( F , nil ) = nil .
+  
+  eq select( F , EX )[ EX2 ] = select-help( evaluate(F[ EX2 ]) , EX , EX2 ) .
+  eq select-help( EX , EX , EX2 ) = EX2 .
+  eq select-help( EX , EX2 , EX3 ) = null [owise] . *** we should do something like tup(E2,true) or tup(E2,false) to make select reusable, this implementation assumes select is only used to contruct lists
+  ***eq NeEL null  = NeEL .
+  ***eq null NeEL = NeEL .
+ 
+
+  eq F[null] = null .
+  eq O[EX,null] = EX .
+  eq O[null,EX] = EX .
+  eq tup( EX, null ) = EX .
+  eq tup( null, EX ) = EX .
+  eq evaluate( null ) = NaE .
+  eq substitute( null, L , EX ) = null .
+  eq type(null) = nullT .
+  eq replace(null, L , EX ) = null .
+  eq find-func(null, F ) = nil .
+  eq find-op(null, O) = nil . 
+
+  *** ADD/MULT 
+  eq O[EX,ident(O,T)] = EX .
+  eq O[ident(O,T),EX] = EX .
+  eq MULT[EX,ident(ADD,T)] = ident(ADD,T) .
+  eq MULT[ident(ADD,T),EX] = ident(ADD,T) .
+  eq type(ident(O,T)) = T .
+  eq evaluate(ident(O,T)) = ident(O,T) .
+  eq image-type(M-INV,T) = T .
+  eq image-type(NEG,T) = T .
+endfm
+
+

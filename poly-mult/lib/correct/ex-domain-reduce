@@ -1,0 +1,3 @@
+ADD[index(index(l("a") of ar23, {0}), {0}),index(index(l("a") of ar23, {1}), {0})]
+Index-Error(simple-reduce(ADD, < 0,2 >)[l("a") of ar23], {0 1}, "length of index is larger than dimension of expression")
+1

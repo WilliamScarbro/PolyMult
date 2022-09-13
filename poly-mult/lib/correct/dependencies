@@ -1,0 +1,20 @@
+f("LABEL")
+nil
+f("UNIQ")
+nil
+f("FACTOR")
+nil
+f("RAT-ALG")
+f("LABEL") f("EX-LANG")
+f("FField")
+f("LABEL") f("EX-LANG")
+f("EX-LANG")
+f("LABEL")
+f("LAMBDA")
+f("LABEL") f("EX-LANG") f("RAT-ALG")
+f("EX-DOMAIN")
+f("UNIQ") f("LABEL") f("EX-LANG") f("RAT-ALG") f("LAMBDA")
+f("FFIELD-DOMAIN")
+f("UNIQ") f("LABEL") f("EX-LANG") f("RAT-ALG") f("LAMBDA") f("EX-DOMAIN") f("FField")
+f("FFT")
+f("UNIQ") f("LABEL") f("EX-LANG") f("RAT-ALG") f("LAMBDA") f("EX-DOMAIN") f("FField") f("FFIELD-DOMAIN")

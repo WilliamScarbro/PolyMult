@@ -1,0 +1,47 @@
+
+
+***------------ RAT-EX-LANG----------------
+fmod RAT-ALG is
+  pr RAT .
+  pr OPER-FUNC * ( sort Oper to Rat-Oper , sort Func to Rat-Func ) .
+  sort Rat-Type .
+  sort Rat-Elt .
+  
+  op r : Rat -> Rat-Elt .
+  op rat : -> Rat-Type .
+  op REM : -> Rat-Oper .
+  op TRUNC : -> Rat-Func .
+endfm
+
+view Rat-Alg from ALGEBRA to RAT-ALG is
+  sort Type to Rat-Type .
+  sort Elt to Rat-Elt .
+  sort Func to Rat-Func .
+  sort Oper to Rat-Oper .
+  ***op MULT to MULT .
+  ***op ADD to ADD .
+endv
+
+fmod RAT-EX-LANG is
+  pr EX-LANG{Rat-Alg} .
+  pr LIST{Rat} .
+  op & _ : Rat-Elt -> List{Rat} .
+  var i : Rat .
+  var E E2 : Ex{Rat-Alg} . 
+  eq type(r(i)) = rat .
+  eq type-check(rat) = rat .
+  eq evaluate-help(MULT[E,E2],rat) = r(& evaluate(E) * & evaluate(E2)) .
+  eq evaluate-help(ADD[E,E2],rat) = r(& evaluate(E) + & evaluate(E2)) .
+  eq evaluate-help(NEG[E],rat) = r( - & evaluate(E)) .
+  eq evaluate-help(M-INV[E],rat) = r( 1 / & evaluate(E) ) .
+  eq evaluate-help(REM[E,E2],rat) = r( & evaluate(E) rem & evaluate(E2) ) . 
+  eq evaluate-help(TRUNC[E],rat) = r( trunc( & evaluate(E) ) ) .
+  eq & r(i) = i .
+  eq & tup(E,E2) = & E & E2 .
+  eq r(0) = ident(ADD,rat) .
+  eq & ident(ADD,rat) = 0 .
+  eq r(1) = ident(MULT,rat) .
+  eq & ident(MULT,rat) = 1 .
+endfm
+
+

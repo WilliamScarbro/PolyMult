@@ -1,0 +1,3 @@
+red dimension(domain(simple-reduce(ADD,< 0,2 > )[ l("a") of ar23 ] )) .
+red dimension(domain(l("a") of ARR(< 0,3 >,ARR(< 0,4 >,rat)))) .
+red dimension(domain(split(3)[l("a") of ARR(< 0,6 >,ARR(< 0,4 >,rat))])) .

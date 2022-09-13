@@ -1,0 +1,6 @@
+*** substitute
+red substitute( expand[l("a") of FF(3)] , l("a"), ff(2,3)) .
+red substitute( MULT[l("a") of FF(3),l("b") of FF(3)] , l("a"), ff(2,3)) .
+red substitute( ff(2,3) , l("a") , ff(4,3) ) .
+
+

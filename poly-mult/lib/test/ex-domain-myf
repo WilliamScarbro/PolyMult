@@ -1,0 +1,6 @@
+red type(myf[l("a") of ARR(< 0,3 >,rat)]) .
+red myf[l("a") of ARR(< 0,3 >,rat)] @ point-index .
+red myf[l("a") of ARR(< 0,3 >,rat)] @ {0} .
+red myf[l("a") of ARR(< 0,3 >,rat)] @ {0} @ point-index .
+red myf[l("a") of ARR(< 0,3 >,rat)] @ {1} @ point-index .
+red myf[l("a") of ARR(< 0,3 >,rat)] @ {2} @ point-index .

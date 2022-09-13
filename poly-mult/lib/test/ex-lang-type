@@ -1,0 +1,8 @@
+***type
+red type( l("a") of FF(7)) .
+red type( ff(2,5) ) .
+red type( MULT[ff(2,5),ff(4,5)]) .
+red type( expand[l("a") of FF(5)] ) .
+red type(tup(ff(2,5),ff(3,7))) .
+
+

@@ -1,0 +1,10 @@
+load ../util/LABEL .
+load ../lang/EX-LANG .
+load ../types/FField .
+
+
+fmod FFIELD-TEST is
+  pr FF-EX-LANG .
+
+  eq generator(7) = 3 .
+endfm

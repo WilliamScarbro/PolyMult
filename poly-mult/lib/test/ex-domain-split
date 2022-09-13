@@ -1,0 +1,2 @@
+
+red domain( split(3)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,ARR(< 0,6 >,rat))) ] ) .

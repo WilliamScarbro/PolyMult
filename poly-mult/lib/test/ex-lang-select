@@ -1,0 +1,5 @@
+*** select
+red select(add3,r(6))[r(3)] .
+red select(add3,r(6))[r(4)] .
+
+

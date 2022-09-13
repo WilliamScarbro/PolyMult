@@ -1,0 +1,28 @@
+
+fmod FFIELD-DOMAIN is
+  pr EX-DOMAIN{FField} .
+  pr FF-EX-LANG .
+
+  op conv : Rat Rat -> LabelFunc{FField} .
+  op conv-wrap : Rat Rat -> LabelFunc{FField} .
+ 
+  var E : Ex{FField} . 
+  var n p i j d N : Rat . 
+
+*** omega
+  ceq evaluate(index(l("omega") of ARR(< 0,n >,FF(p)),{ i }) ) = evaluate(POWER[ POWER[ ff(generator(p),p) , ff(n / p,p) ] , ff(i,p) ] ) if i < n .
+  ceq index(l("omega") of ARR(< 0,n >,FF(p)), { i } ) = index(l("omega") of ARR(< 0,n >,FF(p)), { i rem n } ) if i >= n .
+  eq index(l("omega") of ARR(< 0,n >,FF(p)), { 0 } ) = ff(1,p) .
+
+
+*** CONV 
+  eq type-domain(FF(p)) = point .
+  eq [ conv ] : define( conv(d,N)[E] , ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = for( conv(d,N),  < 0,n >)[ E ] . 
+  eq [ conv ] : define( conv(d,N) @{i}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) 
+    = ADD[ simple-reduce(ADD,< 0,i + 1 >)[for(conv(d,N) @{i} , < 0,i + 1 > )[E] ] , 
+        MULT[ l("omega") of ARR(< 0,N >,FF(p)) @ { d } , 
+              simple-reduce(ADD,< i + 1,n >)[for(conv-wrap(d,N) @{i}, < i + 1,n >)[E] ] ] ] . 
+  eq [ conv ] : define( conv(d,N) @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j} , E @ {1 (i + - j) } ] . 
+  eq [ conv ] : define( conv-wrap(d,N) @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j}, E @ {1 (n + i + - j) } ] . 
+
+endfm

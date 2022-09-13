@@ -1,0 +1,8 @@
+*** evaluate
+red evaluate( MULT[r(1),r(3)] ) .
+red evaluate( tup(r(1), r(2)) ) .
+red evaluate( NEG[r(5)] ) .
+red evaluate( TRUNC[MULT[r(4),M-INV[r(3)]]] ) .
+red evaluate( REM[r(10),r(7)] ) .
+
+

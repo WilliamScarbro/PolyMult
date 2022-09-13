@@ -1,0 +1,6 @@
+FF(4)
+FF(7)
+ident(ADD, FF(3))
+0
+ident(MULT, FF(5))
+1

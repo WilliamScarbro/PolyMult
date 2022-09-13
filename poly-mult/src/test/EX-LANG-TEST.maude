@@ -1,0 +1,17 @@
+load ../util/LABEL .
+load ../lang/EX-LANG .
+load ../types/RAT-ALG .
+load ../types/FField .
+
+fmod EX-LANG-TEST is
+  pr RAT-EX-LANG .
+  pr FF-EX-LANG .
+  op add3 : -> Rat-Func .
+  op expand : -> FF-Func .
+
+  var Eff : Ex{FField} .
+  var Er : Ex{Rat-Alg} .
+  var p : Rat .
+  eq image-type( expand, FF(p) ) = FF(p * 2) . 
+  eq evaluate-help(add3[Er], rat) = r( & evaluate(Er) + 3 ) .
+endfm

@@ -1,0 +1,47 @@
+
+load UNIQ .
+
+fmod FILE is
+  pr STRING .
+  sort File .
+  op f : String -> File .
+endfm
+
+view File from TRIV to FILE is
+  sort Elt to File .
+endv
+
+fmod DEPS is
+  pr UNIQ{File} .
+  op dep : File -> List{File} .
+  op DEP : File -> List{File} .
+  op expand : File -> List{File} .
+  op compare : List{File} File -> Bool . *** does File need to be loaded before List{File}?
+  op sort : List{File} -> List{File} .
+  op sort-help : List{File} File List{File} -> List{File} .
+  op dep-list : List{File} -> List{File} .
+
+  var F F2 : File .
+  var FL FL2 : List{File} .
+  var s : String .
+
+  eq DEP(F) = sort(uniq(dep-list(dep(F)))) .
+  ***ceq dep(F) = dep(F) dep(FL) if FL =/= nil .
+  ***eq dep(nil) = nil .
+  eq expand(F) =  F dep(F) .
+  eq dep-list(f(s) FL) = f(s) dep-list(FL) .
+  eq dep-list(nil) = nil .
+
+  eq compare(FL2 F FL, F) = true .
+  ceq compare(F FL, F2) = compare(DEP(F) FL, F2) if F =/= F2 .
+  eq compare(nil, F2) = false .  
+
+  eq sort(F FL) = sort-help(nil,F,FL) .
+  ceq sort-help(FL,F,F2 FL2) = sort-help(FL F, F2, FL2) if compare(F,F2) .
+  eq sort-help(FL,F,F2 FL2) = sort-help(FL F2,F,FL2) [owise] .
+  eq sort-help(FL,F,nil) = F sort(FL) .
+  eq sort(nil) = nil .
+
+
+  
+endfm

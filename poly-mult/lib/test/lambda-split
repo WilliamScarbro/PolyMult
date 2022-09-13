@@ -1,0 +1,2 @@
+red concat-lambda(3,4) .
+red evaluate(concat-lambda(3,4)[tup(r(1),tup(r(2),tup(r(5),r(5))))] ) .
