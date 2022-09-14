@@ -1,2 +1,2 @@
 myf @ {2}[l("a") of ARR(< 0,6 >, rat)]
-MULT[ADD[index(l("a") of ARR(< 0,6 >, rat), {0}),ADD[index(l("a") of ARR(< 0,6 >, rat), {1}),ADD[index(l("a") of ARR(< 0,6 >, rat), {2}),ADD[index(l("a") of ARR(< 0,6 >, rat), {3}),ADD[index(l("a") of ARR(< 0,6 >, rat), {4}),index(l("a") of ARR(< 0,6 >, rat), {5})]]]]],r(2)]
+MULT[simple-reduce(ADD, < 0,6 >)[l("a") of ARR(< 0,6 >, rat)],r(2)]

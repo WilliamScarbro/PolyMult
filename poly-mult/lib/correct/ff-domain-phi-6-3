@@ -1,0 +1,12 @@
+(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {0}),(ADD).FF-Oper[(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {2}),index(l("omega") of ARR(< 0,6 >, FF(7)), {2})],(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {4}),index(l("omega") of ARR(< 0,6 >, FF(7)), {4})]]]
+(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {0}),(ADD).FF-Oper[(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {2}),index(l("omega") of ARR(< 0,6 >, FF(7)), {4})],(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {4}),index(l("omega") of ARR(< 0,6 >, FF(7)), {2})]]]
+(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {0}),(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {2}),index(l("a") of ARR(< 0,6 >, FF(7)), {4})]]
+(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {1}),(ADD).FF-Oper[(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {3}),index(l("omega") of ARR(< 0,6 >, FF(7)), {2})],(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {5}),index(l("omega") of ARR(< 0,6 >, FF(7)), {4})]]]
+(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {1}),(ADD).FF-Oper[(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {3}),index(l("omega") of ARR(< 0,6 >, FF(7)), {4})],(MULT).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {5}),index(l("omega") of ARR(< 0,6 >, FF(7)), {2})]]]
+(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {1}),(ADD).FF-Oper[index(l("a") of ARR(< 0,6 >, FF(7)), {3}),index(l("a") of ARR(< 0,6 >, FF(7)), {5})]]
+6
+2
+6
+6
+2
+2

@@ -1,0 +1,11 @@
+red evaluate(POWER[ff(2,7) , ff(2,7) ]) .
+red evaluate(POWER[ff(2,7) , ff(3,7) ]) .
+red evaluate(POWER[ff(2,7) , ff(4,7) ]) .
+red evaluate(POWER[ff(3,7) , ff(2,7) ]) .
+red evaluate(POWER[ff(3,7) , ff(3,7) ]) .
+red evaluate(POWER[ff(3,7) , ff(4,7) ]) .
+red evaluate(POWER[ff(3,7) , ident(MULT,FF(7)) ]) .
+red evaluate(POWER[ff(3,7) , ff(1,7) ]) .
+red evaluate(POWER[ff(3,7) , ident(ADD,FF(7)) ]) .
+red evaluate(POWER[ff(3,7) , ff(0,7) ]) .
+

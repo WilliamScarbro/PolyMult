@@ -71,6 +71,7 @@ fmod INDEX-FUNC{A :: ALGEBRA} is
   eq append-index( F @ I , I2 ) = F @ index-append( I, I2 ) .
   ceq append-index( F , I ) = F @ I if not F :: IndexFunc{A} . 
   eq index( O[E,E2] , I) = O[E @ I,E2 @ I] .
+  ceq index( F[E], point-index ) = F[E] if not F :: LabelFunc{A} and not F :: IndexFunc{A} .
   eq index(index(TT, I) , point-index ) = index(TT, I) .
   eq index( TT , point-index ) = TT .
   eq index( ident(O,T) , point-index ) = ident(O,T) .
@@ -104,7 +105,6 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   op _[_] : DomainMap Domain -> Domain .
 
   op for : A$Func Domain -> A$Func .
-  op reduce : A$Oper Lambda -> LabelFunc{A} .
   op reduce-help : A$Oper Lambda Rat Index -> A$Func .
   op reduce-tup : Lambda -> A$Func .
   op reduceT : Lambda A$Type -> A$Type .
@@ -177,7 +177,6 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   eq index-type(T,{ nil }) = T .
   eq type-check(ARR(R,T)) = ARR(R,T) .
 
-  eq image-type( reduce( O , Y ) , T ) = reduceT( Y , T ) .
   eq image-type( reduce-help( O , Y , d , I ) , T ) = reduceT( Y , T ) .
   eq type-domain(reduceT( Y , T ) ) = reduceDM(Y)[type-domain(T)] .
   eq type-check(reduceT(Y,T)) = reduceT(Y,T) .
@@ -235,7 +234,7 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   eq reduce-list-tup( E ) = E .
   ceq reduce-list( O , E EL ) = O[ E , reduce-list( O , EL ) ] if EL =/= nil .
   eq reduce-list( O , E ) = E .
-  eq reduce-list( O , nil ) = null .
+  eq reduce-list( O , nil ) = ident(O,nullT) . *** dangerous, returns wrong type, should have better method, multiply reduce has not been tested
 
 *** index -> Ex{Rat-Alg}
   eq index-list-to-tuple( { RL } IL ) = list-to-tuple( RL ) index-list-to-tuple( IL ) .
@@ -255,6 +254,7 @@ fmod EX-DOMAIN{A :: ALGEBRA} is
   
   *** simple-reduce 
   *** reduces along dimension using operator
+  eq evaluate-help(simple-reduce(O,R)[E],T) = evaluate( reduce-list( O , for-list(E, enumerate(R)))) .
   eq [index] : index( simple-reduce(O,R)[E] , I ) = index( reduce-list( O , for-list( E, enumerate( R ) ) ), I ) .
 
 endfm

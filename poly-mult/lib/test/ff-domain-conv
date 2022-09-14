@@ -1,0 +1,5 @@
+red evaluate(conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0}) .
+red evaluate(conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {1}) .
+red evaluate(conv(7,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {2}) .
+
+

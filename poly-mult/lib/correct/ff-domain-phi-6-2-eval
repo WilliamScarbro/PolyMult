@@ -1,0 +1,6 @@
+(& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {0})) + ((2 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {2}))) rem 7 + (4 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {4}))) rem 7) rem 7) rem 7
+(& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {0})) + ((2 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {4}))) rem 7 + (4 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {2}))) rem 7) rem 7) rem 7
+(& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {0})) + (& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {2})) + & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {4}))) rem 7) rem 7
+(& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {1})) + ((2 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {3}))) rem 7 + (4 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {5}))) rem 7) rem 7) rem 7
+(& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {1})) + ((2 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {5}))) rem 7 + (4 * & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {3}))) rem 7) rem 7) rem 7
+(& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {1})) + (& evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {3})) + & evaluate(index(l("a") of ARR(< 0,6 >, FF(7)), {5}))) rem 7) rem 7

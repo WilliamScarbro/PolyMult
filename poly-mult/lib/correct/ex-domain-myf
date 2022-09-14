@@ -2,5 +2,5 @@ ARR(< 0,3 >, rat)
 for(myf, < 0,3 >)[l("a") of ARR(< 0,3 >, rat)]
 myf @ {0}[l("a") of ARR(< 0,3 >, rat)]
 ident(ADD, rat)
-ADD[index(l("a") of ARR(< 0,3 >, rat), {0}),ADD[index(l("a") of ARR(< 0,3 >, rat), {1}),index(l("a") of ARR(< 0,3 >, rat), {2})]]
-MULT[ADD[index(l("a") of ARR(< 0,3 >, rat), {0}),ADD[index(l("a") of ARR(< 0,3 >, rat), {1}),index(l("a") of ARR(< 0,3 >, rat), {2})]],r(2)]
+simple-reduce(ADD, < 0,3 >)[l("a") of ARR(< 0,3 >, rat)]
+MULT[simple-reduce(ADD, < 0,3 >)[l("a") of ARR(< 0,3 >, rat)],r(2)]

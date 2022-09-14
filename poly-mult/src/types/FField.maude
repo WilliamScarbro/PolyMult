@@ -28,6 +28,12 @@ fmod FF-EX-LANG is
   eq evaluate-help(MULT[E,E2],FF(p)) = ff(& evaluate(E) * & evaluate(E2), p) .
   eq evaluate-help(ADD[E,E2],FF(p)) = ff(& evaluate(E) + & evaluate(E2), p) .
   eq evaluate-help(NEG[E],FF(p)) = ff( - & evaluate(E), p) .
+  ceq evaluate-help(POWER[E,E2],FF(p)) = ff(0,p) if & evaluate(E2) == 0 .
+  ceq evaluate-help(POWER[E,E2],FF(p)) = evaluate(E) if & evaluate(E2) == 1 .
+  ceq evaluate-help(POWER[E,E2],FF(p)) = evaluate(MULT[ff(& evaluate(E),p),POWER[E,ff(& evaluate(E2) + - 1,p) ]]) 
+    if (& evaluate(E2)) rem 2 == 1 and (& evaluate(E2) =/= 1) .
+  ceq evaluate-help(POWER[E,E2],FF(p)) = evaluate(POWER[ff( ( & evaluate(E) ) * ( & evaluate(E) ) , p),ff(& evaluate(E2) / 2,p) ]) 
+    if (& evaluate(E2)) rem 2 == 0 and (& evaluate(E2)) =/= 0 .
   eq type( ff(r,p) ) = FF(p) . 
   eq type-check(FF(p)) = FF(p) .
   eq ff(0,p) = ident(ADD,FF(p)) .

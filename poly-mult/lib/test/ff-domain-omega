@@ -1,9 +1,36 @@
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 0 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 1 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 2 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 3 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 4 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 5 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 6 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 7 } )) .
-red evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 8 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 0 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 1 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 2 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 3 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 4 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 5 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 6 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 7 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 8 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 0 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 1 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 2 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 3 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 4 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 5 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 6 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 7 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,6 >, FF(7)),{ 8 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 0 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 1 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 2 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 3 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 4 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 5 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 6 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 7 } )) .
+red & evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 8 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 0 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 1 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 2 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 3 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 4 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 5 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 6 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 7 } )) .
+red  evaluate(index(l("omega") of ARR(< 0,8 >, FF(17)),{ 8 } )) .

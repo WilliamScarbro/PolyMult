@@ -1,0 +1,36 @@
+1
+3
+2
+6
+4
+5
+1
+3
+2
+ident((MULT).FF-Oper, FF(7))
+ff(3, 7)
+ff(9, 7)
+ff(6, 7)
+ff(4, 7)
+ff(12, 7)
+ident((MULT).FF-Oper, FF(7))
+ff(3, 7)
+ff(9, 7)
+1
+9
+13
+15
+16
+8
+4
+2
+1
+ident((MULT).FF-Oper, FF(17))
+ff(9, 17)
+ff(81, 17)
+ff(117, 17)
+ff(169, 17)
+ff(144, 17)
+ff(208, 17)
+ff(36, 17)
+ident((MULT).FF-Oper, FF(17))

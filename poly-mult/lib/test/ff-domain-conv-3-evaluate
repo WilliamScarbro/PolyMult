@@ -1,0 +1,25 @@
+red l("inputs") .
+red evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) , {0 0} ) ) .
+red evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) , {0 1} ) ) .
+red evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) , {0 2} ) ) .
+red evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) , {1 0} ) ) .
+red evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) , {1 1} ) ) .
+red evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) , {1 2} ) ) .
+
+red l("eval conv(6,6)") .
+red & evaluate(conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0} @ point-index  ) .
+red & evaluate(conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {1} @ point-index  ) .
+red & evaluate(conv(6,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {2} @ point-index  ) .
+
+
+red l("eval conv(3,6)") .
+red & evaluate(conv(3,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0} @ point-index  ) .
+red & evaluate(conv(3,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {1} @ point-index  ) .
+red & evaluate(conv(3,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {2} @ point-index  ) .
+
+red l("eval conv(2,6)") .
+red & evaluate(conv(2,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {0} @ point-index  ) .
+red & evaluate(conv(2,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {1} @ point-index  ) .
+red & evaluate(conv(2,6)[ l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7))) ] @ {2} @ point-index  ) .
+
+

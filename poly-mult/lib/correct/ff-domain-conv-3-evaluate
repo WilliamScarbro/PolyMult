@@ -1,0 +1,19 @@
+l("inputs")
+ident((ADD).FF-Oper, FF(7))
+ident((MULT).FF-Oper, FF(7))
+ff(2, 7)
+ident((MULT).FF-Oper, FF(7))
+ff(2, 7)
+ff(3, 7)
+l("eval conv(6,6)")
+0
+0
+4
+l("eval conv(3,6)")
+0
+2
+4
+l("eval conv(2,6)")
+0
+6
+4

@@ -99,10 +99,10 @@ fi
 diff $correct $th/$test_name-result > $th/$test_name-diff
 
 if [[ ! -z "`cat $th/$test_name-diff`" ]]; then
-  echo "---" 1>&2
-  echo "Test fail on input $test_name" 1>&2
-  cat $correct 1>&2
-  cat $th/$test_name-result 1>&2
-  echo "---" 1>&2
+  echo "---" 
+  echo "Test fail on input $test_name" 
+  cat $correct 
+  cat $th/$test_name-result
+  echo "---"
   exit 1;
 fi

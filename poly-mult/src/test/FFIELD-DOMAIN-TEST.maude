@@ -6,3 +6,18 @@ load ../lang/LAMBDA .
 load ../lang/EX-DOMAIN .
 load ../types/FField .
 load ../types/FFIELD-DOMAIN .
+
+
+fmod FFIELD-DOMAIN-TEST is
+  pr FFIELD-DOMAIN .
+  
+  var i j : Rat .
+  eq generator(7) = 3 .
+  eq generator(17) = 3 .
+
+  eq evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,3 >, FF(7))) , { i j } )) = ff(i + j ,7) .
+  eq evaluate(index( l("a") of ARR(< 0,2 >,ARR(< 0,4 >, FF(17))) , { i j } )) = ff(i + j ,17) .
+  eq evaluate(index( l("a") of ARR(< 0,6 >, FF(7)) , { j } )) = ff(j ,7) .
+  eq evaluate(index( l("a") of ARR(< 0,8 >, FF(17)) , { j } )) = ff(j ,17) .
+  eq evaluate(index( l("a") of ARR(< 0,4 >, FF(17)) , { j } )) = ff(j ,17) .
+endfm

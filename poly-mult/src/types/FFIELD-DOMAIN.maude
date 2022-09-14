@@ -5,12 +5,14 @@ fmod FFIELD-DOMAIN is
 
   op conv : Rat Rat -> LabelFunc{FField} .
   op conv-wrap : Rat Rat -> LabelFunc{FField} .
+  op phi : Rat Rat Rat -> LabelFunc{FField} .
+  op phi-inv : Rat Rat Rat -> LabelFunc{FField} .
  
   var E : Ex{FField} . 
-  var n p i j d N : Rat . 
+  var n p i j d N k z m : Rat . 
 
 *** omega
-  ceq evaluate(index(l("omega") of ARR(< 0,n >,FF(p)),{ i }) ) = evaluate(POWER[ POWER[ ff(generator(p),p) , ff(n / p,p) ] , ff(i,p) ] ) if i < n .
+  ceq evaluate(index(l("omega") of ARR(< 0,n >,FF(p)),{ i }) ) = evaluate(POWER[ POWER[ ff(generator(p),p) , ff((p + -1) / n,p) ] , ff(i,p) ] ) if i < n .
   ceq index(l("omega") of ARR(< 0,n >,FF(p)), { i } ) = index(l("omega") of ARR(< 0,n >,FF(p)), { i rem n } ) if i >= n .
   eq index(l("omega") of ARR(< 0,n >,FF(p)), { 0 } ) = ff(1,p) .
 
@@ -24,5 +26,20 @@ fmod FFIELD-DOMAIN is
               simple-reduce(ADD,< i + 1,n >)[for(conv-wrap(d,N) @{i}, < i + 1,n >)[E] ] ] ] . 
   eq [ conv ] : define( conv(d,N) @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j} , E @ {1 (i + - j) } ] . 
   eq [ conv ] : define( conv-wrap(d,N) @{i j}[E], ARR(< 0,2 >,ARR(< 0,n >,FF(p) ) ) ) = MULT[ E @ {0 j}, E @ {1 (n + i + - j) } ] . 
+
+*** PHI
+  eq [phi] : define(phi(k,d,N)[E],ARR(< 0,n >,FF(p))) = for(phi(k,d,N),< 0,k >)[E] .
+  eq [phi] : define(phi(k,d,N)@{z}[E],ARR(< 0,n >,FF(p))) = for(phi(k,d,N)@{z},< 0,n / k >)[E] .
+  eq [phi] : define(phi(k,d,N)@{z j}[E],ARR(< 0,n >,FF(p))) = simple-reduce(ADD,< 0,k >)[ for(phi(k,d,N)@{z j},< 0,k >)[E]] .
+  eq [phi-3] : define(phi(k,d,N)@{z j i}[E],ARR(< 0,n >,FF(p))) = MULT[ split(n / k)[E] @ {i j} , l("omega") of ARR(< 0,N >,FF(p)) @ { ( d + z * N ) * (i / k) } ] .
+
+*** phi-inv
+  eq [phi-inv] : define(phi-inv(k,d,N)[E],ARR(< 0,k >,ARR(< 0,m >, FF(p)))) = concat(m)[for(phi-inv(k,d,N),< 0,k >)[E]] .
+  eq [phi-inv] : define(phi-inv(k,d,N)@{i}[E],ARR(< 0,k >,ARR(< 0,m >, FF(p)))) = for(phi-inv(k,d,N)@{i},< 0,m >)[E].
+  eq [phi-inv] : define(phi-inv(k,d,N)@{i j}[E],ARR(< 0,k >,ARR(< 0,m >, FF(p)))) = 
+    MULT[M-INV[ff(k,p)], simple-reduce(ADD,< 0,k >)[for(phi-inv(k,d,N)@{i j},< 0,k >)[E]]] .
+  eq [phi-inv] : define(phi-inv(k,d,N)@{i j z}[E],ARR(< 0,k >,ARR(< 0,m >, FF(p)))) =
+    MULT[ E @ {z j}, l("omega") of ARR(< 0,N >,FF(p)) @ { (-1) * ( d + z * N ) * (i / k) } ] .
+
 
 endfm

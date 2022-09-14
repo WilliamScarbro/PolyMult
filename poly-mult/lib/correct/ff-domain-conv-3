@@ -1,0 +1,3 @@
+(ADD).FF-Oper[simple-reduce(ADD, < 0,1 >)[for(conv(6, 6) @ {0}, < 0,1 >)[l("a") of ARR(< 0,2 >, ARR(< 0,3 >, FF(7)))]],simple-reduce(ADD, < 1,3 >)[for(conv-wrap(6, 6) @ {0}, < 1,3 >)[l("a") of ARR(< 0,2 >, ARR(< 0,3 >, FF(7)))]]]
+(ADD).FF-Oper[simple-reduce(ADD, < 0,2 >)[for(conv(6, 6) @ {1}, < 0,2 >)[l("a") of ARR(< 0,2 >, ARR(< 0,3 >, FF(7)))]],simple-reduce(ADD, < 2,3 >)[for(conv-wrap(6, 6) @ {1}, < 2,3 >)[l("a") of ARR(< 0,2 >, ARR(< 0,3 >, FF(7)))]]]
+(ADD).FF-Oper[simple-reduce(ADD, < 0,3 >)[for(conv(6, 6) @ {2}, < 0,3 >)[l("a") of ARR(< 0,2 >, ARR(< 0,3 >, FF(7)))]],simple-reduce(ADD, < 3,3 >)[for(conv-wrap(6, 6) @ {2}, < 3,3 >)[l("a") of ARR(< 0,2 >, ARR(< 0,3 >, FF(7)))]]]

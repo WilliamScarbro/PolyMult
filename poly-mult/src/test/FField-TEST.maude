@@ -7,4 +7,5 @@ fmod FFIELD-TEST is
   pr FF-EX-LANG .
 
   eq generator(7) = 3 .
+
 endfm

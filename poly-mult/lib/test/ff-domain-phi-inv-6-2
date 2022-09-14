@@ -1,0 +1,16 @@
+red l("phi-inv(2,6,6)") .
+red phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {0} @ point-index .
+red phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {1} @ point-index .
+red phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {2} @ point-index .
+red phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {3} @ point-index .
+red phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {4} @ point-index .
+red phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {5} @ point-index .
+
+red & evaluate(phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {0} @ point-index) .
+red & evaluate(phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {1} @ point-index) .
+red & evaluate(phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {2} @ point-index) .
+red & evaluate(phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {3} @ point-index) .
+red & evaluate(phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {4} @ point-index) .
+red & evaluate(phi-inv(2,6,6)[l("a") of ARR(< 0,2 >,ARR(< 0,3 >,FF(7)))] @ {5} @ point-index) .
+
+
