@@ -1,7 +1,10 @@
 --{-# LANGUAGE TypeSynonymInstances #-}
 --{-# LANGUAGE FlexibleInstances #-}
--- 
-module :FField where
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+--{-# LANGUAGE OverlappingInstances #-}
+
+module FField where
 
 
 import qualified Data.Set as Set
@@ -21,13 +24,16 @@ class ResidueRing a where
   one :: a
   zero :: a
 
-data ResInt = Res Integer Integer deriving (Show)
+data ResInt = Res Integer Integer  
 
 instance Residue ResInt where
   reduce (Res x 0) = Res x 0
   reduce (Res x p) = Res (mod x p) p
   comparable (Res x p) (Res y q) = p==q
-  
+
+instance Show ResInt where
+  show (Res x p) = show x ++ "%" ++ show p
+
 instance Eq ResInt where
   (==) = res_cmp (==)
   --x == y = get_rep x == get_rep y && comparable x y --get_mod x == get_mod y
@@ -43,6 +49,28 @@ instance ResidueRing ResInt where
   one = Res 1 0
   zero = Res 0 0
 
+--- FF : public interface
+type FF=Maybe ResInt
+
+ff :: Integral a => a -> a -> FF
+ff n p | is_prime p = Just (Res (toInteger n) (toInteger p))
+       | otherwise = Nothing
+       
+instance Num FF where
+  (+) = maybe_op add
+  negate = fmap neg
+  (-) = maybe_op sub
+  (*) = maybe_op mult
+  abs = id
+  signum x = 1
+  fromInteger x = Just (Res x 0)
+----
+
+maybe_op :: (a -> a -> Maybe a) -> (Maybe a -> Maybe a -> Maybe a)
+maybe_op op (Just x) (Just y) = op x y
+maybe_op op Nothing y = Nothing
+maybe_op op x Nothing = Nothing
+
 get_rep :: ResInt -> Integer
 get_rep res = let Res y p = reduce res in y
 
@@ -56,7 +84,7 @@ res_op :: (Integer -> Integer -> Integer) -> (ResInt -> ResInt -> Maybe ResInt)
 res_op op (Res x p) (Res y q) | (p /= q) && (p /= 0) && (q /= 0) = Nothing
                               | (p == 0) && (q /= 0) = res_op op (Res x q) (Res y q)
                               | (p /= 0) && (q == 0) = res_op op (Res x p) (Res y p)
-                              | (p == q) = Just (Res (op x y) p)
+                              | (p == q) = Just (reduce (Res (op x y) p))
 
 res_cmp :: (Integer -> Integer -> Bool) -> (ResInt -> ResInt -> Bool)
 res_cmp op (Res i p) (Res j q) | (p /= q) && (p /= 0) && (q /= 0) = False
@@ -80,16 +108,26 @@ is_generator :: ResInt -> Bool
 is_generator (Res x p) = ( toInteger . Set.size $ power_set (Res x p) ) == p-1
 --
 ---- Utility functions
-ff_generators :: Integer -> [ResInt]
-ff_generators p | is_prime p = map (set_rep p) $ filter (\x -> is_generator (Res x p) ) [1..p-1]
+ff_generators :: Integral a => a -> [ResInt]
+ff_generators p | is_prime p = let ip=toInteger p in map (set_rep ip) $ filter (\x -> is_generator (Res x ip) ) [1..ip-1]
                 | otherwise = []
-ff_generator :: Integer -> ResInt
+ff_generator :: Integral a => a -> ResInt
 ff_generator p = head (ff_generators p)
 --
 ff_inv :: ResInt -> Maybe ResInt
 ff_inv x | x==zero = Nothing
          | otherwise = let p=get_mod x in Just (fst ( head ( filter (\(y,z) -> z==Just one) [(y,x `mult` y) | y<-[Res i p| i<-[1..p-1]]] ) ) )
-  
+
+pow :: Integral a => ResInt -> a -> Maybe ResInt
+pow (Res x p) e = pow_help (Res 1 p) (Res x p) e
+pow_help :: Integral a => ResInt -> ResInt -> a -> Maybe ResInt
+pow_help y x 0 = Just y
+pow_help y x e | mod e 2 == 1 = do { sq <- mult x x
+                                   ; res <- mult y x
+                                   ; pow_help  res sq (div e 2) }
+               | mod e 2 == 0 = do { sq <- mult x x
+                                   ; pow_help y sq (div e 2) }
+               
 class ResidueRing a => FiniteField a where
   inv :: a -> Maybe a
   divi :: a -> a -> Maybe a
@@ -97,9 +135,4 @@ class ResidueRing a => FiniteField a where
 
 instance FiniteField ResInt where
   inv = ff_inv
- 
---  add ( Res i n  ) ( Res j m ) = if n == m then Just mod ( Res (i+j) n ) n else Nothing
---  mult ( Res i n  ) ( Res j m ) = if n == m then Just mod ( Res (i*j) n ) n else Nothing
---  sub ( Res i n  ) ( Res j m ) = if n == m then Just mod ( Res (i-j) n ) n else Nothing
---  zero = 
---
+
