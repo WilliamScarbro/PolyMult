@@ -55,7 +55,7 @@ type FF=Maybe ResInt
 ff :: Integral a => a -> a -> FF
 ff n p | is_prime p = Just (Res (toInteger n) (toInteger p))
        | otherwise = Nothing
-       
+
 instance Num FF where
   (+) = maybe_op add
   negate = fmap neg
@@ -127,7 +127,14 @@ pow_help y x e | mod e 2 == 1 = do { sq <- mult x x
                                    ; pow_help  res sq (div e 2) }
                | mod e 2 == 0 = do { sq <- mult x x
                                    ; pow_help y sq (div e 2) }
-               
+
+nth_root :: Integral a => a -> a -> FF
+nth_root b p | mod (p-1) b /= 0 = Nothing
+             | otherwise = pow (ff_generator p) (div (p-1) b)  
+
+splitting_prime :: Integral a => a -> a
+splitting_prime n = head (filter is_prime [n*i+1 | i<-[1..]])
+
 class ResidueRing a => FiniteField a where
   inv :: a -> Maybe a
   divi :: a -> a -> Maybe a
