@@ -76,7 +76,7 @@ WARNS := -Wall -WextXXXXXXra -pedantic # -pedantic warns on language standards
 CFLAGS := -O3 #$(STD) $(WARNS) c$(STACK)
 
 # Debug options
-DEBUG := -g3 -DDEBUG=1
+DEBUG := #-g3 -DDEBUG=1
 
 # Dependency libraries
 LIBS := # -lm  -I some/path/to/library

@@ -20,10 +20,9 @@
 
 #include "args.h"
 #include "colors.h"
-#include "LPerm.h"
-#include "Phi.h"
-#include "Gen.h"
+#include "Kernels.h"
 
+//#include "Interface.h"
 
 int* read_inputs(char* fname, int len){
   FILE* fp = fopen(fname,"r");
@@ -34,15 +33,18 @@ int* read_inputs(char* fname, int len){
   }
   int i=0;
   int num;
-  printf("FLAG1\n");
+  //printf("FLAG1\n");
   while(i<len && 1==fscanf(fp,"%d",&num)){
-    printf("read %d\n",num);
+    //printf("read %d\n",num);
     res[i++]=num;
   }
+  if (i!=len){
+    printf("Expected more elements in file. Expected %d got %d\n",len,i);
+    exit(1);
+  }
   return res;
-  // fp.fread(
 }
-  
+
 int* parse_ints(char* str, int len){
   int* res=malloc(len*sizeof(int));
   char* tok=strtok(str," ");
@@ -54,18 +56,20 @@ int* parse_ints(char* str, int len){
       printf("'%s' is not number\n",tok);
       exit(1);
     }
-
-	
     tok=strtok(NULL," ");
   }
   return res;
 }
-void trace(char* kernel, int size, int* params, int plen){
-  fprintf(stdout,GREEN "Executing %s size %d params ",kernel,size);
-  for(int i=0; i<plen; i++){
-    fprintf(stdout,GREEN "%d ",params[i]);
+
+void trace(char* kernel, int size){
+  fprintf(stdout,GREEN "Executing %s size %d\n",kernel,size);
+}
+
+void check_size(int actual, int expected){
+  if (actual!=expected){
+    printf("incorrect number of inputs, expected %d got %d",expected,actual);
+    exit(1);
   }
-  printf("\n");
 }
 
 void print_array(char* name,int* arr,int len){
@@ -76,8 +80,7 @@ void print_array(char* name,int* arr,int len){
   printf("\n");
 }
 
-int
-main (int argc, char* argv[])
+int main (int argc, char* argv[])
 {
 
     /* Read command line options */
@@ -92,31 +95,58 @@ main (int argc, char* argv[])
     fprintf(stdout, BROWN "kernel_name: %s\n" NO_COLOR, options.kernel_name);
     fprintf(stdout, BROWN "input_size: %d\n" NO_COLOR, options.input_size);
     fprintf(stdout, BROWN "use colors: %d\n" NO_COLOR, options.use_colors);
-      fprintf(stdout, BROWN "params: %s\n" NO_COLOR, options.params);
-      fprintf(stdout, BROWN "filename: %s\n" NO_COLOR, options.file_name);
+    fprintf(stdout, BROWN "filename: %s\n" NO_COLOR, options.file_name);
       
 #endif
 
       int n = options.input_size;
-      int p = options.prime;
-      int N = options.N;
       int* X = read_inputs(options.file_name,n);
       int* Y = malloc(n*sizeof(int));
-      int* W = w_powers(w,p);
+
+      int matched=0;
       
-      if (strcmp(options.kernel_name,"LPerm")==0){
-	int* params = parse_ints(options.params,LPERM_ARGS);
-	trace(options.kernel_name,n,params,LPERM_ARGS);
+      if (strcmp(options.kernel_name,"LPerm16_4")==0){
+	matched=1;
+	check_size(16,n);
+	trace(options.kernel_name,n);
 	print_array("input",X,n);
-	LPerm(n,params,X,Y);
+	LPerm16_4(X,Y);
 	print_array("result",Y,n);
       }
 
-      if (strcmp(options.kernel_name,"Phi")==0){
-	int* params = parse_ints(options.params,PHI_ARGS);
-	trace(options.kernel_name,n,params,PHI_ARGS);
-	Phi(n,params,X,Y,W);
+      if (strcmp(options.kernel_name,"Phi4")==0){
+	matched=1;
+	check_size(4,n);
+	trace(options.kernel_name,n);
+	print_array("input",X,n);
+	Phi4(X,Y);
+	print_array("result",Y,n);
       }
+      if (strcmp(options.kernel_name,"Phi4_inv")==0){
+	matched=1;
+	check_size(4,n);
+	trace(options.kernel_name,n);
+	print_array("input",X,n);
+	Phi4_inv(X,Y);
+	print_array("result",Y,n);
+      }
+      if (strcmp(options.kernel_name,"Phi8_id")==0){
+	matched=1;
+	check_size(8,n);
+	trace(options.kernel_name,n);
+	print_array("input",X,n);
+	Phi8_id(X,Y);
+	print_array("result",Y,n);
+      }
+
+      
+      if (!matched){
+	printf("kernel name %s did not match known kernels\n",options.kernel_name);
+	exit(1);
+      }
+      free(X);
+      free(Y);
+
       
     /* Do your magic here :) */
     /* inputs
