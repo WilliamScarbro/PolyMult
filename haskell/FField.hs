@@ -135,6 +135,8 @@ nth_root b p | mod (p-1) b /= 0 = Nothing
 splitting_prime :: Integral a => a -> a
 splitting_prime n = head (filter is_prime [n*i+1 | i<-[1..]])
 
+non_triv_factors :: Integral a => a -> [a]
+non_triv_factors n = filter (\x -> mod n x == 0 && x /= 1) ([2..(truncate . sqrt . fromIntegral $ n)]++[n])
 class ResidueRing a => FiniteField a where
   inv :: a -> Maybe a
   divi :: a -> a -> Maybe a
@@ -142,4 +144,3 @@ class ResidueRing a => FiniteField a where
 
 instance FiniteField ResInt where
   inv = ff_inv
-

@@ -29,6 +29,14 @@ ffVec n p f = Vec (matrix (fromIntegral n) 1 (\(x,y) -> Just (Res (toInteger (f 
 linearOp :: Integral a => a -> ((Int,Int)->b) -> LinearOp b
 linearOp n f = LO (matrix (fromIntegral n) (fromIntegral n) (\(x,y) -> f ((x-1),(y-1))))
 
+
+-- haskell matrices are 1 indexed :\
+get_el :: Int -> Int -> LinearOp a -> a
+get_el x y (LO m) = getElem (x+1) (y+1) m
+
+size :: LinearOp a -> Int
+size (LO m) = nrows m
+
 ----
 
 lo_op :: (Matrix a -> Matrix a -> Matrix a) -> (LinearOp a -> LinearOp a -> LinearOp a)
@@ -78,15 +86,16 @@ vv :: Vector FF -> Vector FF -> Maybe (Vector FF)
 vv (Vec v) (Vec v2) | ncols v /= nrows v2 = Nothing
                     | otherwise = Just (Vec (v*v2))
 
--- haskell matrices are 1 indexed :(
-get_el :: Int -> Int -> Matrix a -> a
-get_el x y m = getElem (x+1) (y+1) m
-
 tensor :: LinearOp FF -> LinearOp FF -> LinearOp FF
-tensor (LO m1) (LO m2) = let n1=nrows m1 in let n2=nrows m2 in
-  linearOp (n1 * n2) (\(x,y) -> (get_el (div x n2) (div y n2) m1) * (get_el (mod x n2) (mod y n2) m2))
-                   
--------
+tensor l1 l2 = let n1=size l1 in let n2=size l2 in
+  linearOp (n1 * n2) (\(x,y) ->  (get_el (div x n2) (div y n2) l1) * (get_el (mod x n2) (mod y n2) l2))
+
+tpose :: LinearOp FF -> LinearOp FF
+tpose l = linearOp (size l) (\(x,y) -> get_el y x l)
+
+--tpose :: Vector FF -> Vector FF
+--tpose v = Vector 
+---------
 
 
 mId :: Integral a => a -> LinearOp FF
@@ -99,24 +108,54 @@ perm n f = linearOp n (\(i,j) -> if f(j)==i then Just one else Just FField.zero)
 mL :: Integral a => a -> a -> LinearOp FF
 mL n k = let m = fromIntegral (div n k) in let ik = fromIntegral k in perm n (\x -> (div x ik) + m * (mod x ik))
 
+---
+
 mNTT :: Integral a =>  a -> a -> LinearOp FF
 mNTT n p = let w=nth_root n p in (linearOp n (\(i,j) -> w >>= (\x -> pow x (i*j) )))
 
 mNTT_inv :: Integral a => a -> a -> LinearOp FF
 mNTT_inv n p =
-  let w_inv=(nth_root (2*n) p) in
+  let w_inv=(nth_root n p) >>= inv in
     let n_inv=inv (Res (toInteger n) (toInteger p)) in
-      (linearOp n (\(i,j) -> n_inv * (gen_inv >>= (\x -> pow x (i*j)))))
+      (linearOp n (\(i,j) -> n_inv * (w_inv >>= (\x -> pow x (i*j)))))
 
 --phi n k d b p
 phi :: Int -> Int -> Int -> Int -> Int -> LinearOp FF
--- x,y -> let z=x//m , j=x%m, i=y//m, j'=y%m in if j==j' then w_b^(d+z*b)*i/k
-phi n k d b p = 
-  let w=nth_root b p in
-    let m=div n k in
-      linearOp n (\(x,y) -> if mod x m == mod y m then w >>= (\z -> pow z (div ((d+(div x m)*b)*(div y m)) k)) else 0)
-phi_inv :: Int -> Int -> Int -> Int -> Int LinearOp FF
+-- x,y -> let z=x//m , j=x%m, i=y//m, j'=y%m in if j==j' then w_b^(rd+z*b)*i/k
+phi n k d b p =
+  let rd = mod d b in
+    let w=nth_root b p in
+      let m=div n k in
+        linearOp n (\(x,y) -> if mod x m == mod y m then w >>= (\z -> pow z (div ((rd+(div x m)*b)*(div y m)) k)) else 0)
+
+phi_inv :: Int -> Int -> Int -> Int -> Int -> LinearOp FF
 phi_inv n k d b p =
-  let w_inv=inv (nth
-gamma :: n d b p =
+  let rd = mod d b in
+    let w_inv=(nth_root b p) >>= inv in
+      let k_inv=inv (Res (toInteger k) (toInteger p)) in
+        let m=div n k in
+          --linearOp n (\(x,y) -> if mod x m == mod y m then Just (Res (toInteger (div ((rd+(div x m)*b)*(div y m)) k)) (toInteger p)) else 0)
+          linearOp n (\(x,y) -> if mod x m == mod y m then k_inv * (w_inv >>= (\z -> pow z (div ((rd+(div x m)*b)*(div y m)) k))) else 0)
+        
+                
+gamma :: Int -> Int -> Int -> Int -> LinearOp FF
+gamma n d b p =
+  let w=nth_root b p >>= (\z -> pow z (div (b-d) n)) in
+    linearOp n (\(x,y) -> if x==y then w >>= (\z -> pow z x) else 0)
+
+gamma_inv :: Int -> Int -> Int -> Int -> LinearOp FF
+gamma_inv n d b p =
+  let w=nth_root b p >>= (\z -> pow z (div (b-d) n)) in
+    linearOp n (\(x,y) -> if x==y then w >>= (\z -> pow z (b-x)) else 0)
+
   
+----
+repeatLO :: Int -> LinearOp FF -> Maybe (LinearOp FF)
+repeatLO k l = Just (tensor (mId k) l)
+
+-- n == nrows (f i) \forall i
+extendLO :: Int -> Int -> (Int -> Maybe (LinearOp FF)) -> Maybe (LinearOp FF)
+extendLO n k f = Just (linearOp (n * k) (\(x,y) -> if div x n == div y n then (f (div x n)) >>= (\g -> get_el (mod x n) (mod y n) g) else 0))
+
+-- ! Test repeat and extend !
+
