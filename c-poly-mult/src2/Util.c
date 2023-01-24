@@ -1,12 +1,18 @@
 #include "Util.h"
 
 
-void Id(interface_t inter){
-  for (int i=0; i<inter.n; i++){
-    inter.Y[i]=inter.X[i];
+void Id(int n, int* X, int* Y){
+  for (int i=0; i<n; i++){
+    Y[i]=X[i];
   }
 }
-  
+
+void swap(int **X, int **Y){
+  int **temp=X;
+  X=Y;
+  Y=temp;
+}
+
 void swapInOut(interface_t* inter){
   int* temp=inter->X;
   inter->X=inter->Y;

@@ -14,7 +14,7 @@ void Phi_W(int w,int d,int N,int k,int p,int *W){
 }
 
 void Phi(int n,int k,int d,int N,int p,int *X,int *Y,int *W){
-  printf("Phi n:%d k:%d d:%d N:%dp:%d\n",n,k,d,N,p);
+  printf("Phi n:%d k:%d d:%d N:%d p:%d\n",n,k,d,N,p);
   int m=n/k;
   int z,j,i;
   for(z=0; z<k; z++){

@@ -105,6 +105,14 @@ int main (int argc, char* argv[])
 	K16(X,Y);
  	print_array("result",Y,n);
       }
+      if (strcmp(options.kernel_name,"Gamma4")==0){
+ 	matched=1;
+ 	check_size(4,n);
+ 	trace(options.kernel_name,n);
+ 	print_array("input",X,n);
+	Gamma4(&X,&Y);
+ 	print_array("result",Y,n);
+      }
       //      
 //      if (strcmp(options.kernel_name,"LPerm16_4")==0){
 //	matched=1;

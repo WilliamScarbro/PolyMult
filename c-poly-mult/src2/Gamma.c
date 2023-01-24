@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "Gamma.h"
 #include "Gen.h"
 
@@ -10,10 +12,10 @@ void Gamma_W(int w, int n, int d, int N, int p, int* W){
 
 void Gamma(int n, int d, int N, int p, int* X, int* Y, int* W){
   #ifdef DEBUG
-  printf("Gamma_inv: n:%d d:%d N:%d p:%d\n",n,d,N,p);
+  printf("Gamma: n:%d d:%d N:%d p:%d\n",n,d,N,p);
   #endif
   for (int i=0; i<n; i++){
-    Y[i]=X[i]*W[i];
+    Y[i]=X[i]*W[i]%p;
   }
 }
 
@@ -29,7 +31,7 @@ void Gamma_inv(int n, int d, int N, int p, int* X, int* Y, int* W){
   printf("Gamma_inv: n:%d d:%d N:%d p:%d\n",n,d,N,p);
   #endif
   for (int i=0; i<n; i++){
-    Y[i]=X[i]*W[i];
+    Y[i]=X[i]*W[i]%p;
   }
 }
 

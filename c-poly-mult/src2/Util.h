@@ -5,8 +5,10 @@
 
 #include "interface.h"
 
-void Id(interface_t inter);
-  
+void Id(int n, int* X, int *Y);
+
+void swap(int** X,int** Y);
+
 void swapInOut(interface_t* inter);
 
 void print_array(char*,int*,int);
