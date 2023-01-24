@@ -5,52 +5,11 @@
 module Fourier where
 
 import FField
+import PolyRings
 import NTT
 import Data.List
 import Data.Maybe
-
-instance Show (Int -> Maybe Ring) where
-  show f = show (f 0)
-
-instance Eq (Int -> Maybe Ring) where
-  (==) f1 f2 = (f1 0) == (f2 0)
-
-data Ring = Base Int Int Int Int | Prod Int Int (Int -> Maybe Ring) | Quo Int Int Int Ring deriving (Show,Eq)
---
---instance Show Ring where
---  show (Base n d b p) = "Base "++show n++" "++show d++" "++show b++" "++show p
---  show (Prod n k f) = "Prod "++show n++" "++show k++" "++show (f 0)
---  show (Quo n d r) = "Quo "++show n++" "++show d++" "++show r
---
---instance Eq Ring where
---  (==) (Base n1 d1 b1 p1) (Base n2 d2 b2 p2) = n1 == n2 && d1==d2 && b1==b2 && p1==p2
---  (==) (Prod n1 k1 f1) (Prod n2 k2 f2) = n1==n2 && k1==k2 && (f1 0)==(f2 0)
---  (==) (Quo n1 d1 r1) (Quo n2 d2 r2) = n1==n2 && d1==d2 && r1==r2
---  (==) _ _ = False
---
-factor :: Int -> Ring -> Maybe Ring
-factor k (Base n d b p) = Just (Prod n k (\i -> Just (Base (n `div` k) ((d `div` k)+i*(b `div` k)) b p)))
-factor k r = Nothing
-
---xi
-label :: Int -> Ring ->  Maybe Ring
-label k (Base n d b p) = Just (Quo n k 0 (Base (n `div` k) d b p))
-label k r = Nothing
-
---gamma
-norm :: Ring -> Maybe Ring
-norm (Base n d b p) = Just (Quo n 1 (div d n) (Base n 0 b p))
-norm r = Nothing
-
---psi
-define :: Ring -> Maybe Ring
-define (Quo n k d0 (Base 1 d b p)) = Just (Base k (d0+d) b p)
-define r = Nothing
-
---zeta
-pushin :: Ring -> Maybe Ring
-pushin (Quo n kq d0 (Prod n2 kp f)) = Just (Prod n kp (\i -> (f i) >>= (\g -> Just (Quo n2 kq d0 g))))
-pushin r = Nothing
+import qualified Data.Map as Map (empty,insert,Map,member)
 
 ---
 
@@ -60,7 +19,7 @@ instance Show (Int -> Morphism) where
 instance Eq (Int -> Morphism) where
   (==) f1 f2 = (f1 0) == (f2 0)
   
-data Morphism = Compose Morphism Morphism | Extend Int Morphism | Repeat Int Morphism | Factor Int | Label Int | Norm | Define | Pushin | IdR deriving (Show,Eq)
+data Morphism = Inverse Morphism | Extend Int Morphism | Repeat Int Morphism | Factor Int | Label Int | Norm | Define | Pushin | IdR deriving (Show,Eq)
 
 --instance Show Morphism where
 --  show Compose m1 m2 = show m1++" . "++shw m2
@@ -74,7 +33,7 @@ apply (Factor k) x = (factor k) x
 apply (Norm) x = norm x
 apply Define x = define x
 apply Pushin x = pushin x
-apply (Compose m1 m2) x = (apply m2 x) >>= (\y -> apply m1 y)
+--apply (Compose m1 m2) x = (apply m2 x) >>= (\y -> apply m1 y)
 apply (Extend k0 m) (Prod n k f) | k0==k = Just (Prod n k (\i -> f i >>= (\g -> apply m g)))  --- ( int -> Maybe R ) >>= (Ring -> Maybe Ring)  :: Int -> Maybe Ring
                                  | otherwise = Nothing
 apply (Repeat i m) (Quo n j k x) | i==j = (apply m x) >>= (\y -> Just (Quo n j k y))
@@ -82,21 +41,6 @@ apply (Repeat i m) (Quo n j k x) | i==j = (apply m x) >>= (\y -> Just (Quo n j k
 apply IdR x = Just x
 
 ---
---- ( a -> M b ) -> (( a -> b ) -> M c) -> M c
---- ( a -> M b ) -> M ( a -> b )
---- (>>=) :: M a -> (a -> b) -> M b
---- (<*>) :: f ( a -> b ) -> f a -> f b
--- it is very difficult to insure all patterns get matched (with extend and repeat)
---- sol use parse pattern?
-
-
-
--- assume n|d
---match :: Ring -> [Morphism]
---match (Base n d b p) = [Factor i | i<-non_triv_factors(n)]
---  ++ [Label i | i<-non_triv_factors(n)]
---  ++ if d /= 0 then [Norm] else []
---match (Quo k d0 (Base n d b p)
 
 data Match = Match (Ring -> [Morphism])
 
@@ -113,9 +57,12 @@ matchMorphism :: Match
 matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor) <+> (Match matchLabel)
   <+> (Match matchDefine) <+> (Match matchPushin)  <+> (Match matchNorm) <+> (Match matchId)
 
+-- 
+
+-- insures that any matched morphism can be applied to entire domain of f 
 matchExtend :: Ring -> [Morphism]
 matchExtend (Prod n k f) = 
-  let morphs=[(maybeToList (f i)) >>= (\r -> match matchMorphism r) | i<-[0..k-1]]
+  let morphs=[(maybeToList (f i)) >>= (\r -> (match matchMorphism r)++(match (Match matchNormExtend) r)) | i<-[0..k-1]]
   in fmap (\x -> Extend k x) (foldr intersect (head morphs) morphs)
 matchExtend r = []
 
@@ -132,9 +79,14 @@ matchLabel (Base n d b p) = [Label k | k <- (filter (\x -> x /= n) (non_triv_fac
 matchLabel r = []
 
 matchNorm :: Ring -> [Morphism]
-matchNorm (Base n d b p) | n /= 1 = [Norm]
+matchNorm (Base n d b p) | d /= 0 && n /= 1 = [Norm]
                          | otherwise = []
 matchNorm r = []
+
+matchNormExtend :: Ring -> [Morphism]
+matchNormExtend (Base n d b p) | n /= 1 = [Norm]
+                               | otherwise = []
+matchNormExtend r = []
 
 matchDefine :: Ring -> [Morphism]
 matchDefine (Quo n k d0 (Base 1 d b p)) = [Define]
@@ -149,20 +101,23 @@ matchId r = [IdR]
 
 ---
 
-expand :: Maybe Ring -> [Maybe Ring]
-expand (Just r) = nub (fmap (\m -> apply m r) (match matchMorphism r))
-expand Nothing = []
+expand :: Ring -> [Ring]
+expand r = let mrl=nub (fmap (\m -> apply m r) (match matchMorphism r)) in foldr (++) [] (fmap maybeToList mrl)
 
-rec_expand :: [Maybe Ring] -> [Maybe Ring]
+
+rec_expand :: [Ring] -> [Ring]
 rec_expand lmr = nub (foldr (++) [] [[x] >>= expand | x <- lmr])
 
-n_expand :: Int -> [Maybe Ring] -> [Maybe Ring]
-n_expand n lmr | n>0 = n_expand (n-1) (rec_expand lmr)
-               | n<=0 = lmr
+--
+n_expand :: Int -> [Ring] -> [Ring]
+n_expand n lr | n>0 = n_expand (n-1) (rec_expand lr)
+             | n<=0 = lr
+
 
 ---
 
 define_morphism :: Morphism -> Ring -> Maybe (LinearOp FF)
+
 define_morphism (Factor k) (Base n d b p) = Just (phi n k d b p)
 define_morphism (Factor k) r = Nothing
 define_morphism (Label k) (Base n d b p) = Just (mL n k)
@@ -178,9 +133,23 @@ define_morphism (Repeat k0 m) r = Nothing
 define_morphism (Extend k0 m) (Prod n k f) = extendLO n k0 (\i -> (f i) >>= (\r -> define_morphism m r))
 define_morphism (Extend k0 m) r = Nothing
 
+morphism_to_kernel :: Morphism -> Ring -> Maybe Kernel
+morphism_to_kernel (Factor k) (Base n d b p) = Just (Phi n k d b p)
+morphism_to_kernel (Factor k) r = Nothing
+morphism_to_kernel (Label k) (Base n d b p) = Just (KL n k)
+morphism_to_kernel (Label k) r = Nothing
+morphism_to_kernel Norm (Base n d b p) = Just (Gamma n d b p)
+morphism_to_kernel Norm r = Nothing
+morphism_to_kernel Define (Quo n k d0 (Base 1 d b p)) = Just (KId n)
+morphism_to_kernel Define r = Nothing
+morphism_to_kernel Pushin (Quo n kq d0 (Prod n2 kp f)) = Just (KL n kq) -- check
+morphism_to_kernel Pushin r = Nothing
+morphism_to_kernel (Repeat k0 m) (Quo n k1 d r) = if k0 == k1 then (morphism_to_kernel m r) >>= (\lo -> Just (Kernel_Repeat n k0 lo)) else Nothing
+morphism_to_kernel (Repeat k0 m) r = Nothing
+morphism_to_kernel (Extend k0 m) (Prod n k f) = Just (Kernel_Extend n k0 (\i -> (f i) >>= (\r -> morphism_to_kernel m r)))
+morphism_to_kernel (Extend k0 m) r = Nothing
 
-
-                                                
+--
 --class Domain a b where
 --  isin :: a -> b -> Bool
 --

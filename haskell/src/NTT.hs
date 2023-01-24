@@ -157,5 +157,28 @@ repeatLO k l = Just (tensor (mId k) l)
 extendLO :: Int -> Int -> (Int -> Maybe (LinearOp FF)) -> Maybe (LinearOp FF)
 extendLO n k f = Just (linearOp (n * k) (\(x,y) -> if div x n == div y n then (f (div x n)) >>= (\g -> get_el (mod x n) (mod y n) g) else 0))
 
--- ! Test repeat and extend !
 
+instance Show (Int -> Maybe Kernel) where
+  show f = show (f 0)
+instance Eq (Int -> Maybe Kernel) where
+  f1 == f2 = (f1 0) == (f2 0)
+instance Ord (Int -> Maybe Kernel) where
+  f1 <= f2 = (f1 0) <= (f2 0)
+
+data Kernel = Phi Int Int Int Int Int | Gamma Int Int Int Int | KL Int Int | KId Int | Kernel_Extend Int Int (Int -> Maybe Kernel) | Kernel_Repeat Int Int Kernel deriving (Show,Eq,Ord)
+
+-- a bit hacky
+squashMaybeInt :: Maybe a -> (a -> Int) -> Int
+squashMaybeInt (Just a) f = f a
+squashMaybeInt Nothing f = 0
+
+sizeof :: Kernel -> Int
+sizeof (Phi n _ _ _ _) = n
+sizeof (Gamma n _ _ _) = n
+sizeof (KL n _) = n
+sizeof (KId n) = n
+sizeof (Kernel_Extend n _ f) = n*(squashMaybeInt (f 0) sizeof)
+sizeof (Kernel_Repeat n _ k) = n*(sizeof k)
+
+--define_kernel :: Kernel -> Maybe LinearOp FF
+--define_kernel (Phi n k d b p) = phi 
