@@ -54,15 +54,15 @@ infixl 2 <+>
 (<+>)=matchAdd
   
 matchMorphism :: Match
-matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor) <+> (Match matchLabel)
-  <+> (Match matchDefine) <+> (Match matchPushin)  <+> (Match matchNorm) <+> (Match matchId)
+matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor) <+> (Match matchLabel) <+> (Match matchDefine) <+> (Match matchPushin) -- <+> (Match matchId) <+> (Match matchNorm)
 
 -- 
 
 -- insures that any matched morphism can be applied to entire domain of f 
 matchExtend :: Ring -> [Morphism]
 matchExtend (Prod n k f) = 
-  let morphs=[(maybeToList (f i)) >>= (\r -> (match matchMorphism r)++(match (Match matchNormExtend) r)) | i<-[0..k-1]]
+--let morphs=[(maybeToList (f i)) >>= (\r -> (match matchMorphism r)++(match (Match matchNormExtend) r)) | i<-[0..k-1]]
+  let morphs=[(maybeToList (f i)) >>= (\r -> match matchMorphism r) | i<-[0..k-1]]
   in fmap (\x -> Extend k x) (foldr intersect (head morphs) morphs)
 matchExtend r = []
 
@@ -100,18 +100,6 @@ matchId :: Ring -> [Morphism]
 matchId r = [IdR]
 
 ---
-
-expand :: Ring -> [Ring]
-expand r = let mrl=nub (fmap (\m -> apply m r) (match matchMorphism r)) in foldr (++) [] (fmap maybeToList mrl)
-
-
-rec_expand :: [Ring] -> [Ring]
-rec_expand lmr = nub (foldr (++) [] [[x] >>= expand | x <- lmr])
-
---
-n_expand :: Int -> [Ring] -> [Ring]
-n_expand n lr | n>0 = n_expand (n-1) (rec_expand lr)
-             | n<=0 = lr
 
 
 ---

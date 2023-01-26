@@ -19,6 +19,9 @@ extra-source-files: CHANGELOG.md
 executable haskell
   main-is:             Main.hs
   other-modules:
+        Search,
+        PolyRings,
+        Fourier,
         CompileKernel,
         FField,
         NTT
