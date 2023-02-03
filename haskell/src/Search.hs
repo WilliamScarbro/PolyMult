@@ -29,7 +29,37 @@ terminal :: Eq b => Map.Map a [b] -> [a]
 terminal hmap = fst (Map.mapAccumWithKey (\accum key val -> (if val==[] then accum++[key] else accum,0)) [] hmap)
 
 
---- 
+---
+
+data Path = Path Ring [Morphism]
+
+path_get_start :: Path -> Ring
+path_get_start (Path start morphs) = start
+
+path_get_steps :: Path -> Maybe [Kernel] 
+path_get_steps (Path r (m:morphs)) = let new_r = apply m r in
+  let m_new_steps = (new_r >>= (\m_r -> path_get_steps (Path m_r morphs))) in
+    let m_ker_list = traverse id ([morphism_to_kernel m r]) in
+      m_ker_list >>= (\ker_list -> pure (++ ker_list) <*> m_new_steps)
+path_get_steps (Path start []) = Just []
+
+---
+
+buildForestPath :: Ring -> [Tree (Morphism)]
+buildForestPath start = unfoldForest buildForestPath_branch [(Just start,mi) | mi <- match matchMorphism start]
+
+buildForestPath_branch :: (Maybe Ring,Morphism) -> (Morphism, [(Maybe Ring, Morphism)])
+buildForestPath_branch (r,m) = let r2 = r >>= apply m in
+  (m,[(r2,mi) | mi <- buildForestPath_help r2])
+
+buildForestPath_help :: Maybe Ring -> [Morphism]
+buildForestPath_help (Just r) = match matchMorphism r
+buildForestPath_help Nothing = []
+
+-- Maybe Ring -> [Morphism]
+
+
+
 
 buildPathForest :: Ring -> [Tree (Maybe Kernel)]
 buildPathForest start = unfoldForest buildPathForest_branch [(Just start,mi) | mi <- match matchMorphism start]
@@ -54,10 +84,12 @@ buildRingTree_branch r = (r,foldl (++) [] (fmap maybeToList (fmap (\m -> apply m
 
 --
 
-randomWalk :: RandomGen b => [Tree (Maybe Kernel)] -> b -> Maybe [Kernel]
+randomWalk :: RandomGen b => [Tree (Maybe Kernel)] -> b -> (Maybe [Kernel],b)
 randomWalk forest g = let (index,new_g) = randomR (0,(length forest)-1) g in
   let tree = forest !! index in
-    traverse id (fst (randomWalk_help ([],new_g) tree))
+    let (walk,new_new_g) = randomWalk_help ([],new_g) tree in
+      (traverse id walk,new_new_g)
+--    (traverse id (fst (randomWalk_help ([],new_g) tree))
                    
 randomWalk_help :: (RandomGen b, Eq a) => ([a],b) -> Tree a -> ([a],b)
 randomWalk_help (walk,g) (Node c rest) = if rest == [] then (walk++[c],g) else
@@ -80,10 +112,6 @@ turtlesAWD cur turtle path = let morphs = (filter (\m -> is_par_morph turtle m) 
       turtlesAWD new_ring turtle (Just (uw_path ++ uw_ker))
       }
       
-is_par_morph :: Morphism -> Morphism -> Bool
-is_par_morph base (Repeat k m) = base == (Repeat k m) || is_par_morph base m
-is_par_morph base (Extend k m) = base == (Extend k m) || is_par_morph base m 
-is_par_morph base m = base == m
 
 --allPaths :: Ring -> [Kernel]
 --allPaths start = let pf = buildPathForest start in

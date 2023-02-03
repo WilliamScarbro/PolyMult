@@ -130,61 +130,19 @@ morphism_to_kernel Norm (Base n d b p) = Just (Gamma n d b p)
 morphism_to_kernel Norm r = Nothing
 morphism_to_kernel Define (Quo n k d0 (Base 1 d b p)) = Just (KId n)
 morphism_to_kernel Define r = Nothing
-morphism_to_kernel Pushin (Quo n kq d0 (Prod n2 kp f)) = Just (KL n kq) -- check
+morphism_to_kernel Pushin (Quo n kq d0 (Prod n2 kp f)) = Just (KT n kq (div n2 kp)) -- check
 morphism_to_kernel Pushin r = Nothing
 morphism_to_kernel (Repeat k0 m) (Quo n k1 d r) = if k0 == k1 then (morphism_to_kernel m r) >>= (\lo -> Just (Kernel_Repeat n k0 lo)) else Nothing
 morphism_to_kernel (Repeat k0 m) r = Nothing
 morphism_to_kernel (Extend k0 m) (Prod n k f) = Just (Kernel_Extend n k0 (\i -> (f i) >>= (\r -> morphism_to_kernel m r)))
-morphism_to_kernel (Extend k0 m) r = Nothing
+morphism_to_kernel (Extend k0 m) r = Nothing 
 
---
---class Domain a b where
---  isin :: a -> b -> Bool
---
---class Morphism a b where
---  source :: Domain c b => a -> b
---  target :: Domain c b => a -> b
---
-----apply :: (Domain c, Morphism a) => a -> b -> Maybe c
-----apply a b = if isin (source a) b then Just (target a) else Nothing
---
-----class Category a where
-----  morphisms :: a -> b -> [Morphism c]
-----
-----compose :: Morphism a -> Morphism b -> c -> Maybe d
---
------
---
---data Object a = O a
---data RedD=RedD
-----data BlueD=Blue
-----data GreenD=Green
----- 
-----data Red2Blue = Red2Blue
-----data Blue2Green = Blue2Green
-----data Green2Red = Green2Red
-----
---instance Domain RedD (Object a) where
---  isin (RedD) (O RedD) = True
---  isin (RedD) x = False
-----
---instance Domain BlueD where
---  isin (Blue) Blue = True
---  isin (Blue) x = False
---  
---instance Domain GreenD where
---  isin (Green) Green = True
---  isin (Green) x = False
---  
---instance Morphism Red2Blue where
---  source Red2Blue = Red
---  target Red2Blue = Blue
---  
---instance Morphism Blue2Green where
---  source Blue2Green = Blue
---  target Blue2Green = Green
---
---
---matchApply :: Morphism a => [a] -> b -> [c]
---matchApply z b = filter (\x -> x /= Nothing) (fmap (\x -> apply x b) z) 
---
+is_par_morph :: Morphism -> Morphism -> Bool
+is_par_morph base (Repeat k m) = base == (Repeat k m) || is_par_morph base m
+is_par_morph base (Extend k m) = base == (Extend k m) || is_par_morph base m 
+is_par_morph base m = base == m
+
+patternMatchMorphism :: (Morphism -> Bool) -> Morphism -> Bool
+patternMatchMorphism f (Repeat k m) = if f (Repeat k m) then True else patternMatchMorphism f m
+patternMatchMorphism f (Extend k m) = if f (Extend k m) then True else patternMatchMorphism f m
+patternMatchMorphism f m = f m

@@ -15,9 +15,9 @@ type PCC = Map.Map Kernel (Int,String)
 
 -- name -> path -> code
 compilePath :: Path -> PCC -> String
-compilePath p pcc = let compKers = fmap (\ker -> compileKernel 0 ker pcc) p in
-  let steps = foldr (++) [] (fmap maybeToList compKers) in
-    "\n  //Computation\n" ++ foldl (\x y -> (x++swap)++y) (head steps) (tail steps)
+compilePath path pcc = let compKers = fmap (\ker -> compileKernel 0 ker pcc) path in
+    let steps = foldr (++) [] (fmap maybeToList compKers) in
+      "\n  //Computation\n" ++ foldl (\x y -> (x++swap)++y) (head steps) (tail steps)
 
 --  fmap (Kernel -> String) [Kernel]
 -- Maybe (Integer,String) >>= (String -> Maybe String)
@@ -31,6 +31,7 @@ compileKernel :: Int -> Kernel -> PCC -> Maybe String
 --compileKernel = undefined
 compileKernel o (Phi n k d b p) pcc = Just ("  Phi("++(showTuple [n,k,d,b,p])++","++(endXY o)++","++(endW (Phi n k d b p) pcc)++");\n")
 compileKernel o (KL n k) pcc = Just ("  LPerm("++(showTuple [n,k])++","++(endXY o)++");\n")
+compileKernel o (KT n k l) pcc = Just ("  TPerm("++(showTuple [n,k,l])++","++(endXY o)++");\n")
 compileKernel o (KId n) pcc = Nothing
 compileKernel o (Gamma n d b p) pcc = Just ("  Gamma("++(showTuple [n,d,b,p])++","++(endXY o)++","++(endW (Gamma n d b p) pcc)++");\n")
 compileKernel o (Kernel_Repeat n k ker) pcc = Just (foldr (++) "" (foldr (++) [] (fmap maybeToList [compileKernel (o+(div n k)*i) ker pcc | i<-[0..k-1]])))
@@ -57,6 +58,7 @@ squashMaybeBool Nothing _ = False
 
 reqPCC :: Kernel -> Bool
 reqPCC (Phi _ _ _ _ _) = True
+reqPCC (KT _ _ _) = False
 reqPCC (KL _ _) = False
 reqPCC (KId _) = False
 reqPCC (Gamma _ _ _ _) = True
@@ -68,6 +70,7 @@ reqPCC (Kernel_Extend _ _ f) = squashMaybeBool (f 0) reqPCC
 listLeafs :: Kernel -> [Kernel]
 listLeafs (Phi n k d b p) = [Phi n k d b p]
 listLeafs (KL _ _) = []
+listLeafs (KT _ _ _) = []
 listLeafs (KId _) = []
 listLeafs (Gamma n d b p) = [Gamma n d b p]
 listLeafs (Kernel_Repeat n k ker) = listLeafs ker
@@ -95,7 +98,7 @@ associateKernel c _ = (0,"Error: Kernel does not need PCC")
 --
 
 initializePCC :: PCC -> String
-initializePCC pcc = let allocs =fst (Map.mapAccum (\pred (size,name) -> (pred++"  int* "++name++" = malloc("++show size++"*sizeof(int));\n",0)) "" pcc) in
+initializePCC pcc = let allocs =fst (Map.mapAccum (\pred (size,name) -> (pred++"  int* "++name++" = malloc("++show (size*size)++"*sizeof(int));\n",0)) "" pcc) in
   let assigns = fst (Map.mapAccumWithKey (\pred ker (size,name) -> (pred++(precompute ker name),0)) "" pcc) in
     "\n  //Pre-Compute Constants\n"++allocs ++ assigns
     
@@ -107,15 +110,47 @@ destroyPCC pcc = "\n  //free Pre-Computed Constants\n" ++ fst (Map.mapAccum (\pr
 
 --
 
-initialize_w :: (Integer,Integer) -> String
+initialize_w :: (Int,Int) -> String
 initialize_w (b,p) = "  int w = Nth_root("++show p++",generator("++show p++"),"++show b++");\n"
 --
 
-compile :: (Integer,Integer) -> String -> Path -> String
-compile bp name path = let iw = initialize_w bp in
-  let pcc = associateKernels path in
-    let ip = initializePCC pcc in
-      let cp = compilePath path pcc in
-        let dp = destroyPCC pcc in
-          "void "++name++"(int** X,int** Y){\n"++iw++ip++cp++dp++"}\n"
+imports = "#include <stdlib.h>\n#include \"timer.h\"\n#include \"NTLib.h\"\n#include \"Util.h\"\n#include \"LPerm.h\"\n#include \"Phi.h\"\n#include \"Gamma.h\"\n\n"
+
+
+main_func :: Int -> String -> Int -> String
+main_func size name path_parity = let fsig = "int main(int argc, char** argv){\n" in
+                        let alloc = "  int* X = malloc(sizeof(int)*"++show size++");\n  int* Y = malloc(sizeof(int)*"++show size++");\n\n" in
+                          let init = "  for(int i=0; i<"++show size++"; i++){\n    X[i]=i;\n  }\n" in
+                            let callfunc = "  "++name++"(&X,&Y);\n\n" in
+                              let res_var = if path_parity==0 then "X" else "Y" in
+                                let print_res = "  print_array(\"result\","++res_var++","++show size++");\n\n" in
+                                  let free = "  free(X);\n  free(Y);\n" in
+                                    fsig++alloc++init++callfunc++print_res++free++"}\n"
+
+start_timer = "\n  initialize_timer();\n  start_timer();\n"
+stop_timer = "\n  stop_timer();\n"
+report_timer = "  printf(\"Elapsed time: %f\\n\",elapsed_time());\n"
 --
+
+compile :: (Int,Int,Int) -> String -> Path -> String
+compile (n,b,p) name path = let filtered_path = filter (\k -> not (is_identity k)) path in
+  let iw = initialize_w (b,p) in
+    let pcc = associateKernels filtered_path in
+      let ip = initializePCC pcc in
+        let cp = compilePath filtered_path pcc in
+          let dp = destroyPCC pcc in
+            let mf = main_func n name (mod (length path) 2) in
+              imports++"void "++name++"(int** X,int** Y){\n"++iw++ip++start_timer++cp++stop_timer++report_timer++dp++"}\n"++mf
+
+--
+
+--
+
+is_identity :: Kernel -> Bool
+is_identity (Phi _ _ _ _ _) = False
+is_identity (Gamma _ _ _ _) = False
+is_identity (KL _ _) = False
+is_identity (KT _ _ _) = False
+is_identity (KId _) = True
+is_identity (Kernel_Extend _ _ f) = squashMaybeBool (f 0) is_identity
+is_identity (Kernel_Repeat _ _ k) = is_identity k

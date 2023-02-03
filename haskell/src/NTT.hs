@@ -5,6 +5,7 @@
 module NTT where
 
 import FField
+import PolyRings
 
 import Data.Matrix 
 --import qualified Data.Vector as Vector ( Vector, (!), generate)
@@ -165,20 +166,18 @@ instance Eq (Int -> Maybe Kernel) where
 instance Ord (Int -> Maybe Kernel) where
   f1 <= f2 = (f1 0) <= (f2 0)
 
-data Kernel = Phi Int Int Int Int Int | Gamma Int Int Int Int | KL Int Int | KId Int | Kernel_Extend Int Int (Int -> Maybe Kernel) | Kernel_Repeat Int Int Kernel deriving (Show,Eq,Ord)
+data Kernel = Phi Int Int Int Int Int | Gamma Int Int Int Int | KL Int Int | KT Int Int Int | KId Int | Kernel_Extend Int Int (Int -> Maybe Kernel) | Kernel_Repeat Int Int Kernel deriving (Show,Eq,Ord)
 
--- a bit hacky
-squashMaybeInt :: Maybe a -> (a -> Int) -> Int
-squashMaybeInt (Just a) f = f a
-squashMaybeInt Nothing f = 0
 
 sizeof :: Kernel -> Int
 sizeof (Phi n _ _ _ _) = n
 sizeof (Gamma n _ _ _) = n
+sizeof (KT n _ _) = n
 sizeof (KL n _) = n
 sizeof (KId n) = n
 sizeof (Kernel_Extend n _ f) = n*(squashMaybeInt (f 0) sizeof)
 sizeof (Kernel_Repeat n _ k) = n*(sizeof k)
+
 
 --define_kernel :: Kernel -> Maybe LinearOp FF
 --define_kernel (Phi n k d b p) = phi 
