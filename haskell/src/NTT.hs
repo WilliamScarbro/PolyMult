@@ -8,24 +8,13 @@ import FField
 import PolyRings
 
 import Data.Matrix 
---import qualified Data.Vector as Vector ( Vector, (!), generate)
-
---apply :: LinearOperato ResInt -> Vector ResInt -> Maybe (Vector (Maybe ResInt))
---apply (LOP n1 x) (VEC n2 y) | n1 /= n2 = Nothing
---                            | otherwise = Just (VEC n1 [foldr (\x -> \y -> do { ux <- x; uy <- y; add ux uy }) (Just zero) (zipWith mult xj y) | xj<-x])
---mat_ctor :: Integer -> (Integer -> Integer -> Maybe a) -> LinearOperator a
---mat_ctor :: 
-
---mv_mult :: Num a => Matrix a -> Vector a -> Vector a
---mv_mult m v = vectorize (m * (vertical v))
-
 
 
 data LinearOp a = LO (Matrix a)
 data Vector a = Vec (Matrix a)
 
 ffVec :: Integral a =>  a -> a -> (Int -> Int) -> Vector FF
-ffVec n p f = Vec (matrix (fromIntegral n) 1 (\(x,y) -> Just (Res (toInteger (f x)) (toInteger p))))
+ffVec n p f = Vec (matrix (fromIntegral n) 1 (\(x,y) -> Just (Res (toInteger (f (x-1))) (toInteger p))))
 
 linearOp :: Integral a => a -> ((Int,Int)->b) -> LinearOp b
 linearOp n f = LO (matrix (fromIntegral n) (fromIntegral n) (\(x,y) -> f ((x-1),(y-1))))
@@ -40,6 +29,10 @@ size (LO m) = nrows m
 
 ----
 
+toIntList :: Vector FF -> Maybe [Int]
+toIntList (Vec m) = let fflist = if ncols m > nrows m then [getElem 1 i m | i<-[1..ncols m]] else [getElem i 1 m | i<-[1..nrows m]] in
+  fmap (fmap (fromIntegral . get_rep)) (traverse id fflist)
+          
 lo_op :: (Matrix a -> Matrix a -> Matrix a) -> (LinearOp a -> LinearOp a -> LinearOp a)
 lo_op op (LO x) (LO y) = LO (op x y)
 

@@ -28,11 +28,9 @@ search_morphs [] hmap = hmap
 terminal :: Eq b => Map.Map a [b] -> [a]
 terminal hmap = fst (Map.mapAccumWithKey (\accum key val -> (if val==[] then accum++[key] else accum,0)) [] hmap)
 
-
 ---
 
-data Path = Path Ring [Morphism]
-
+data Path = Path Ring [Morphism] deriving Show
 path_get_start :: Path -> Ring
 path_get_start (Path start morphs) = start
 
@@ -40,8 +38,13 @@ path_get_steps :: Path -> Maybe [Kernel]
 path_get_steps (Path r (m:morphs)) = let new_r = apply m r in
   let m_new_steps = (new_r >>= (\m_r -> path_get_steps (Path m_r morphs))) in
     let m_ker_list = traverse id ([morphism_to_kernel m r]) in
-      m_ker_list >>= (\ker_list -> pure (++ ker_list) <*> m_new_steps)
+      m_ker_list >>= (\ker_list -> pure (ker_list ++) <*> m_new_steps)
 path_get_steps (Path start []) = Just []
+
+path_get_end :: Path -> Maybe Ring
+path_get_end (Path start (m:morphs)) = let new_start = apply m start in
+  new_start >>= (\r -> (path_get_end (Path r morphs)))
+path_get_end (Path cur []) = Just cur
 
 ---
 
@@ -56,6 +59,9 @@ buildForestPath_help :: Maybe Ring -> [Morphism]
 buildForestPath_help (Just r) = match matchMorphism r
 buildForestPath_help Nothing = []
 
+randomPath :: Ring -> Int -> Maybe Path
+randomPath start seed = let morphs = fst (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) (mkStdGen seed)) in
+  morphs >>= (\ms -> Just (Path start ms))
 -- Maybe Ring -> [Morphism]
 
 
@@ -84,7 +90,8 @@ buildRingTree_branch r = (r,foldl (++) [] (fmap maybeToList (fmap (\m -> apply m
 
 --
 
-randomWalk :: RandomGen b => [Tree (Maybe Kernel)] -> b -> (Maybe [Kernel],b)
+--randomWalk :: RandomGen b => [Tree (Maybe Kernel)] -> b -> (Maybe [Kernel],b)
+randomWalk :: (RandomGen b, Eq a) => [Tree (Maybe a)] -> b -> (Maybe [a],b)
 randomWalk forest g = let (index,new_g) = randomR (0,(length forest)-1) g in
   let tree = forest !! index in
     let (walk,new_new_g) = randomWalk_help ([],new_g) tree in
@@ -101,6 +108,11 @@ strTree :: Show a => Tree a -> String
 strTree (Node x rest) = show x ++ (foldr (++) "" [ (strTree r) | r <- rest] )
 
 --
+
+-- rewrite turtles to work with paths
+--turtles :: Ring -> Morphism -> Path
+--turtles cur turtle = let morphs = (filter (\m 0> is_par_morph turtle m) (match matchMorphism cur)) in
+--  if morphs then 
 
 turtlesAWD :: Ring -> Morphism -> Maybe [Kernel] -> Maybe [Kernel]
 turtlesAWD cur turtle path = let morphs = (filter (\m -> is_par_morph turtle m) (match matchMorphism cur)) in

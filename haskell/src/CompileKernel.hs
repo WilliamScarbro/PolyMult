@@ -9,20 +9,20 @@ import qualified Data.Map as Map (fromList,empty,insert,Map,member,lookup,mapWit
  
 --- [Kernel] --> C file
 
-type Path=[Kernel]
+type KList=[Kernel]
 type PCC = Map.Map Kernel (Int,String)
 
 
 -- name -> path -> code
-compilePath :: Path -> PCC -> String
-compilePath path pcc = let compKers = fmap (\ker -> compileKernel 0 ker pcc) path in
+compileKList :: KList -> PCC -> String
+compileKList path pcc = let compKers = fmap (\ker -> compileKernel 0 ker pcc) path in
     let steps = foldr (++) [] (fmap maybeToList compKers) in
       "\n  //Computation\n" ++ foldl (\x y -> (x++swap)++y) (head steps) (tail steps)
 
 --  fmap (Kernel -> String) [Kernel]
 -- Maybe (Integer,String) >>= (String -> Maybe String)
 
---compilePath p km = let steps = foldr (++) [] (fmap maybeToList (fmap (\ker -> compileKernel 0 ker (Map.lookup km) p)) in
+--compileKList p km = let steps = foldr (++) [] (fmap maybeToList (fmap (\ker -> compileKernel 0 ker (Map.lookup km) p)) in
 
 showTuple :: Show a => [a] -> String
 showTuple t = let st = fmap show t in foldl (\x y -> (x++","++y)) (head st) (tail st)
@@ -85,7 +85,7 @@ precompute (Gamma n d b p) pcc_name = "  Gamma_W(w,"++showTuple [n,d,b,p]++","++
 --
 --
 ----
-associateKernels :: Path -> PCC
+associateKernels :: KList -> PCC
 associateKernels p = let rp = nub (filter reqPCC (foldr (++) [] (fmap listLeafs p))) in
   Map.fromList [(rp!!i, associateKernel i (rp!!i)) | i<-[0..(length rp)-1]]
 --
@@ -114,7 +114,7 @@ initialize_w :: (Int,Int) -> String
 initialize_w (b,p) = "  int w = Nth_root("++show p++",generator("++show p++"),"++show b++");\n"
 --
 
-imports = "#include <stdlib.h>\n#include \"timer.h\"\n#include \"NTLib.h\"\n#include \"Util.h\"\n#include \"LPerm.h\"\n#include \"Phi.h\"\n#include \"Gamma.h\"\n\n"
+imports = "#include <stdlib.h>\n#include \"../timer.h\"\n#include \"../NTLib.h\"\n#include \"../Util.h\"\n#include \"../LPerm.h\"\n#include \"../Phi.h\"\n#include \"../Gamma.h\"\n\n"
 
 
 main_func :: Int -> String -> Int -> String
@@ -122,7 +122,7 @@ main_func size name path_parity = let fsig = "int main(int argc, char** argv){\n
                         let alloc = "  int* X = malloc(sizeof(int)*"++show size++");\n  int* Y = malloc(sizeof(int)*"++show size++");\n\n" in
                           let init = "  for(int i=0; i<"++show size++"; i++){\n    X[i]=i;\n  }\n" in
                             let callfunc = "  "++name++"(&X,&Y);\n\n" in
-                              let res_var = if path_parity==0 then "X" else "Y" in
+                              let res_var = if path_parity==0 then "Y" else "Y" in -- apparently we don't need this? short circuted for now
                                 let print_res = "  print_array(\"result\","++res_var++","++show size++");\n\n" in
                                   let free = "  free(X);\n  free(Y);\n" in
                                     fsig++alloc++init++callfunc++print_res++free++"}\n"
@@ -132,12 +132,12 @@ stop_timer = "\n  stop_timer();\n"
 report_timer = "  printf(\"Elapsed time: %f\\n\",elapsed_time());\n"
 --
 
-compile :: (Int,Int,Int) -> String -> Path -> String
+compile :: (Int,Int,Int) -> String -> KList -> String
 compile (n,b,p) name path = let filtered_path = filter (\k -> not (is_identity k)) path in
   let iw = initialize_w (b,p) in
     let pcc = associateKernels filtered_path in
       let ip = initializePCC pcc in
-        let cp = compilePath filtered_path pcc in
+        let cp = compileKList filtered_path pcc in
           let dp = destroyPCC pcc in
             let mf = main_func n name (mod (length path) 2) in
               imports++"void "++name++"(int** X,int** Y){\n"++iw++ip++start_timer++cp++stop_timer++report_timer++dp++"}\n"++mf

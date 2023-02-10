@@ -124,7 +124,7 @@ define_morphism (Extend k0 m) r = Nothing
 morphism_to_kernel :: Morphism -> Ring -> Maybe Kernel
 morphism_to_kernel (Factor k) (Base n d b p) = Just (Phi n k d b p)
 morphism_to_kernel (Factor k) r = Nothing
-morphism_to_kernel (Label k) (Base n d b p) = Just (KL n k)
+morphism_to_kernel (Label k) (Base n d b p) = Just (KL n (div n k))
 morphism_to_kernel (Label k) r = Nothing
 morphism_to_kernel Norm (Base n d b p) = Just (Gamma n d b p)
 morphism_to_kernel Norm r = Nothing
