@@ -54,8 +54,8 @@ infixl 2 <+>
 (<+>)=matchAdd
   
 matchMorphism :: Match
-matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor) <+> (Match matchLabel) <+> (Match matchDefine) <+> (Match matchPushin) -- <+> (Match matchId) <+> (Match matchNorm)
-
+--matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor) <+> (Match matchLabel) <+> (Match matchDefine) <+> (Match matchPushin) -- <+> (Match matchId) <+> (Match matchNorm)
+matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor)
 -- 
 
 -- insures that any matched morphism can be applied to entire domain of f 

@@ -41,11 +41,30 @@ path_get_steps (Path r (m:morphs)) = let new_r = apply m r in
       m_ker_list >>= (\ker_list -> pure (ker_list ++) <*> m_new_steps)
 path_get_steps (Path start []) = Just []
 
+path_get_morphs :: Path -> [Morphism]
+path_get_morphs (Path r morphs) = morphs
+
 path_get_end :: Path -> Maybe Ring
 path_get_end (Path start (m:morphs)) = let new_start = apply m start in
   new_start >>= (\r -> (path_get_end (Path r morphs)))
 path_get_end (Path cur []) = Just cur
 
+buildPath :: Ring -> (Ring -> Maybe Morphism) -> Maybe Path
+buildPath start f = buildPath_help start f start []
+buildPath_help :: Ring -> (Ring -> Maybe Morphism) -> Ring -> [Morphism] -> Maybe Path
+buildPath_help start f cur build = let morph = f cur in
+  if morph == Nothing then Just (Path start build) else do {
+    m <- morph;
+    new_cur <- apply m cur;
+    buildPath_help start f new_cur (build++(maybeToList morph)) }
+
+appendPath :: Path -> Path -> Maybe Path
+appendPath lhs rhs = do {
+  lend <- path_get_end lhs;
+  if lend == path_get_start rhs then Just (Path (path_get_start lhs) ((path_get_morphs lhs)++(path_get_morphs rhs))) else Nothing }
+
+takePath :: Int -> Path -> Path
+takePath i (Path s morphs) = let j=mod i (length morphs) in Path s (take j morphs)
 ---
 
 buildForestPath :: Ring -> [Tree (Morphism)]
@@ -62,10 +81,13 @@ buildForestPath_help Nothing = []
 randomPath :: Ring -> Int -> Maybe Path
 randomPath start seed = let morphs = fst (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) (mkStdGen seed)) in
   morphs >>= (\ms -> Just (Path start ms))
+
+
+
 -- Maybe Ring -> [Morphism]
 
 
-
+---
 
 buildPathForest :: Ring -> [Tree (Maybe Kernel)]
 buildPathForest start = unfoldForest buildPathForest_branch [(Just start,mi) | mi <- match matchMorphism start]
@@ -110,10 +132,16 @@ strTree (Node x rest) = show x ++ (foldr (++) "" [ (strTree r) | r <- rest] )
 --
 
 -- rewrite turtles to work with paths
---turtles :: Ring -> Morphism -> Path
---turtles cur turtle = let morphs = (filter (\m 0> is_par_morph turtle m) (match matchMorphism cur)) in
---  if morphs then 
+turtles :: Ring -> Morphism -> Maybe Path
+turtles start turtle = let findTurtle ring = let morphs = (filter (\m -> is_par_morph turtle m) (match matchMorphism ring)) in
+                             if morphs == [] then Nothing else Just (head morphs) in
+                         buildPath start findTurtle
 
+turtlesExtend :: Path -> Morphism -> Maybe Path
+turtlesExtend p1 turtle = do { p1_end <- path_get_end p1;
+                               p2 <- turtles p1_end turtle;
+                               appendPath p1 p2 }
+  
 turtlesAWD :: Ring -> Morphism -> Maybe [Kernel] -> Maybe [Kernel]
 turtlesAWD cur turtle path = let morphs = (filter (\m -> is_par_morph turtle m) (match matchMorphism cur)) in
   if morphs == [] then path else

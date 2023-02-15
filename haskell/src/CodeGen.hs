@@ -72,6 +72,9 @@ expandTerminal :: Ring -> Maybe [Int]
 expandTerminal (Prod n k f) = fmap (foldr (++) []) (traverse id [(f i) >>= expandTerminal | i<- [0..k-1]])
 expandTerminal (Base n d b p) = Just [d]
 
+terminalToPerm :: Int -> Int -> Int -> [Int] -> [Int]
+terminalToPerm n d b term = fmap (\x -> (x-(d `div` n)) `div` (b `div` n)) term
+
 correctResult :: Ring -> Maybe [Int]
 correctResult (Base n d b p) = let vec = ffVec n p id in
   let phi_lop = phi n n d b p in
@@ -92,8 +95,9 @@ checkCorrect (Just path) fname = let written = writePath (Just path) fname in
       written >> result >>= (\res -> return (squashMaybeString (do { end <- path_get_end path;
                                                           cor <- correctResult start;
                                                          term <- expandTerminal end;
-                                                         permCor <- return (applyPerm cor term);
+                                                         perm <- return (terminalToPerm (get_size start) (get_root_power start) (get_root start) term);
+                                                         permCor <- return (applyPerm cor perm);
                                                          Just (show (res==permCor)) } ) "Test error")
-                                                         --Just ("Result: "++show res++"\nCorrect: "++show cor++"\nPerm: "++show term++"\nPermCor: "++show permCor ) }) "Test error")
+                                                         --Just ("Result: "++show res++"  Correct: "++show cor++"  Term:"++show term++"  Perm: "++show perm++"  PermCor: "++show permCor ) }) "Test error")
                  )
 checkCorrect Nothing fname = return "Test error"

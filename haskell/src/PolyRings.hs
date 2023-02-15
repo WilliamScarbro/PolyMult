@@ -29,6 +29,11 @@ get_size (Base n _ _ _) = n
 get_size (Prod _ _ f) = squashMaybeInt (f 0) get_size
 get_size (Quo _ _ _ r) = get_size r
 
+get_root_power :: Ring -> Int
+get_root_power (Base _ d _ _) = d
+get_root_power (Prod _ _ f) = squashMaybeInt (f 0) get_root_power
+get_root_power (Quo _ _ _ r) = get_size r
+
 
 --phi
 factor :: Int -> Ring -> Maybe Ring
