@@ -10,7 +10,7 @@ import qualified Data.Map as Map (fromList,empty,insert,Map,member,lookup,mapWit
 --- [Kernel] --> C file
 
 type KList=[Kernel]
-type PCC = Map.Map Kernel (Int,String)
+type PCC = Map.Map Kernel String
 
 
 -- name -> path -> code
@@ -38,8 +38,9 @@ compileKernel o (Kernel_Repeat n k ker) pcc = Just (foldr (++) "" (foldr (++) []
 compileKernel o (Kernel_Extend n k f) pcc = Just (foldr (++) "" (foldr (++) [] (fmap maybeToList [(f i) >>= (\ker -> compileKernel (o+(div n k)*i) ker pcc) | i<-[0..k-1]]))) 
 
 endW :: Kernel -> PCC -> String
-endW ker pcc = squashMaybeString (do { mtup <- Map.lookup ker pcc;
-                                          (\x -> Just (snd x)) mtup }) "<Error: couldn't find kernel in PCC Map>"
+endW ker pcc = squashMaybeString (Map.lookup ker pcc) "Error couldn't fid kernel in PCC Map"
+--endW ker pcc = squashMaybeString (do { mtup <- Map.lookup ker pcc;
+--                                          (\x -> Just (snd x)) mtup }) "<Error: couldn't find kernel in PCC Map>"
 
 swap :: String
 swap = "  swap(X,Y);\n"
@@ -89,24 +90,42 @@ associateKernels :: KList -> PCC
 associateKernels p = let rp = nub (filter reqPCC (foldr (++) [] (fmap listLeafs p))) in
   Map.fromList [(rp!!i, associateKernel i (rp!!i)) | i<-[0..(length rp)-1]]
 --
-associateKernel :: Int -> Kernel -> (Int,String)
-associateKernel c (Phi n k d b p) = (n, ("W"++show c))
-associateKernel c (Gamma n d b p) = (n, ("W"++show c))
-associateKernel c _ = (0,"Error: Kernel does not need PCC")
+associateKernel :: Int -> Kernel -> String
+associateKernel c (Phi n k d b p) = "W"++show c
+associateKernel c (Gamma n d b p) = "W"++show c
+associateKernel c _ = "Error: Kernel does not need PCC"
 
+--
+reducePCC :: PCC -> PCC
+reducePCC pcc = fst (Map.mapAccumWithKey reducePCC_help pcc pcc)
+
+reducePCC_help :: PCC -> Kernel -> String -> (PCC,String)
+reducePCC_help pcc curK curV = (Map.mapWithKey (\k v -> if samePCC k curK then curV else v) pcc,"garbage")
+
+samePCC :: Kernel -> Kernel -> Bool
+samePCC (Phi n1 k1 d1 b1 p1) (Phi n2 k2 d2 b2 p2) = k1==k2 && b1==b2 && d1==d2 && p1==p2 
+samePCC k1 k2 = False
+
+sizePCC :: Kernel -> Int
+sizePCC (Phi n k d b p) = k*k
+sizePCC _ = -1
 ----
+
+uniquePCC :: PCC -> [(Int,String,String)]
+uniquePCC pcc = nub (fst (Map.mapAccumWithKey (\pred kernel name -> (pred++[(sizePCC kernel,name,precompute kernel name)],0)) [] pcc))
+
 --
 
-initializePCC :: PCC -> String
-initializePCC pcc = let allocs =fst (Map.mapAccum (\pred (size,name) -> (pred++"  int* "++name++" = malloc("++show (size*size)++"*sizeof(int));\n",0)) "" pcc) in
-  let assigns = fst (Map.mapAccumWithKey (\pred ker (size,name) -> (pred++(precompute ker name),0)) "" pcc) in
+initializePCC :: [(Int,String,String)] -> String
+initializePCC pcc = let allocs = foldl (\pred (size,name,preComp) -> (pred++"  int* "++name++" = malloc("++show size++"*sizeof(int));\n")) "" pcc in
+  let assigns = foldl (\pred (size,name,preComp) -> (pred++preComp)) "" pcc in
     "\n  //Pre-Compute Constants\n"++allocs ++ assigns
-    
+
   --  let assigns = Map.mapWithKey (\ker (size,name) -> precompute ker name) pcc in
 --    (Map.mapAccum (\x y -> (x++y,y)) allocs) ++ (Map.mapAccum (\x y -> (x++y,y)) assigns)
     
-destroyPCC :: PCC -> String
-destroyPCC pcc = "\n  //free Pre-Computed Constants\n" ++ fst (Map.mapAccum (\pred (size,name) -> (pred++"  free("++name++");\n",0)) "" pcc)
+destroyPCC :: [(Int,String,String)] -> String
+destroyPCC pcc = "\n  //free Pre-Computed Constants\n" ++ foldl (\pred (size,name,preComp) -> (pred++"  free("++name++");\n")) "" pcc
 
 --
 
@@ -135,12 +154,14 @@ report_timer = "  printf(\"Elapsed time: %f\\n\",elapsed_time());\n"
 compile :: (Int,Int,Int) -> String -> KList -> String
 compile (n,b,p) name path = let filtered_path = filter (\k -> not (is_identity k)) path in
   let iw = initialize_w (b,p) in
-    let pcc = associateKernels filtered_path in
-      let ip = initializePCC pcc in
-        let cp = compileKList filtered_path pcc in
-          let dp = destroyPCC pcc in
-            let mf = main_func n name (mod (length path) 2) in
-              imports++"void "++name++"(int** X,int** Y){\n"++iw++ip++start_timer++cp++stop_timer++report_timer++dp++"}\n"++mf
+    let ipcc = associateKernels filtered_path in
+      let pcc = reducePCC ipcc in
+        let upcc = uniquePCC pcc in
+          let ip = initializePCC upcc in
+            let cp = compileKList filtered_path pcc in
+              let dp = destroyPCC upcc in
+                let mf = main_func n name (mod (length path) 2) in
+                  imports++"void "++name++"(int** X,int** Y){\n"++iw++ip++start_timer++cp++stop_timer++report_timer++dp++"}\n"++mf
 
 --
 

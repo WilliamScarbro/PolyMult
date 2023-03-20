@@ -63,7 +63,7 @@ matchExtend :: Ring -> [Morphism]
 matchExtend (Prod n k f) = 
 --let morphs=[(maybeToList (f i)) >>= (\r -> (match matchMorphism r)++(match (Match matchNormExtend) r)) | i<-[0..k-1]]
   let morphs=[(maybeToList (f i)) >>= (\r -> match matchMorphism r) | i<-[0..k-1]]
-  in fmap (\x -> Extend k x) (foldr intersect (head morphs) morphs)
+  in if morphs==[] then [] else fmap (\x -> Extend k x) (foldr intersect (head morphs) morphs)
 matchExtend r = []
 
 matchRepeat :: Ring -> [Morphism]
@@ -71,7 +71,7 @@ matchRepeat (Quo n k d r) = fmap (\x -> Repeat k x) (match matchMorphism r)
 matchRepeat r = []
 
 matchFactor :: Ring -> [Morphism]
-matchFactor (Base n d b p) = [Factor k | k <- non_triv_factors(n) ]
+matchFactor (Base n d b p) = [Factor k | k <-(non_triv_factors n) ]
 matchFactor r = []
 
 matchLabel :: Ring -> [Morphism]
@@ -114,7 +114,7 @@ define_morphism Norm (Base n d b p) = Just (gamma n d b p)
 define_morphism Norm r = Nothing
 define_morphism Define (Quo n k d0 (Base 1 d b p)) = Just (mId n)
 define_morphism Define r = Nothing
-define_morphism Pushin (Quo n kq d0 (Prod n2 kp f)) = Just (mL n kq) -- check
+define_morphism Pushin (Quo n kq d0 (Prod n2 kp f)) = Just (mL n kq) -- check -- wrong (uses T)
 define_morphism Pushin r = Nothing
 define_morphism (Repeat k0 m) (Quo n k1 d r) = if k0 == k1 then (define_morphism m r) >>= (\lo -> (repeatLO n lo)) else Nothing
 define_morphism (Repeat k0 m) r = Nothing

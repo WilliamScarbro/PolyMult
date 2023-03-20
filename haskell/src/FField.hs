@@ -108,11 +108,12 @@ is_generator :: ResInt -> Bool
 is_generator (Res x p) = ( toInteger . Set.size $ power_set (Res x p) ) == p-1
 --
 ---- Utility functions
-ff_generators :: Integral a => a -> [ResInt]
+ff_generators :: (Integral a,Show a) => a -> [ResInt]
 ff_generators p | is_prime p = let ip=toInteger p in map (set_rep ip) $ filter (\x -> is_generator (Res x ip) ) [1..ip-1]
                 | otherwise = []
-ff_generator :: Integral a => a -> ResInt
-ff_generator p = head (ff_generators p)
+ff_generator :: (Integral a, Show a) => a -> ResInt
+ff_generator p = let gens = ff_generators p in
+  if gens==[] then error (show p++" is not prime") else head gens
 --
 ff_inv :: ResInt -> Maybe ResInt
 ff_inv x | x==zero = Nothing
@@ -128,7 +129,7 @@ pow_help y x e | mod e 2 == 1 = do { sq <- mult x x
                | mod e 2 == 0 = do { sq <- mult x x
                                    ; pow_help y sq (div e 2) }
 
-nth_root :: Integral a => a -> a -> FF
+nth_root :: (Integral a,Show a) => a -> a -> FF
 nth_root b p | mod (p-1) b /= 0 = Nothing
              | otherwise = pow (ff_generator p) (div (p-1) b)  
 

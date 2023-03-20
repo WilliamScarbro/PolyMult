@@ -64,7 +64,7 @@ appendPath lhs rhs = do {
   if lend == path_get_start rhs then Just (Path (path_get_start lhs) ((path_get_morphs lhs)++(path_get_morphs rhs))) else Nothing }
 
 takePath :: Int -> Path -> Path
-takePath i (Path s morphs) = let j=mod i (length morphs) in Path s (take j morphs)
+takePath i (Path s morphs) = let j=mod i (length morphs) in if j==0 then Path s morphs else Path s (take j morphs)
 ---
 
 buildForestPath :: Ring -> [Tree (Morphism)]
@@ -82,7 +82,9 @@ randomPath :: Ring -> Int -> Maybe Path
 randomPath start seed = let morphs = fst (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) (mkStdGen seed)) in
   morphs >>= (\ms -> Just (Path start ms))
 
-
+randomPathGen :: RandomGen g => Ring -> g -> Maybe (Path,g)
+randomPathGen start rand = let (morphs,rand2) = (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) rand) in
+                             Just (\x -> (Path start x,rand2)) <*> morphs
 
 -- Maybe Ring -> [Morphism]
 

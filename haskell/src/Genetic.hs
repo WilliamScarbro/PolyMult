@@ -59,8 +59,12 @@ ngp_scanf _ _ Nothing _ = Nothing
 
 --
 
---nthGeneration :: (Species a, RandomGen b) => a -> b -> Int -> Int -> IO (Maybe (Population a,b))
---nthGeneration specimen rand size n = let ip = initializePopulation specimen rand size
+--nthGeneration :: (Species a, RandomGen b) => a -> b -> Int -> Int -> Maybe (IO (Population a,b))
+--nthGeneration specimen rand size n = let ip = initializePopulation specimen rand size in ngCount rand pop count
+--  where
+--    ngCount :: (Species a, RandomGen b) => Maybe (IO (Population a,b)) -> Int -> Maybe (IO (Population a,b))
+--    ngCount pop_rand count = if count <= 0 then pop_rand else fmap (fmap (\x -> nextGenPopulation (snd x) (fst x))) pop_rand
+--
 
 unwrapMaybeOverIO :: Show a => Maybe (IO a) -> IO (Maybe a)
 unwrapMaybeOverIO (Just x) = x >>= (\y -> return (Just y))

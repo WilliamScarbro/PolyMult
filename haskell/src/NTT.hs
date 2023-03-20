@@ -104,10 +104,10 @@ mL n k = let m = fromIntegral (div n k) in let ik = fromIntegral k in perm n (\x
 
 ---
 
-mNTT :: Integral a =>  a -> a -> LinearOp FF
+mNTT :: (Integral a,Show a) =>  a -> a -> LinearOp FF
 mNTT n p = let w=nth_root n p in (linearOp n (\(i,j) -> w >>= (\x -> pow x (i*j) )))
 
-mNTT_inv :: Integral a => a -> a -> LinearOp FF
+mNTT_inv :: (Integral a,Show a) => a -> a -> LinearOp FF
 mNTT_inv n p =
   let w_inv=(nth_root n p) >>= inv in
     let n_inv=inv (Res (toInteger n) (toInteger p)) in
