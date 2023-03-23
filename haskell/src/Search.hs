@@ -30,7 +30,7 @@ terminal hmap = fst (Map.mapAccumWithKey (\accum key val -> (if val==[] then acc
 
 ---
 
-data Path = Path Ring [Morphism] deriving Show
+data Path = Path Ring [Morphism] deriving (Show,Eq)
 path_get_start :: Path -> Ring
 path_get_start (Path start morphs) = start
 
@@ -49,6 +49,9 @@ path_get_end (Path start (m:morphs)) = let new_start = apply m start in
   new_start >>= (\r -> (path_get_end (Path r morphs)))
 path_get_end (Path cur []) = Just cur
 
+path_get_states :: Path -> Maybe [Ring]
+path_get_states (Path start morphs) = traverse id (scanl (\prev_state m -> prev_state >>= apply m) (Just start) morphs)
+                                                            
 buildPath :: Ring -> (Ring -> Maybe Morphism) -> Maybe Path
 buildPath start f = buildPath_help start f start []
 buildPath_help :: Ring -> (Ring -> Maybe Morphism) -> Ring -> [Morphism] -> Maybe Path
@@ -65,6 +68,50 @@ appendPath lhs rhs = do {
 
 takePath :: Int -> Path -> Path
 takePath i (Path s morphs) = let j=mod i (length morphs) in if j==0 then Path s morphs else Path s (take j morphs)
+
+combinePaths :: StdGen -> Path -> Path -> Maybe (Path,StdGen)
+combinePaths rand p1 p2 = let common = commonStates p1 p2 in -- [Ring]
+  do {
+    choices <- foldl choiceFold (Just [(p1,p2)]) common; -- Maybe [(Path,Path)]
+    r_choices <- return ( reverse choices ) ;
+    nPath <- return (foldl npFold (Just (Path (path_get_start p1) [],rand)) r_choices);
+    nPath }
+  where
+    npFold :: Maybe (Path,StdGen) -> (Path,Path) -> Maybe (Path,StdGen)
+    npFold (Just (prev,old_rand)) ctup = let (choice,new_rand) = randomChoice [fst ctup,snd ctup] old_rand in
+      appendPath prev choice >>= (\x -> Just (x,new_rand))
+    npFold Nothing _ = Nothing
+    
+    choiceFold :: Maybe [(Path,Path)] ->  Ring -> Maybe [(Path,Path)]
+    choiceFold prev cur = do
+      m_prev <- prev
+      prev_head <- return . head $ m_prev
+      q1 <- return . fst $ prev_head
+      q2 <- return . snd $ prev_head
+      (before_q1,after_q1) <- splitPathOnState q1 cur
+      (before_q2,after_q2) <- splitPathOnState q2 cur
+      return ([(after_q1,after_q2),(before_q1,before_q2)] ++ (tail m_prev))
+                              
+                                                        
+--                          (appendPath prev,new_rand)) (Path (path_get_start p1) []) choices in
+--      return nPath
+--      where
+
+
+commonStates :: Path -> Path -> [Ring]
+commonStates p1 p2 = let p1_states = path_get_states p1 in
+  let p2_states = path_get_states p2 in
+    fromMaybe [] (traverse id [p1_states,p2_states] >>= (\x -> Just (intersect (head x) (last x))))
+
+splitPathOnState :: Path -> Ring -> Maybe (Path,Path)
+splitPathOnState (Path start morphs) split = helper start [] start morphs split
+  where
+    helper :: Ring -> [Morphism] -> Ring -> [Morphism] -> Ring -> Maybe (Path,Path)
+    helper start before current [] split = if current == split then Just (Path start before, Path split []) else Nothing
+    helper start before current after split = if current == split then Just (Path start before,Path split after) else
+      let m = head after in
+        (apply m current) >>= (\next -> helper start (before++[m]) next (tail after) split)
+                                                
 ---
 
 buildForestPath :: Ring -> [Tree (Morphism)]
@@ -154,6 +201,9 @@ turtlesAWD cur turtle path = let morphs = (filter (\m -> is_par_morph turtle m) 
       turtlesAWD new_ring turtle (Just (uw_path ++ uw_ker))
       }
       
+
+randomChoice :: RandomGen g => [a] -> g -> (a,g)
+randomChoice list rand = let (ind,rand2)=randomR (0,(length list)-1) rand in (list!!ind,rand2)
 
 --allPaths :: Ring -> [Kernel]
 --allPaths start = let pf = buildPathForest start in

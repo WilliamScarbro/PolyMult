@@ -11,14 +11,15 @@ import PolyRings
 import PolyMult
 import Genetic
 import CodeGen
+import Logger
 
 instance Species Path where
-  --sample :: RandomGen b => a -> b -> Maybe (a,b)
+  --sample :: RandomGen b => a -> Std -> Maybe (a,StdGen)
   sample specimen rand = randomPathGen (path_get_start specimen) rand
   
-  --combine :: RandomGen b => b -> a -> a -> Maybe (a,b)
-  combine rand spec1 spec2 = Just (randomChoice [spec1,spec2] rand)
+  --combine :: RandomGen b => StdGen -> a -> a -> Maybe (a,StdGeb)
+  combine rand spec1 spec2 = combinePaths rand spec1 spec2
   
-  --fitness :: a -> Float
-  fitness specimen = timePath (Just specimen) "Genetic"
+  --fitness :: a -> IO Float
+  fitness specimen = (logObj "Timing: " specimen) >> fmap (\x -> -1*x) (timePath (Just specimen) "Genetic")
 

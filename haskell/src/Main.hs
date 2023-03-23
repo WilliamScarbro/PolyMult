@@ -5,9 +5,15 @@ import CompileKernel
 import Search
 import Fourier
 import PolyRings
+import Genetic
+import GeneticCode
+import GeneticTest
+import Logger
+
 import qualified Data.Map as Map (empty,insert,Map,member)
 import Data.Tree
 import System.Random
+
 
 import System.Environment
 import System.Exit
@@ -29,15 +35,20 @@ samplePath start seed = let pf = buildPathForest start in
      let code = squashMaybeString (m_walk >>= (\mw -> Just (compile (get_size start,get_root start,get_prime start) "Sampled" mw))) "Error: compilation failure" in
          let s_walk = squashMaybeString (m_walk >>= (\ms -> Just (show ms))) "Error: exploration failure" in
              putStrLn ("Path:\n  "++s_walk++"\n---\nCode:\n"++code) 
- 
+
+-- params -> size -> gens
+geneticRun :: (Int,Int) -> Int -> Int -> IO ()
+geneticRun params size gens = (putStrLn ("-----\nGenetic Run N:"++show (fst params)++" P:"++show (snd params)++" PopSize:"++show size++" Gens:"++show gens)) >> testNthGen params size gens
 main :: IO ()
+main = (\x -> geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >> geneticRun new_hope_params x 0 >> geneticRun new_hope_params x 10) 20
+
  --main = putStrLn (drawForest (fmap (fmap show) (buildPathForest (Base 4 0 4 5))))
  --main = putStrLn $ drawTree $ fmap $ (fmap show) $ buildTree $ (Base 4 0 4 5)
  --main = let graph = search [Base 4 0 4 5] expand Map.empty in putStrLn (show (terminal graph))
  --main = putStrLn (show (search_morphs [Base 4 0 4 5] Map.empty))
  --main = putStrLn (compile (4,5) "Generated4" path)
  --main = putStrLn (show (fst (randomWalk (buildPathForest (Base 4 0 4 5)) (mkStdGen 100))))
-main = putStrLn (squashMaybeString ((fst (randomWalk (buildPathForest (Base 4 0 4 5)) (mkStdGen 100))) >>= (\mw -> Just (compile (4,4,5) "Sampled4" mw)))  "Error: compilation failed")
+--main = putStrLn (squashMaybeString ((fst (randomWalk (buildPathForest (Base 4 0 4 5)) (mkStdGen 100))) >>= (\mw -> Just (compile (4,4,5) "Sampled4" mw)))  "Error: compilation failed")
  --  
  --  code <- squashMaybeString m_code "Error: compilation failed";
  --  putStrLn (show code);

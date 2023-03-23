@@ -12,8 +12,14 @@ instance Eq (Int -> Maybe Ring) where
 instance Ord (Int -> Maybe Ring) where
   (<=) f1 f2 = (f1 0) <= (f2 0)
   
-data Ring = Base Int Int Int Int | Prod Int Int (Int -> Maybe Ring) | Quo Int Int Int Ring deriving (Show,Eq,Ord)
+data Ring = Base Int Int Int Int | Prod Int Int (Int -> Maybe Ring) | Quo Int Int Int Ring deriving (Show,Ord)
 
+instance Eq Ring where
+  (==) (Base n d b p) (Base n' d' b' p') = (n==n')&&(d==d')&&(b==b')&&(p==p')
+  (==) (Prod n k f) (Prod n' k' f') = (n==n') && (k==k') && (foldr (&&) True [(f i)==(f' i) |i<-[0..k-1]])
+  (==) (Quo n k d r) (Quo n' k' d' r') = (n==n') && (k==k') && (d==d') && (r==r')
+  (==) _ _ = False
+  
 get_root :: Ring -> Int
 get_root (Base _ _ b _) = b
 get_root (Prod _ _ f) = squashMaybeInt (f 0) get_root
