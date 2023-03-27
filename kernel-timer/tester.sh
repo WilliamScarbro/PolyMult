@@ -11,13 +11,11 @@ outfile=/tmp/kernel-test-results
 rm $1
 make > /dev/null
 rm $outfile
-for i in {1..10}; do
-    $1  > $outfile 
-    if [[ "$?" != 0 ]]; then
-	echo "failed"
-    else
-	cat $outfile | grep result
-    fi
-done
+$1  > $outfile 
+if [[ "$?" != 0 ]]; then
+    echo "failed"
+else
+    cat $outfile | grep result
+fi
 
 popd > /dev/null

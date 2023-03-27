@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "Gen.h"
+#include "NTLib.h"
 #include "Phi.h"
 
 void Phi_W(int w,int d,int N,int k,int p,int *W){

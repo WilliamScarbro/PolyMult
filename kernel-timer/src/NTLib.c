@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Gen.h"
+#include "NTLib.h"
 
 int power(int x, int e, int p){
   //printf("Flag power %d^%d mod %d\n",x,e,p);

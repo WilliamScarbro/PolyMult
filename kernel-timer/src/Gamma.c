@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "Gamma.h"
-#include "Gen.h"
+#include "NTLib.h"
 
 void Gamma_W(int w, int n, int d, int N, int p, int* W){
   for (int i=0; i<n; i++){
