@@ -34,7 +34,7 @@ executable haskell
         GeneticTest
   -- other-extensions:
   build-depends:
-       base >=4.12 && <4.13,
+       base >=4.12,
        mtl >=2.2.2,
        containers >= 0.6.0.1,
        matrix >= 0.3.6.1,
