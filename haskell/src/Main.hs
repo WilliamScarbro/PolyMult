@@ -40,7 +40,7 @@ samplePath start seed = let pf = buildPathForest start in
 geneticRun :: (Int,Int) -> Int -> Int -> IO ()
 geneticRun params size gens = (putStrLn ("-----\nGenetic Run N:"++show (fst params)++" P:"++show (snd params)++" PopSize:"++show size++" Gens:"++show gens)) >> testNthGen params size gens
 main :: IO ()
-main = (\x -> geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >> geneticRun new_hope_params x 0 >> geneticRun new_hope_params x 10) 20
+main = (\x -> geneticRun new_hope_params x 0 >> geneticRun new_hope_params x 10) 20 -- geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >
 
  --main = putStrLn (drawForest (fmap (fmap show) (buildPathForest (Base 4 0 4 5))))
  --main = putStrLn $ drawTree $ fmap $ (fmap show) $ buildTree $ (Base 4 0 4 5)

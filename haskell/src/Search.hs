@@ -61,6 +61,16 @@ buildPath_help start f cur build = let morph = f cur in
     new_cur <- apply m cur;
     buildPath_help start f new_cur (build++(maybeToList morph)) }
 
+buildPath_random :: Ring -> StdGen -> (Ring -> StdGen -> Maybe (Morphism,StdGen)) -> Maybe (Path,StdGen)
+buildPath_random start rand f = buildPath_random_help start rand f start []
+buildPath_random_help :: Ring -> StdGen -> (Ring -> StdGen -> Maybe (Morphism, StdGen)) -> Ring -> [Morphism] -> Maybe (Path,StdGen)
+buildPath_random_help start rand f cur build = let morph_rand = f cur rand in
+  if morph_rand == Nothing then Just (Path start build,rand) else do {
+    (morph,nrand) <- morph_rand;
+    new_cur <- apply morph cur;
+    buildPath_random_help start nrand f new_cur (build++[morph]) }
+
+
 appendPath :: Path -> Path -> Maybe Path
 appendPath lhs rhs = do {
   lend <- path_get_end lhs;
@@ -69,11 +79,18 @@ appendPath lhs rhs = do {
 takePath :: Int -> Path -> Path
 takePath i (Path s morphs) = let j=mod i (length morphs) in if j==0 then Path s morphs else Path s (take j morphs)
 
+uniquePathChoices :: Path -> Path -> Int
+uniquePathChoices p1 p2 = let common = commonStates p1 p2 in let uniq = do {
+  choices <- foldl choiceFold (Just [(p1,p2)]) common; -- [(Path,Path)]
+  uniqueC <- return (foldl (\prev (x,y) -> prev + (if x==y then 0 else 1)) 0 choices);
+  return uniqueC } in
+    fromMaybe (-1) uniq
+  
 combinePaths :: StdGen -> Path -> Path -> Maybe (Path,StdGen)
 combinePaths rand p1 p2 = let common = commonStates p1 p2 in -- [Ring]
-  do {
-    choices <- foldl choiceFold (Just [(p1,p2)]) common; -- Maybe [(Path,Path)]
-    r_choices <- return ( reverse choices ) ;
+  do { -- Maybe
+    choices <- foldl choiceFold (Just [(p1,p2)]) common; -- [(Path,Path)]
+    r_choices <- return ( reverse choices ) ; -- [(Path,Path)]
     nPath <- return (foldl npFold (Just (Path (path_get_start p1) [],rand)) r_choices);
     nPath }
   where
@@ -82,18 +99,36 @@ combinePaths rand p1 p2 = let common = commonStates p1 p2 in -- [Ring]
       appendPath prev choice >>= (\x -> Just (x,new_rand))
     npFold Nothing _ = Nothing
     
-    choiceFold :: Maybe [(Path,Path)] ->  Ring -> Maybe [(Path,Path)]
-    choiceFold prev cur = do
-      m_prev <- prev
-      prev_head <- return . head $ m_prev
-      q1 <- return . fst $ prev_head
-      q2 <- return . snd $ prev_head
-      (before_q1,after_q1) <- splitPathOnState q1 cur
-      (before_q2,after_q2) <- splitPathOnState q2 cur
-      return ([(after_q1,after_q2),(before_q1,before_q2)] ++ (tail m_prev))
+choiceFold :: Maybe [(Path,Path)] ->  Ring -> Maybe [(Path,Path)]
+choiceFold prev cur = do
+   m_prev <- prev
+   prev_head <- return . head $ m_prev
+   q1 <- return . fst $ prev_head
+   q2 <- return . snd $ prev_head
+   (before_q1,after_q1) <- splitPathOnState q1 cur
+   (before_q2,after_q2) <- splitPathOnState q2 cur
+   return ([(after_q1,after_q2),(before_q1,before_q2)] ++ (tail m_prev))
                               
-                                                        
---                          (appendPath prev,new_rand)) (Path (path_get_start p1) []) choices in
+
+randomPath2 :: Ring -> StdGen -> Maybe (Path,StdGen)
+randomPath2 start rand = buildPath_random start rand builder
+  where
+    builder :: Ring -> StdGen -> Maybe (Morphism,StdGen)
+    builder cur rand = let morphs = match matchMorphism cur in
+      if morphs == [] then Nothing else Just (randomChoice morphs rand)
+
+combinePaths2 :: StdGen -> Path -> Path -> Maybe (Path,StdGen)
+combinePaths2 rand p1 p2 = let (r1,r2) = split rand in
+   let combinedMorphs  = (path_get_morphs p1) ++ (path_get_morphs p2) in
+     --let shuffledMorphs = shuffle' combinedMorphs (length combinedMorphs) r1 in
+     buildPath_random (path_get_start p1) rand (pathBuilder combinedMorphs)
+     where
+       pathBuilder :: [Morphism] -> Ring -> StdGen -> Maybe (Morphism,StdGen)
+       pathBuilder oldMorphs ring rand = let morphs = match matchMorphism ring in 
+         let overlapping = intersectBy (\m1 m2 -> is_par_morph (morph_get_inner m1) m2) morphs oldMorphs in
+           let choices = if overlapping == [] then morphs else overlapping in
+             if choices == [] then Nothing else Just (randomChoice choices rand)
+
 --      return nPath
 --      where
 
@@ -175,6 +210,9 @@ randomWalk_help (walk,g) (Node c rest) = if rest == [] then (walk++[c],g) else
     let new_rest = rest !! index  in -- this may be a bad idea
         randomWalk_help (walk++[c],new_g) new_rest
 
+
+
+          
 strTree :: Show a => Tree a -> String
 strTree (Node x rest) = show x ++ (foldr (++) "" [ (strTree r) | r <- rest] )
 

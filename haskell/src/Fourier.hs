@@ -7,10 +7,11 @@ module Fourier where
 import FField
 import PolyRings
 import NTT
+
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map (empty,insert,Map,member)
-
+import Data.Hashable
 ---
 
 instance Show (Int -> Morphism) where
@@ -18,8 +19,9 @@ instance Show (Int -> Morphism) where
 
 instance Eq (Int -> Morphism) where
   (==) f1 f2 = (f1 0) == (f2 0)
-  
+
 data Morphism = Inverse Morphism | Extend Int Morphism | Repeat Int Morphism | Factor Int | Label Int | Norm | Define | Pushin | IdR deriving (Show,Eq)
+
 
 --instance Show Morphism where
 --  show Compose m1 m2 = show m1++" . "++shw m2
@@ -71,7 +73,7 @@ matchRepeat (Quo n k d r) = fmap (\x -> Repeat k x) (match matchMorphism r)
 matchRepeat r = []
 
 matchFactor :: Ring -> [Morphism]
-matchFactor (Base n d b p) = [Factor k | k <-(non_triv_factors n) ]
+matchFactor (Base n d b p) = [Factor k | k <-filter (\x -> x <= 32) (non_triv_factors n) ]
 matchFactor r = []
 
 matchLabel :: Ring -> [Morphism]
@@ -141,6 +143,11 @@ is_par_morph :: Morphism -> Morphism -> Bool
 is_par_morph base (Repeat k m) = base == (Repeat k m) || is_par_morph base m
 is_par_morph base (Extend k m) = base == (Extend k m) || is_par_morph base m 
 is_par_morph base m = base == m
+
+morph_get_inner :: Morphism -> Morphism
+morph_get_inner (Repeat k m) = morph_get_inner m
+morph_get_inner (Extend k m) = morph_get_inner m
+morph_get_inner m = m
 
 patternMatchMorphism :: (Morphism -> Bool) -> Morphism -> Bool
 patternMatchMorphism f (Repeat k m) = if f (Repeat k m) then True else patternMatchMorphism f m
