@@ -14,15 +14,16 @@ fi
 #echo "timer count $tc" 1>&2
 echo $tc > /tmp/timercount
 
-titers=`cat /tmp/timer_iterations`
-echo "timer iterations $titers"
+if [ -z $TIMER_ITERS ]; then
+  echo "TIMER_ITERS not set" 1>&2
+fi
 
 pushd "/home/scarbro/CSU/PolyMult/kernel-timer" > /dev/null
 
 rm $1
 make > /dev/null
 i=0
-while [ $i -le ${titers} ]; do
+while [ $i -le $TIMER_ITERS ]; do
     rm /tmp/kernel-timer-results
     $1  > /tmp/kernel-timer-results
     if [[ "$?" != 0 ]]; then
