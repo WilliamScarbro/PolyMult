@@ -11,14 +11,38 @@ import Data.List
 import Text.Regex.Posix
 
 import System.Process
+import System.Environment
 
+--
+
+kt_home = (getEnv "POLYMULT_HOME") >>= (\x -> return (x++"/kernel-timer/"))
+kt_relative_path :: String -> IO String
+kt_relative_path str = kt_home >>= (\x -> return (x++str))
+
+code_path :: String -> IO String
+code_path fname = kt_relative_path ("src/gen/"++fname++".c")
+
+binary_path :: String -> IO String
+binary_path fname = kt_relative_path ("bin/"++fname)
+
+--
+
+
+<<<<<<< HEAD
 kt_home = "/home/scarbro/CSU/PolyMult/kernel-timer/"
 
 --writeSample :: Ring -> Int -> FilePath -> IO ()
 --writeSample start seed fname = writeFile (kt_home++"src/gen/"++fname++".c") (sampleCode start seed)
+=======
+writeSample :: Ring -> Int -> FilePath -> IO ()
+writeSample start seed fname = code_path fname >>= (\x -> writeFile x (sampleCode start seed))
+>>>>>>> 430192f91dd8f7fd12b483cf7cfa2c3d24f85ccc
 
 timeCode :: FilePath -> IO String
-timeCode fname = readProcess "bash" [kt_home++"timer.sh",kt_home++"bin/"++fname] ""
+timeCode fname = do { -- IO 
+  timer_path <- kt_relative_path "timer.sh";
+  bin_path <- binary_path fname;
+  readProcess "bash" [timer_path,bin_path] "" }
 
 extractTimes :: String -> [Float]
 extractTimes s = let (before,match,after,_) = s =~ "[0-9]+\\.[0-9]*" :: (String,String,String,[String]) in
@@ -38,7 +62,10 @@ timeCodeAvg fname =
  --     sum >>= (\s -> s/(fmap length res))
  
 testCode :: FilePath -> IO String
-testCode fname = readProcess "bash" [kt_home++"tester.sh",kt_home++"bin/"++fname] ""
+testCode fname = do { -- IO 
+  tester_path <- kt_relative_path "tester.sh";
+  bin_path <- binary_path fname;
+  readProcess "bash" [tester_path,bin_path] "" }
 
 --
 
@@ -56,10 +83,11 @@ pathCode path = let pstart = path_get_start path in
       let sp = get_prime pstart in
         let msteps = path_get_steps path in
           squashMaybeString (msteps >>= (\steps -> Just (compile (sn,sb,sp) "Gen" steps) ) ) "Compilation Error"
-        
-writePath :: Path -> FilePath -> IO ()
-writePath path fname = let pcode = pathCode path in
-  writeFile (kt_home++"src/gen/"++fname++".c") pcode
+       
+writePath :: Maybe Path -> FilePath -> IO ()
+writePath (Just path) fname = let pcode = pathCode path in
+  code_path fname >>= (\x -> writeFile x pcode)
+writePath Nothing fname = code_path fname >>= (\x -> writeFile x "Compilation Error")
 
 timePath :: Path -> FilePath -> IO Float
 timePath path fname = writePath path fname >> timeCodeAvg fname
