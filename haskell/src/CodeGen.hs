@@ -6,15 +6,16 @@ import CompileKernel
 import Search
 import Fourier
 import PolyRings
-import PolyMult
+--import PolyMult
 import Data.List
 import Text.Regex.Posix
 
 import System.Process
 
 kt_home = "/home/scarbro/CSU/PolyMult/kernel-timer/"
-writeSample :: Ring -> Int -> FilePath -> IO ()
-writeSample start seed fname = writeFile (kt_home++"src/gen/"++fname++".c") (sampleCode start seed)
+
+--writeSample :: Ring -> Int -> FilePath -> IO ()
+--writeSample start seed fname = writeFile (kt_home++"src/gen/"++fname++".c") (sampleCode start seed)
 
 timeCode :: FilePath -> IO String
 timeCode fname = readProcess "bash" [kt_home++"timer.sh",kt_home++"bin/"++fname] ""
@@ -41,11 +42,10 @@ testCode fname = readProcess "bash" [kt_home++"tester.sh",kt_home++"bin/"++fname
 
 --
 
-timeSample start seed fname = writeSample start seed fname >> timeCode fname
+--timeSample start seed fname = writeSample start seed fname >> timeCode fname
 
-testSample start seed fname = writeSample start seed fname >> testCode fname
-
-find_bad start fname range = fmap (filter (\x -> (isInfixOf "fail" (x!!1)))) (traverse id [traverse id [pure (show i),timeSample start i fname] | i <- range])
+--testSample start seed fname = writeSample start seed fname >> testCode fname
+--find_bad start fname range = fmap (filter (\x -> (isInfixOf "fail" (x!!1)))) (traverse id [traverse id [pure (show i),timeSample start i fname] | i <- range])
 
 ---
 
@@ -57,12 +57,11 @@ pathCode path = let pstart = path_get_start path in
         let msteps = path_get_steps path in
           squashMaybeString (msteps >>= (\steps -> Just (compile (sn,sb,sp) "Gen" steps) ) ) "Compilation Error"
         
-writePath :: Maybe Path -> FilePath -> IO ()
-writePath (Just path) fname = let pcode = pathCode path in
+writePath :: Path -> FilePath -> IO ()
+writePath path fname = let pcode = pathCode path in
   writeFile (kt_home++"src/gen/"++fname++".c") pcode
-writePath Nothing fname = writeFile (kt_home++"src/gen/"++fname++".c") "Compilation Error"
 
-timePath :: Maybe Path -> FilePath -> IO Float
+timePath :: Path -> FilePath -> IO Float
 timePath path fname = writePath path fname >> timeCodeAvg fname
 
 --
@@ -88,8 +87,8 @@ applyPerm :: [Int] -> [Int] -> [Int]
 applyPerm l perm = [l!!p | p <- perm]
 
 
-checkCorrect :: Maybe Path -> FilePath -> IO (String)
-checkCorrect (Just path) fname = let written = writePath (Just path) fname in
+checkCorrect :: Path -> FilePath -> IO (String)
+checkCorrect path fname = let written = writePath path fname in
   let result = extractResult fname in
     let start = path_get_start path in
       written >> result >>= (\res -> return (squashMaybeString (do { end <- path_get_end path;
@@ -100,4 +99,3 @@ checkCorrect (Just path) fname = let written = writePath (Just path) fname in
                                                          Just (show (res==permCor)) } ) "Test error")
                                                          --Just ("Result: "++show res++"  Correct: "++show cor++"  Term:"++show term++"  Perm: "++show perm++"  PermCor: "++show permCor ) }) "Test error")
                  )
-checkCorrect Nothing fname = return "Test error"

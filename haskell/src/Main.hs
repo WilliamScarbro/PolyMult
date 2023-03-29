@@ -23,24 +23,25 @@ import System.Exit
 path = [(Phi 4 2 0 4 5), Kernel_Repeat 4 2 (Phi 2 2 0 4 5), Kernel_Extend 4 2 (\i -> Just (Phi 2 2 (2*i) 4 5))]
  
  --interface functions
-pathTree :: Ring -> IO()
-pathTree r = putStrLn (drawForest (fmap (fmap show) (buildPathForest r)))
- 
-ringTree :: Ring -> IO()
-ringTree r = putStrLn (drawTree (fmap show (buildRingTree r)))
- 
-samplePath :: Ring -> Int -> IO()
-samplePath start seed = let pf = buildPathForest start in
-   let m_walk = fst (randomWalk pf (mkStdGen seed)) in
-     let code = squashMaybeString (m_walk >>= (\mw -> Just (compile (get_size start,get_root start,get_prime start) "Sampled" mw))) "Error: compilation failure" in
-         let s_walk = squashMaybeString (m_walk >>= (\ms -> Just (show ms))) "Error: exploration failure" in
-             putStrLn ("Path:\n  "++s_walk++"\n---\nCode:\n"++code) 
-
+--pathTree :: Ring -> IO()
+--pathTree r = putStrLn (drawForest (fmap (fmap show) (buildPathForest r)))
+-- 
+--ringTree :: Ring -> IO()
+--ringTree r = putStrLn (drawTree (fmap show (buildRingTree r)))
+-- 
+--samplePath :: Ring -> Int -> IO()
+--samplePath start seed = let pf = buildPathForest start in
+--   let m_walk = fst (randomWalk pf (mkStdGen seed)) in
+--     let code = squashMaybeString (m_walk >>= (\mw -> Just (compile (get_size start,get_root start,get_prime start) "Sampled" mw))) "Error: compilation failure" in
+--         let s_walk = squashMaybeString (m_walk >>= (\ms -> Just (show ms))) "Error: exploration failure" in
+--             putStrLn ("Path:\n  "++s_walk++"\n---\nCode:\n"++code) 
+--
 -- params -> size -> gens
 geneticRun :: (Int,Int) -> Int -> Int -> IO ()
 geneticRun params size gens = (putStrLn ("-----\nGenetic Run N:"++show (fst params)++" P:"++show (snd params)++" PopSize:"++show size++" Gens:"++show gens)) >> testNthGen params size gens
+
 main :: IO ()
-main = (\x -> geneticRun new_hope_params x 0 >> geneticRun new_hope_params x 10) 20 -- geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >
+main = (\x -> geneticRun new_hope_params x 0 >> geneticRun new_hope_params x 10) 5 -- geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >
 
  --main = putStrLn (drawForest (fmap (fmap show) (buildPathForest (Base 4 0 4 5))))
  --main = putStrLn $ drawTree $ fmap $ (fmap show) $ buildTree $ (Base 4 0 4 5)

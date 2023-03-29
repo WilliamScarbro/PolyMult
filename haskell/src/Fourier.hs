@@ -7,12 +7,16 @@ module Fourier where
 import FField
 import PolyRings
 import NTT
+import Logger
 
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map (empty,insert,Map,member)
-import Data.Hashable
----
+import System.Environment
+
+--ENV Variables
+matchContext = getEnv("MATCH_CONTEXT")
+
 
 instance Show (Int -> Morphism) where
   show f = show (f 0)
@@ -44,62 +48,83 @@ apply IdR x = Just x
 
 ---
 
-data Match = Match (Ring -> [Morphism])
+data Match = Match (Ring -> IO [Morphism])
 
-match :: Match -> Ring -> [Morphism]
+match :: Match -> Ring -> IO [Morphism]
 match (Match m) r = m r
 
 matchAdd :: Match -> Match -> Match
-matchAdd (Match m1) (Match m2) = Match (\r -> (m1 r) ++ (m2 r))
+matchAdd (Match m1) (Match m2) = Match (\r -> do { m1r <- (m1 r);
+                                                   m2r <- m2 r;
+                                                   return (m1r ++ m2r); } )
 
 infixl 2 <+>
 (<+>)=matchAdd
-  
-matchMorphism :: Match
-matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor) <+> (Match matchLabel) <+> (Match matchDefine) <+> (Match matchPushin) -- <+> (Match matchId) <+> (Match matchNorm)
+
+functorMatch = (Match matchExtend) <+> (Match matchRepeat)
+factorMatch = functorMatch <+> (Match matchFactor)
+permuteMatch = factorMatch <+> (Match matchLabel) <+> (Match matchDefine) <+> (Match matchPushin) <+> (Match matchNorm)
+normalizeMatch = permuteMatch <+> (Match matchNorm)
+morphismMatch :: IO Match
+morphismMatch = do { -- IO
+  mc <- matchContext;
+  let correctMatch = (filter (\x -> fst x==mc ) [("Factor",factorMatch),("Permute",permuteMatch),("Normalize",normalizeMatch)]) in
+      if length correctMatch == 0 then (logObj "MATCH_CONTEXT value invalid "  mc) >> (return factorMatch) else return (snd (head (correctMatch))); }
+
+  --matchMorphism :: Match
+--matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor) <+>  -- <+> (Match matchId) <+> (Match matchNorm)
 --matchMorphism = (Match matchExtend) <+> (Match matchRepeat) <+> (Match matchFactor)
 -- 
 
 -- insures that any matched morphism can be applied to entire domain of f 
-matchExtend :: Ring -> [Morphism]
+matchExtend :: Ring -> IO [Morphism]
 matchExtend (Prod n k f) = 
---let morphs=[(maybeToList (f i)) >>= (\r -> (match matchMorphism r)++(match (Match matchNormExtend) r)) | i<-[0..k-1]]
-  let morphs=[(maybeToList (f i)) >>= (\r -> match matchMorphism r) | i<-[0..k-1]]
-  in if morphs==[] then [] else fmap (\x -> Extend k x) (foldr intersect (head morphs) morphs)
-matchExtend r = []
+  --let morphs=[(maybeToList (f i)) >>= (\r -> match matchMorphism r) | i<-[0..k-1]] -- [[Morph]]
+  --in if morphs==[] then [] else fmap (\x -> Extend k x) (foldr intersect (head morphs) morphs)
+  do { -- IO
+    mm <- morphismMatch; -- Match
+    morphs <- sequence (do { -- []
+        i <- [0..k-1]; -- Int
+        ring <- maybeToList (f i); -- Ring
+        io_morphs <- return (match mm ring); -- IO [Morph]
+        return io_morphs; }); -- [[Morph]]
+    return (if morphs==[] then [] else fmap (\x -> Extend k x) (foldr intersect (head morphs) morphs)) }
+matchExtend r = return []
 
-matchRepeat :: Ring -> [Morphism]
-matchRepeat (Quo n k d r) = fmap (\x -> Repeat k x) (match matchMorphism r)
-matchRepeat r = []
+matchRepeat :: Ring -> IO [Morphism]
+matchRepeat (Quo n k d r) = do { mm <- morphismMatch; -- Match
+                                 morphs <- match mm r; -- [Morphs]
+                                 return (fmap (\x -> Repeat k x) morphs) }
+matchRepeat r = return []
 
-matchFactor :: Ring -> [Morphism]
-matchFactor (Base n d b p) = [Factor k | k <-filter (\x -> x <= 32) (non_triv_factors n) ]
-matchFactor r = []
+matchFactor :: Ring -> IO [Morphism]
+matchFactor (Base n d b p) = return [Factor k | k <-filter (\x -> x <= 32) (non_triv_factors n) ]
+matchFactor r = return []
 
-matchLabel :: Ring -> [Morphism]
-matchLabel (Base n d b p) = [Label k | k <- (filter (\x -> x /= n) (non_triv_factors n)) ]
-matchLabel r = []
+matchLabel :: Ring -> IO [Morphism]
+matchLabel (Base n d b p) = return [Label k | k <- (filter (\x -> x /= n) (non_triv_factors n)) ]
+matchLabel r = return []
 
-matchNorm :: Ring -> [Morphism]
-matchNorm (Base n d b p) | d /= 0 && n /= 1 = [Norm]
-                         | otherwise = []
-matchNorm r = []
+matchNorm :: Ring -> IO [Morphism]
+matchNorm (Base n d b p) | d /= 0 && n /= 1 = return [Norm]
+                         | otherwise = return []
+matchNorm r = return []
 
-matchNormExtend :: Ring -> [Morphism]
-matchNormExtend (Base n d b p) | n /= 1 = [Norm]
-                               | otherwise = []
-matchNormExtend r = []
+matchNormExtend :: Ring -> IO [Morphism]
+matchNormExtend (Base n d b p) | n /= 1 = return [Norm]
+                               | otherwise = return []
+matchNormExtend r = return []
 
-matchDefine :: Ring -> [Morphism]
-matchDefine (Quo n k d0 (Base 1 d b p)) = [Define]
-matchDefine r = []
+matchDefine :: Ring -> IO [Morphism]
+matchDefine (Quo n k d0 (Base 1 d b p)) = return [Define]
+matchDefine r = return []
 
-matchPushin :: Ring -> [Morphism]
-matchPushin (Quo n kq d0 (Prod n2 kp f)) = [Pushin]
-matchPushin r = []
+matchPushin :: Ring -> IO [Morphism]
+matchPushin (Quo n kq d0 (Prod n2 kp f)) = return [Pushin]
+matchPushin r = return []
 
-matchId :: Ring -> [Morphism]
-matchId r = [IdR]
+matchId :: Ring -> IO [Morphism]
+matchId r = return [IdR]
 
 ---
 

@@ -17,6 +17,9 @@ pathTree r = putStrLn (drawForest (fmap (fmap show) (buildPathForest r)))
 ringTree :: Ring -> IO()
 ringTree r = putStrLn (drawTree (fmap show (buildRingTree r)))
 
+
+samplePath :: Ring -> Int -> IO ()
+samplePath start seed = 
 samplePath :: Ring -> Int -> IO()
 samplePath start seed = let pf = buildPathForest start in
   let m_walk = fst (randomWalk pf (mkStdGen seed)) in

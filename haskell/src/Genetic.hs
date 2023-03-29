@@ -13,8 +13,8 @@ import Search
 import Logger
 
 class Species a where
-  sample :: a -> StdGen -> Maybe (a,StdGen)
-  combine :: StdGen -> a -> a -> Maybe (a,StdGen)
+  sample :: a -> StdGen -> IO (a,StdGen)
+  combine :: StdGen -> a -> a -> IO (a,StdGen)
   fitness :: a -> IO Float
 
 type Population a = [(a,Float)]
@@ -29,36 +29,39 @@ type Population a = [(a,Float)]
 fitnessFilter = 0.6
 
 
-failedState = (return ([] :: Population a),mkStdGen 10)
+failedState = return (return ([] :: Population a),mkStdGen 10)
 
 getFitness :: IO (Population a) -> IO [Float]
 getFitness i_pop = do {
   pop <- i_pop;
   return (fmap snd pop) }
   
--- creates population, sets fitness to 0
-initializePopulation :: (Species a, Show a) => a -> StdGen -> Int -> (IO (Population a),StdGen)
-initializePopulation specimen rand size = if size <= 0 then failedState else
-  let inter = do { list <- traverse id (scanl ip_scanf (sample specimen rand) [0..(size-2)]); -- Maybe
-                   pop <- Just (popFitness (fmap (\x -> (x,0)) (fmap fst list)));
-                   newRand <- Just (snd( last( list )));
-                   pop_logged <- Just ((logObj "InitializePopulation" list) >> pop); -- log initial population
-                   return (pop_logged,newRand); } in -- Maybe (IO (Population,StdGen))
+--  creates population, sets fitness to 0
+-- Outer IO is errors, inner IO is fitness
+initializePopulation :: (Species a, Show a) => a -> StdGen -> Int -> IO (IO (Population a),StdGen)
+initializePopulation specimen rand size = if size <= 0 then (logObj "ERROR INIT_POP" "size<=0") >> failedState else
+  let inter = do { -- IO
+        list <- sequence (scanl ip_scanf (sample specimen rand) [0..(size-2)]); -- [(a,StdGen)]
+        pop <- return (popFitness (fmap (\x -> (x,0)) (fmap fst list))); -- IO [(a,fit)]
+        newRand <- return (snd( last( list ))); -- StdGen
+        pop_logged <- return ((logObj "InitializePopulation" list) >> pop); -- log initial population
+          return (pop_logged,newRand); } in -- IO (IO (Population,StdGen))
     --let maybeOverIO = fmap (\(p,r) -> (return (\z -> (z,r))) <*> p ) inter in
-    fromMaybe failedState inter
+    inter
 
-ipWoFitness :: Species a => a -> StdGen -> Int -> (Population a,StdGen)
-ipWoFitness specimen rand size = if size <= 0 then ([] :: Population a,rand) else
-  let inter = do { -- Maybe
-        list <- traverse id (scanl ip_scanf (sample specimen rand) [0..(size-2)]); -- [(a,StdGen)]
-          pop <- Just (fmap (\x -> (x,0)) (fmap fst list)); -- [(a,0)]
-          return (pop,snd (last (list))) } in -- Maybe ([(a,0)],StdGen)
-  fromMaybe ([] :: Population a,mkStdGen 10) inter
+ipWoFitness :: Species a => a -> StdGen -> Int -> IO (Population a,StdGen)
+ipWoFitness specimen rand size = if size <= 0 then return ([] :: Population a,rand) else
+  let inter = do { -- IO
+        list <- sequence (scanl ip_scanf (sample specimen rand) [0..(size-2)]); -- [(a,StdGen)]
+          pop <- return (fmap (\x -> (x,0)) (fmap fst list)); -- [(a,0)]
+          return (pop,snd (last (list))) } in -- IO ([(a,0)],StdGen)
+  inter
 
 
-ip_scanf :: (Species a) => Maybe (a,StdGen) -> Int -> Maybe (a,StdGen)
-ip_scanf (Just (x,rand)) y = sample x rand
-ip_scanf Nothing _ = Nothing
+ip_scanf :: (Species a) => IO (a,StdGen) -> Int -> IO (a,StdGen)
+ip_scanf x_rand y = do {
+  (x,rand) <- x_rand;
+  sample x rand }
 
 -- computes fitness for each individual
 popFitness :: (Species a) => Population a -> IO (Population a)
@@ -72,28 +75,29 @@ nextGenPopulation pop rand size = let uniquePop = nub pop in
       let filteredPop = take numSurvive (sortedPop) in
         let shuffledFP = shuffle' filteredPop (length filteredPop) rand in
           let zipped = zip filteredPop shuffledFP in
-            let inter = do { -- Maybe
-                  nextGen <- traverse id (scanl (ngp_scanf filteredPop shuffledFP) (Just (fst (head filteredPop),rand)) [0..(length filteredPop)-1]); -- [(a,StdGen)]
-                  nrand <- return (if length nextGen > 0 then snd (last nextGen) else rand);
+            let inter = do { -- IO
+                  nextGen <- sequence (scanl (ngp_scanf filteredPop shuffledFP) (return (fst (head filteredPop),rand)) [0..(length filteredPop)-1]); -- [(a,StdGen)]
+                  nrand <- return (if length nextGen > 0 then snd (last nextGen) else rand); -- StdGen
                   nextGenwf <- return (fmap (\x -> (x,0)) (fmap fst nextGen)); -- [(a,0)]
                   nextGenUniq <- return (insureUnique filteredPop nextGenwf); -- [(a,0)]
                   nextGenFinal <- return (take (size-numSurvive) nextGenUniq); -- [(a,0)]
-                  (ngFiller,nnrand) <- return (ipWoFitness (fst (last sortedPop)) nrand (size - (length nextGenFinal) - (length filteredPop)));
+                  (ngFiller,nnrand) <- ipWoFitness (fst (last sortedPop)) nrand (size - (length nextGenFinal) - (length filteredPop));
                   nextGenFilled <- return (nextGenFinal ++ ngFiller);
                   nextPop <- return ((popFitness nextGenFilled) >>= (\x -> return (x ++ filteredPop))); -- [(a,Float)]
                   --nextPop <- return ((popFitness (fmap (\x -> (x,0)) (fmap fst nextGen))) >>= (\x -> return (x ++ filteredPop)));
                   nextPop_logged <- return ((logObj "nextGen" ("spawned: "++ show (length nextGenFinal) ++ " filled: "++ show (length ngFiller)) ) >> nextPop); -- IO (Population a)
-                  return (nextPop_logged); } in -- Maybe (IO (Population a))
+                  return (nextPop_logged); } in -- IO (IO (Population a))
               --let inter2 = fmap (\(p,r) -> (return (\z -> (z,r))) <*> p ) inter in -- Maybe IO (Population a, StdGen)
-                fromMaybe (fst failedState) inter
+                join inter
               where
                 insureUnique :: Eq a => Population a -> Population a -> Population a
                 insureUnique oldp newp = deleteFirstsBy (\x y -> fst x == fst y) (nub newp) oldp
               
                 
-ngp_scanf :: (Species a) => [(a,Float)] -> [(a,Float)] -> Maybe (a,StdGen) -> Int -> Maybe (a,StdGen)
-ngp_scanf l1 l2 (Just (x,rand2)) ind = combine rand2 (fst (l1!!ind)) (fst (l2!!ind))
-ngp_scanf _ _ Nothing _ = Nothing
+ngp_scanf :: (Species a) => [(a,Float)] -> [(a,Float)] -> IO (a,StdGen) -> Int -> IO (a,StdGen)
+ngp_scanf l1 l2 x_rand ind = do {
+  (x,rand) <- x_rand;
+  combine rand (fst (l1!!ind)) (fst (l2!!ind)) }
 
 sortPop :: (Species a) => IO (Population a) -> IO (Population a)
 sortPop pop = fmap (\x -> (sortBy (\(x1,x2) (y1,y2) -> compare (-x2) (-y2)) x)) pop
@@ -126,16 +130,16 @@ unwrapMaybeOverIO Nothing = return Nothing
 -------
 
 instance Species Integer where
-  sample x rand = Just (randomR (0,100) rand)
-  combine rand x y = Just (gcd x y,rand)
+  sample x rand = return (randomR (0,100) rand)
+  combine rand x y = return (gcd x y,rand)
   fitness x = logObj "factoring " x >> return (fromIntegral (length (filter (\y -> mod x y == 0) [2..x-1]))) -- counts factors 
 
 initInt :: [(Integer,StdGen)]
 initInt = scanl (\(x,rand) y -> randomR (0,100) rand) (0,mkStdGen 10) [0,1,2]
 
 instance Species Bool where
-  sample x rand = Just (randomChoice [True,False] rand)
-  combine rand x y = Just (randomChoice [x,y] rand)
+  sample x rand = return (randomChoice [True,False] rand)
+  combine rand x y = return (randomChoice [x,y] rand)
   fitness x = return (if x then 1 else 0)
 
 --  

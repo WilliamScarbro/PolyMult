@@ -1,32 +1,36 @@
 module Search where
 
-import FField
-import PolyRings
-import NTT
-import Fourier
 import Data.List
 import Data.Maybe
 import qualified Data.Map as Map (empty,insert,Map,member,mapAccumWithKey)
 import Data.Tree
 import System.Random
+import Control.Monad
+
+import FField
+import PolyRings
+import NTT
+import Fourier
+import Logger
 
 ---
 
-expand :: Ring -> [Ring]
-expand r = let mrl=nub (fmap (\m -> apply m r) (match matchMorphism r)) in foldr (++) [] (fmap maybeToList mrl)
+--expand :: Ring -> [Ring]
+--expand r = let mrl=nub (fmap (\m -> apply m r) (match matchMorphism r)) in foldr (++) [] (fmap maybeToList mrl)
+
 
 ---
 
-search_morphs :: [Ring] -> Map.Map Ring [Morphism] -> Map.Map Ring [Morphism]
-search_morphs (current:z) hmap = if Map.member current hmap then search_morphs z hmap else
-  let morphs = match matchMorphism current in
-    let neighbors = foldl (++) [] (fmap maybeToList (fmap (\m -> apply m current) morphs)) in
-      let hmap_new = Map.insert current morphs hmap in
-        search_morphs (nub (z++neighbors)) hmap_new
-search_morphs [] hmap = hmap
-
-terminal :: Eq b => Map.Map a [b] -> [a]
-terminal hmap = fst (Map.mapAccumWithKey (\accum key val -> (if val==[] then accum++[key] else accum,0)) [] hmap)
+--search_morphs :: [Ring] -> Map.Map Ring [Morphism] -> Map.Map Ring [Morphism]
+--search_morphs (current:z) hmap = if Map.member current hmap then search_morphs z hmap else
+--  let morphs = match matchMorphism current in
+--    let neighbors = foldl (++) [] (fmap maybeToList (fmap (\m -> apply m current) morphs)) in
+--      let hmap_new = Map.insert current morphs hmap in
+--        search_morphs (nub (z++neighbors)) hmap_new
+--search_morphs [] hmap = hmap
+--
+--terminal :: Eq b => Map.Map a [b] -> [a]
+--terminal hmap = fst (Map.mapAccumWithKey (\accum key val -> (if val==[] then accum++[key] else accum,0)) [] hmap)
 
 ---
 
@@ -52,25 +56,30 @@ path_get_end (Path cur []) = Just cur
 path_get_states :: Path -> Maybe [Ring]
 path_get_states (Path start morphs) = traverse id (scanl (\prev_state m -> prev_state >>= apply m) (Just start) morphs)
                                                             
-buildPath :: Ring -> (Ring -> Maybe Morphism) -> Maybe Path
+buildPath :: Ring -> (Ring -> IO (Maybe Morphism)) -> IO Path
 buildPath start f = buildPath_help start f start []
-buildPath_help :: Ring -> (Ring -> Maybe Morphism) -> Ring -> [Morphism] -> Maybe Path
-buildPath_help start f cur build = let morph = f cur in
-  if morph == Nothing then Just (Path start build) else do {
-    m <- morph;
-    new_cur <- apply m cur;
-    buildPath_help start f new_cur (build++(maybeToList morph)) }
+buildPath_help :: Ring -> (Ring -> IO (Maybe Morphism)) -> Ring -> [Morphism] -> IO Path
+buildPath_help start f cur build = join (do {
+  morph <- f cur; -- Maybe Morph
+  recursive <- return (if morph == Nothing then Just (return (Path start build) :: IO Path) else (do { -- Maybe
+                          m <- morph; -- Morph
+                          new_cur <- apply m cur; -- Ring
+                          return (buildPath_help start f new_cur (build++[m])) }));
+  return (fromMaybe ((logObj "ERROR: SEARCH" "buildPath fail")>>(return (Path start build))) recursive); })
 
-buildPath_random :: Ring -> StdGen -> (Ring -> StdGen -> Maybe (Morphism,StdGen)) -> Maybe (Path,StdGen)
+buildPath_random :: Ring -> StdGen -> (Ring -> StdGen -> IO (Maybe (Morphism,StdGen))) -> IO (Path,StdGen)
 buildPath_random start rand f = buildPath_random_help start rand f start []
-buildPath_random_help :: Ring -> StdGen -> (Ring -> StdGen -> Maybe (Morphism, StdGen)) -> Ring -> [Morphism] -> Maybe (Path,StdGen)
-buildPath_random_help start rand f cur build = let morph_rand = f cur rand in
-  if morph_rand == Nothing then Just (Path start build,rand) else do {
-    (morph,nrand) <- morph_rand;
-    new_cur <- apply morph cur;
-    buildPath_random_help start nrand f new_cur (build++[morph]) }
+buildPath_random_help :: Ring -> StdGen -> (Ring -> StdGen -> IO (Maybe (Morphism, StdGen))) -> Ring -> [Morphism] -> IO (Path,StdGen)
+buildPath_random_help start rand f cur build =
+  join (do { -- IO
+        morph_rand <- f cur rand; -- Maybe (Morph,StdGen)
+        recursive <- return (if morph_rand == Nothing then Just (return (Path start build,rand) :: IO (Path,StdGen)) else (do { -- Maybe
+                                                                                                  (morph,nrand) <- morph_rand; -- (Morph,StdGen)
+                                                                                                    new_cur <- apply morph cur; -- Ring
+                                                                                                    return (buildPath_random_help start nrand f new_cur (build++[morph]));  })); -- Maybe (IO (Path,StdGen))
+        return (fromMaybe ((logObj "ERROR: SEARCH" "buildPath fail")>>(return (Path start build,rand))) (recursive)); }) -- if fails, returns path so far
 
-
+   
 appendPath :: Path -> Path -> Maybe Path
 appendPath lhs rhs = do {
   lend <- path_get_end lhs;
@@ -110,27 +119,26 @@ choiceFold prev cur = do
    return ([(after_q1,after_q2),(before_q1,before_q2)] ++ (tail m_prev))
                               
 
-randomPath2 :: Ring -> StdGen -> Maybe (Path,StdGen)
-randomPath2 start rand = buildPath_random start rand builder
+randomPath :: Ring -> StdGen -> IO (Path,StdGen)
+randomPath start rand = buildPath_random start rand builder
   where
-    builder :: Ring -> StdGen -> Maybe (Morphism,StdGen)
-    builder cur rand = let morphs = match matchMorphism cur in
-      if morphs == [] then Nothing else Just (randomChoice morphs rand)
+    builder :: Ring -> StdGen -> IO (Maybe (Morphism,StdGen))
+    builder cur rand = do { --IO
+      morphs <- morphismMatch >>= (\x -> match x cur); -- [Morph]
+      return (if morphs == [] then Nothing else Just (randomChoice morphs rand)); }
 
-combinePaths2 :: StdGen -> Path -> Path -> Maybe (Path,StdGen)
+combinePaths2 :: StdGen -> Path -> Path -> IO (Path,StdGen)
 combinePaths2 rand p1 p2 = let (r1,r2) = split rand in
    let combinedMorphs  = (path_get_morphs p1) ++ (path_get_morphs p2) in
      --let shuffledMorphs = shuffle' combinedMorphs (length combinedMorphs) r1 in
      buildPath_random (path_get_start p1) rand (pathBuilder combinedMorphs)
      where
-       pathBuilder :: [Morphism] -> Ring -> StdGen -> Maybe (Morphism,StdGen)
-       pathBuilder oldMorphs ring rand = let morphs = match matchMorphism ring in 
-         let overlapping = intersectBy (\m1 m2 -> is_par_morph (morph_get_inner m1) m2) morphs oldMorphs in
-           let choices = if overlapping == [] then morphs else overlapping in
-             if choices == [] then Nothing else Just (randomChoice choices rand)
-
---      return nPath
---      where
+       pathBuilder :: [Morphism] -> Ring -> StdGen -> IO (Maybe (Morphism,StdGen))
+       pathBuilder oldMorphs ring rand = do { -- IO
+         morphs <- morphismMatch >>= (\x -> match x ring); -- [Morph] 
+         overlapping <- return (intersectBy (\m1 m2 -> is_par_morph (morph_get_inner m1) m2) morphs oldMorphs);
+         choices <- return (if overlapping == [] then morphs else overlapping);
+         return (if choices == [] then Nothing else Just (randomChoice choices rand)); }
 
 
 commonStates :: Path -> Path -> [Ring]
@@ -147,69 +155,70 @@ splitPathOnState (Path start morphs) split = helper start [] start morphs split
       let m = head after in
         (apply m current) >>= (\next -> helper start (before++[m]) next (tail after) split)
                                                 
+
 ---
 
-buildForestPath :: Ring -> [Tree (Morphism)]
-buildForestPath start = unfoldForest buildForestPath_branch [(Just start,mi) | mi <- match matchMorphism start]
-
-buildForestPath_branch :: (Maybe Ring,Morphism) -> (Morphism, [(Maybe Ring, Morphism)])
-buildForestPath_branch (r,m) = let r2 = r >>= apply m in
-  (m,[(r2,mi) | mi <- buildForestPath_help r2])
-
-buildForestPath_help :: Maybe Ring -> [Morphism]
-buildForestPath_help (Just r) = match matchMorphism r
-buildForestPath_help Nothing = []
-
-randomPath :: Ring -> Int -> Maybe Path
-randomPath start seed = let morphs = fst (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) (mkStdGen seed)) in
-  morphs >>= (\ms -> Just (Path start ms))
-
-randomPathGen :: RandomGen g => Ring -> g -> Maybe (Path,g)
-randomPathGen start rand = let (morphs,rand2) = (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) rand) in
-                             Just (\x -> (Path start x,rand2)) <*> morphs
+--buildForestPath :: Ring -> [Tree (Morphism)]
+--buildForestPath start = unfoldForest buildForestPath_branch [(Just start,mi) | mi <- match matchMorphism start]
+--
+--buildForestPath_branch :: (Maybe Ring,Morphism) -> (Morphism, [(Maybe Ring, Morphism)])
+--buildForestPath_branch (r,m) = let r2 = r >>= apply m in
+--  (m,[(r2,mi) | mi <- buildForestPath_help r2])
+--
+--buildForestPath_help :: Maybe Ring -> [Morphism]
+--buildForestPath_help (Just r) = match matchMorphism r
+--buildForestPath_help Nothing = []
+--
+--randomPath :: Ring -> Int -> Maybe Path
+--randomPath start seed = let morphs = fst (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) (mkStdGen seed)) in
+--  morphs >>= (\ms -> Just (Path start ms))
+--
+--randomPathGen :: RandomGen g => Ring -> g -> Maybe (Path,g)
+--randomPathGen start rand = let (morphs,rand2) = (randomWalk (fmap (fmap (\x -> Just x)) (buildForestPath start)) rand) in
+--                             Just (\x -> (Path start x,rand2)) <*> morphs
 
 -- Maybe Ring -> [Morphism]
 
 
 ---
 
-buildPathForest :: Ring -> [Tree (Maybe Kernel)]
-buildPathForest start = unfoldForest buildPathForest_branch [(Just start,mi) | mi <- match matchMorphism start]
- 
-buildPathForest_branch :: (Maybe Ring,Morphism) -> (Maybe Kernel, [(Maybe Ring, Morphism)])
-buildPathForest_branch (r,m) = let r2 = r >>= apply m in
-  (r >>= morphism_to_kernel m, [(r2,mi) | mi <- buildPathForest_help1 r2])
-
-buildPathForest_help1 :: Maybe Ring -> [Morphism]
-buildPathForest_help1 (Just r) = match matchMorphism r
-buildPathForest_help1 Nothing = []
-
+--buildPathForest :: Ring -> [Tree (Maybe Kernel)]
+--buildPathForest start = unfoldForest buildPathForest_branch [(Just start,mi) | mi <- match matchMorphism start]
+-- 
+--buildPathForest_branch :: (Maybe Ring,Morphism) -> (Maybe Kernel, [(Maybe Ring, Morphism)])
+--buildPathForest_branch (r,m) = let r2 = r >>= apply m in
+--  (r >>= morphism_to_kernel m, [(r2,mi) | mi <- buildPathForest_help1 r2])
+--
+--buildPathForest_help1 :: Maybe Ring -> [Morphism]
+--buildPathForest_help1 (Just r) = match matchMorphism r
+--buildPathForest_help1 Nothing = []
+--
 
 --
 
 
-buildRingTree :: Ring -> Tree Ring
-buildRingTree start = unfoldTree buildRingTree_branch start
-
-buildRingTree_branch :: Ring -> (Ring,[Ring])
-buildRingTree_branch r = (r,foldl (++) [] (fmap maybeToList (fmap (\m -> apply m r) (match matchMorphism r))))
-
+--buildRingTree :: Ring -> Tree Ring
+--buildRingTree start = unfoldTree buildRingTree_branch start
 --
-
---randomWalk :: RandomGen b => [Tree (Maybe Kernel)] -> b -> (Maybe [Kernel],b)
-randomWalk :: (RandomGen b, Eq a) => [Tree (Maybe a)] -> b -> (Maybe [a],b)
-randomWalk forest g = let (index,new_g) = randomR (0,(length forest)-1) g in
-  let tree = forest !! index in
-    let (walk,new_new_g) = randomWalk_help ([],new_g) tree in
-      (traverse id walk,new_new_g)
---    (traverse id (fst (randomWalk_help ([],new_g) tree))
-                   
-randomWalk_help :: (RandomGen b, Eq a) => ([a],b) -> Tree a -> ([a],b)
-randomWalk_help (walk,g) (Node c rest) = if rest == [] then (walk++[c],g) else
-  let (index,new_g) = randomR (0,(length rest)-1) g in
-    let new_rest = rest !! index  in -- this may be a bad idea
-        randomWalk_help (walk++[c],new_g) new_rest
-
+--buildRingTree_branch :: Ring -> (Ring,[Ring])
+--buildRingTree_branch r = (r,foldl (++) [] (fmap maybeToList (fmap (\m -> apply m r) (match matchMorphism r))))
+--
+----
+--
+----randomWalk :: RandomGen b => [Tree (Maybe Kernel)] -> b -> (Maybe [Kernel],b)
+--randomWalk :: (RandomGen b, Eq a) => [Tree (Maybe a)] -> b -> (Maybe [a],b)
+--randomWalk forest g = let (index,new_g) = randomR (0,(length forest)-1) g in
+--  let tree = forest !! index in
+--    let (walk,new_new_g) = randomWalk_help ([],new_g) tree in
+--      (traverse id walk,new_new_g)
+----    (traverse id (fst (randomWalk_help ([],new_g) tree))
+--                   
+--randomWalk_help :: (RandomGen b, Eq a) => ([a],b) -> Tree a -> ([a],b)
+--randomWalk_help (walk,g) (Node c rest) = if rest == [] then (walk++[c],g) else
+--  let (index,new_g) = randomR (0,(length rest)-1) g in
+--    let new_rest = rest !! index  in -- this may be a bad idea
+--        randomWalk_help (walk++[c],new_g) new_rest
+--
 
 
           
@@ -219,26 +228,36 @@ strTree (Node x rest) = show x ++ (foldr (++) "" [ (strTree r) | r <- rest] )
 --
 
 -- rewrite turtles to work with paths
-turtles :: Ring -> Morphism -> Maybe Path
-turtles start turtle = let findTurtle ring = let morphs = (filter (\m -> is_par_morph turtle m) (match matchMorphism ring)) in
-                             if morphs == [] then Nothing else Just (head morphs) in
+turtles :: Ring -> Morphism -> IO Path
+turtles start turtle = let findTurtle ring = do { -- IO
+                             mm <- morphismMatch; -- Match
+                             uf_morphs <- match mm ring; -- [Morph]
+                             morphs <- return (filter (\m -> is_par_morph turtle m) uf_morphs); -- [Morph]
+                             return (if morphs == [] then Nothing else Just (head morphs)); } in -- Ring -> IO (Maybe (Morph))
                          buildPath start findTurtle
 
-turtlesExtend :: Path -> Morphism -> Maybe Path
-turtlesExtend p1 turtle = do { p1_end <- path_get_end p1;
-                               p2 <- turtles p1_end turtle;
-                               appendPath p1 p2 }
+turtlesExtend :: Path -> Morphism -> IO Path
+turtlesExtend p1 turtle = do {
+  p1_end <- maybeToIO (Base 1 1 1 1) "turtlesExtend calling path_get_end" (path_get_end p1);
+  p2 <- turtles p1_end turtle;
+  maybeToIO (Path (Base 1 1 1 1) []) "turtlesExtend calling appendPath" (appendPath p1 p2); }
   
-turtlesAWD :: Ring -> Morphism -> Maybe [Kernel] -> Maybe [Kernel]
-turtlesAWD cur turtle path = let morphs = (filter (\m -> is_par_morph turtle m) (match matchMorphism cur)) in
-  if morphs == [] then path else
-    let my_morph = head morphs in do {
-      new_ring <- apply my_morph cur;
-      uw_path <- path;
-      uw_ker <- traverse id [(morphism_to_kernel my_morph cur)];
-      turtlesAWD new_ring turtle (Just (uw_path ++ uw_ker))
-      }
-      
+--turtlesAWD :: Ring -> Morphism -> Maybe [Kernel] -> Maybe [Kernel]
+--turtlesAWD cur turtle path = let morphs = (filter (\m -> is_par_morph turtle m) (match matchMorphism cur)) in
+--  if morphs == [] then path else
+--    let my_morph = head morphs in do {
+--      new_ring <- apply my_morph cur;
+--      uw_path <- path;
+--      uw_ker <- traverse id [(morphism_to_kernel my_morph cur)];
+--      turtlesAWD new_ring turtle (Just (uw_path ++ uw_ker))
+--      }
+--      
+
+-- UTILITY
+
+maybeToIO :: a -> String -> Maybe a -> IO a
+maybeToIO _ _ (Just m_obj) = return m_obj
+maybeToIO dummy_obj str Nothing = logObj "ERROR" str >> (return dummy_obj)
 
 randomChoice :: RandomGen g => [a] -> g -> (a,g)
 randomChoice list rand = let (ind,rand2)=randomR (0,(length list)-1) rand in (list!!ind,rand2)
@@ -258,12 +277,12 @@ randomChoice list rand = let (ind,rand2)=randomR (0,(length list)-1) rand in (li
 --  let paths = fmap search_paths 
 --1
 
-rec_expand :: [Ring] -> [Ring]
-rec_expand lmr = nub (foldr (++) [] [[x] >>= expand | x <- lmr])
-
+--rec_expand :: [Ring] -> [Ring]
+--rec_expand lmr = nub (foldr (++) [] [[x] >>= expand | x <- lmr])
 --
-n_expand :: Int -> [Ring] -> [Ring]
-n_expand n lr | n>0 = n_expand (n-1) (rec_expand lr)
-             | n<=0 = lr
-
+----
+--n_expand :: Int -> [Ring] -> [Ring]
+--n_expand n lr | n>0 = n_expand (n-1) (rec_expand lr)
+--             | n<=0 = lr
 --
+----
