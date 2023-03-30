@@ -41,7 +41,7 @@ geneticRun :: (Int,Int) -> Int -> Int -> IO ()
 geneticRun params size gens = (putStrLn ("-----\nGenetic Run N:"++show (fst params)++" P:"++show (snd params)++" PopSize:"++show size++" Gens:"++show gens)) >> testNthGen params size gens
 
 main :: IO ()
-main = (\x -> geneticRun new_hope_params x 0 >> geneticRun new_hope_params x 10) 5 -- geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >
+main = (\x -> setEnv "MATCH_CONTEXT" "Factor" >> geneticRun new_hope_params x 0 >> setEnv "MATCH_CONTEXT" "Permute" >> geneticRun new_hope_params x 0 ) 5 -- geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >
 
  --main = putStrLn (drawForest (fmap (fmap show) (buildPathForest (Base 4 0 4 5))))
  --main = putStrLn $ drawTree $ fmap $ (fmap show) $ buildTree $ (Base 4 0 4 5)

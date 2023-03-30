@@ -182,17 +182,21 @@ splitPathOnState (Path start morphs) split = helper start [] start morphs split
 
 ---
 
---buildPathForest :: Ring -> [Tree (Maybe Kernel)]
---buildPathForest start = unfoldForest buildPathForest_branch [(Just start,mi) | mi <- match matchMorphism start]
+buildPathForest :: Ring -> IO [Tree (Kernel)]
+buildPathForest start = do { -- IO
+  mm <- morphismMatch; -- Match
+  morphs <- match mm start; -- [Morphs]
+  initial <- return [(start,mi) | mi <- morphs]; -- [(Ring,Morphism)]
+  unfoldForestM buildPathForest_branch initial; } -- IO [Tree (Kernel)]
+  
 -- 
---buildPathForest_branch :: (Maybe Ring,Morphism) -> (Maybe Kernel, [(Maybe Ring, Morphism)])
---buildPathForest_branch (r,m) = let r2 = r >>= apply m in
---  (r >>= morphism_to_kernel m, [(r2,mi) | mi <- buildPathForest_help1 r2])
---
---buildPathForest_help1 :: Maybe Ring -> [Morphism]
---buildPathForest_help1 (Just r) = match matchMorphism r
---buildPathForest_help1 Nothing = []
---
+buildPathForest_branch :: (Ring,Morphism) -> IO (Kernel, [(Ring, Morphism)])
+buildPathForest_branch (r,m) = do { -- IO
+  mm <- morphismMatch;
+  morphs <- match mm r;
+  r2 <- maybeToIO "buildPathForest calling apply" (apply m r);
+  k <- maybeToIO "buildPathForest calling morphism_to_kernel" (morphism_to_kernel m r);
+  return (k,[(r2,mi) | mi <- morphs ]) }
 
 --
 
@@ -238,9 +242,9 @@ turtles start turtle = let findTurtle ring = do { -- IO
 
 turtlesExtend :: Path -> Morphism -> IO Path
 turtlesExtend p1 turtle = do {
-  p1_end <- maybeToIO (Base 1 1 1 1) "turtlesExtend calling path_get_end" (path_get_end p1);
+  p1_end <- maybeToIO "turtlesExtend calling path_get_end" (path_get_end p1);
   p2 <- turtles p1_end turtle;
-  maybeToIO (Path (Base 1 1 1 1) []) "turtlesExtend calling appendPath" (appendPath p1 p2); }
+  maybeToIO "turtlesExtend calling appendPath" (appendPath p1 p2); }
   
 --turtlesAWD :: Ring -> Morphism -> Maybe [Kernel] -> Maybe [Kernel]
 --turtlesAWD cur turtle path = let morphs = (filter (\m -> is_par_morph turtle m) (match matchMorphism cur)) in
@@ -255,9 +259,9 @@ turtlesExtend p1 turtle = do {
 
 -- UTILITY
 
-maybeToIO :: a -> String -> Maybe a -> IO a
-maybeToIO _ _ (Just m_obj) = return m_obj
-maybeToIO dummy_obj str Nothing = logObj "ERROR" str >> (return dummy_obj)
+maybeToIO :: String -> Maybe a -> IO a
+maybeToIO _ (Just m_obj) = return m_obj
+maybeToIO str Nothing = logObj "ERROR" str >> (return undefined)
 
 randomChoice :: RandomGen g => [a] -> g -> (a,g)
 randomChoice list rand = let (ind,rand2)=randomR (0,(length list)-1) rand in (list!!ind,rand2)
