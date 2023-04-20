@@ -1,4 +1,4 @@
-module Search where
+module Search.Search where
 
 import Data.List
 import Data.Maybe
@@ -7,11 +7,11 @@ import Data.Tree
 import System.Random
 import Control.Monad
 
-import FField
-import PolyRings
-import NTT
-import Fourier
-import Logger
+import Algebra.FField
+import Algebra.PolyRings
+import Algebra.NTT
+import Algebra.Fourier
+import Util.Logger
 
 ---
 
@@ -201,11 +201,18 @@ buildPathForest_branch (r,m) = do { -- IO
 --
 
 
---buildRingTree :: Ring -> Tree Ring
---buildRingTree start = unfoldTree buildRingTree_branch start
---
---buildRingTree_branch :: Ring -> (Ring,[Ring])
---buildRingTree_branch r = (r,foldl (++) [] (fmap maybeToList (fmap (\m -> apply m r) (match matchMorphism r))))
+buildRingTree :: Ring -> IO (Tree Ring)
+buildRingTree start = unfoldTreeM buildRingTree_branch start
+
+buildRingTree_branch :: Ring -> IO (Ring,[Ring])
+buildRingTree_branch r = do { --IO
+  mm <- morphismMatch; --Match
+  morphs <- match mm r; -- [Morphs]
+  rings <- maybeToIO "buildRingTree calling apply" (sequence (fmap (\m -> apply m r) morphs));
+  return (r,rings); }
+		     
+--(r,foldl (++) [] (fmap maybeToList (fmap (\m -> apply m r) (match matchMorphism r))))
+
 --
 ----
 --

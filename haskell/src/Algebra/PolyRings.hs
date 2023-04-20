@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 
 
-module PolyRings where
+module Algebra.PolyRings where
 
 instance Show (Int -> Maybe Ring) where
   show f = show (f 0)

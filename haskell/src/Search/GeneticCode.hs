@@ -1,15 +1,15 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module GeneticCode where
+module Search.GeneticCode where
 
-import FField
-import NTT
-import CompileKernel
-import Search
-import Fourier
-import Genetic
-import CodeGen
-import Logger
+import Algebra.FField
+import Algebra.NTT
+import Compile.CompileKernel
+import Search.Search
+import Algebra.Fourier
+import Search.Genetic
+import Search.CodeGen
+import Util.Logger
 
 instance Species Path where
   --sample :: RandomGen b => a -> Std -> IO (a,StdGen)

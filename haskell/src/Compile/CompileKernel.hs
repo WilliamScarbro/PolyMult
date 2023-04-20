@@ -1,8 +1,8 @@
-module CompileKernel where
+module Compile.CompileKernel where
 
 -- assume b p are common accross all kernels, this allows a common w
 
-import NTT
+import Algebra.NTT
 import Data.Maybe
 import Data.List
 import qualified Data.Map as Map (fromList,empty,insert,Map,member,lookup,mapWithKey,mapAccum,mapAccumWithKey)

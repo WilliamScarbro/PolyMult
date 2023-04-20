@@ -1,5 +1,5 @@
-import NTT
-import CompileKernel
+import Algebra.NTT
+import Compile.CompileKernel
 
 
 

@@ -1,4 +1,4 @@
-import Fourier
+import Algebra.Fourier
 
 df_test_factor = define_morphism (Factor 2) (Base 8 0 8 17)
 df_test_label = define_morphism (Label 2) (Base 8 0 8 17)

@@ -4,7 +4,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 --{-# LANGUAGE OverlappingInstances #-}
 
-module FField where
+module Algebra.FField where
 
 
 import qualified Data.Set as Set

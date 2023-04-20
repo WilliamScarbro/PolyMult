@@ -1,10 +1,10 @@
-module GeneticTest where
+module Test.GeneticTest where
 
-import Genetic
-import GeneticCode
-import Search
-import PolyRings
-import FField
+import Search.Genetic
+import Search.GeneticCode
+import Search.Search
+import Algebra.PolyRings
+import Algebra.FField
 
 import System.Random
 import Control.Monad
@@ -14,12 +14,12 @@ import Data.Maybe
 new_hope_params=(1024,12289) :: (Int,Int)
 kyber_params=(256,7681) :: (Int,Int)
 
-testPathPop :: Int -> IO ()
-testPathPop size = let pop = do { -- IO
-                    (path,ta_rand) <- randomPath (Base 16 0 16 17) (mkStdGen 10); -- Path
+testPathPop :: (Int,Int) -> Int -> IO ()
+testPathPop (n,p) size = let pop = do { -- IO
+                    (path,ta_rand) <- randomPath (Base n 0 n p) (mkStdGen 10); -- Path
                     (ip,rand) <- initializePopulation path (mkStdGen 10) size; -- (IO (Population Path),StdGen)
                     sorted_ip <- sortPop ip; -- Population Path 
-                    putStr ( show ( sorted_ip ))} in -- IO ()
+                    putStr ( show ( fmap snd sorted_ip ) ++"\n"++ show ( fst ( head sorted_ip) ) ++ "\n" )} in -- IO ()
                   pop
 
 -- KernelSize -> PopSize -> Generations

@@ -1,19 +1,19 @@
 module Main where
 
-import NTT
-import CompileKernel
-import Search
-import Fourier
-import PolyRings
-import Genetic
-import GeneticCode
-import GeneticTest
-import Logger
+import Algebra.NTT
+import Compile.CompileKernel
+import Search.Search
+import Algebra.Fourier
+import Algebra.PolyRings
+import Search.Genetic
+import Search.GeneticCode
+import Test.GeneticTest
+import Util.Logger
+import Test.TimeTest_Factor
 
 import qualified Data.Map as Map (empty,insert,Map,member)
 import Data.Tree
 import System.Random
-
 
 import System.Environment
 import System.Exit
@@ -36,13 +36,28 @@ path = [(Phi 4 2 0 4 5), Kernel_Repeat 4 2 (Phi 2 2 0 4 5), Kernel_Extend 4 2 (\
 --         let s_walk = squashMaybeString (m_walk >>= (\ms -> Just (show ms))) "Error: exploration failure" in
 --             putStrLn ("Path:\n  "++s_walk++"\n---\nCode:\n"++code) 
 --
+
+new_hope_logn = (8,12289)
+kyber_params_logn = (8,7681)
+
+passEnvVars :: IO ()
+passEnvVars = let vars=["POLYMULT_HOME","TIMER_ITERS","MATCH_CONTEXT"] in
+  sequence (fmap (\v -> getEnv v >>= setEnv v >> logIO ("MAIN Set EnvVar "++v) (getEnv v)) vars) >> return ()
+                   
 -- params -> size -> gens
 geneticRun :: (Int,Int) -> Int -> Int -> IO ()
 geneticRun params size gens = (putStrLn ("-----\nGenetic Run N:"++show (fst params)++" P:"++show (snd params)++" PopSize:"++show size++" Gens:"++show gens)) >> testNthGen params size gens
 
-main :: IO ()
-main = (\x -> setEnv "MATCH_CONTEXT" "Factor" >> geneticRun new_hope_params x 0 >> setEnv "MATCH_CONTEXT" "Permute" >> geneticRun new_hope_params x 0 ) 5 -- geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 >
+factorRun :: (Int,Int) -> IO ()
+factorRun (logn,p) = do { -- IO
+  fp <- (timeFactorPaths logn p); -- [(Int,Int,Float)]
+  putStrLn ( show fp )  }
 
+main :: IO ()
+--main = passEnvVars >> testPathPop new_hope_params 1000
+--main = passEnvVars >> factorRun new_hope_logn
+main = passEnvVars >> (\x -> geneticRun new_hope_params x 0 >> geneticRun new_hope_params x 10 >> geneticRun kyber_params x 0 >> geneticRun kyber_params x 10 ) 20
+ 
  --main = putStrLn (drawForest (fmap (fmap show) (buildPathForest (Base 4 0 4 5))))
  --main = putStrLn $ drawTree $ fmap $ (fmap show) $ buildTree $ (Base 4 0 4 5)
  --main = let graph = search [Base 4 0 4 5] expand Map.empty in putStrLn (show (terminal graph))

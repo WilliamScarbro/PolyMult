@@ -2,12 +2,12 @@
 --{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module Fourier where
+module Algebra.Fourier where
 
-import FField
-import PolyRings
-import NTT
-import Logger
+import Algebra.FField
+import Algebra.PolyRings
+import Algebra.NTT
+import Util.Logger
 
 import Data.List
 import Data.Maybe

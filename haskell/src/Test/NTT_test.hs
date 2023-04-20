@@ -1,5 +1,5 @@
-import FField
-import NTT
+import Algebra.FField
+import Algebra.NTT
 
 
 test_ntt1 = (mNTT 4 5) `mv` (ffVec 4 5 id)

@@ -1,11 +1,11 @@
-module CodeGen where
+module Search.CodeGen where
 
-import FField
-import NTT
-import CompileKernel
-import Search
-import Fourier
-import PolyRings
+import Algebra.FField
+import Algebra.NTT
+import Compile.CompileKernel
+import Search.Search
+import Algebra.Fourier
+import Algebra.PolyRings
 --import PolyMult
 import Data.List
 import Text.Regex.Posix
@@ -28,15 +28,8 @@ binary_path fname = kt_relative_path ("bin/"++fname)
 --
 
 
-<<<<<<< HEAD
-kt_home = "/home/scarbro/CSU/PolyMult/kernel-timer/"
-
 --writeSample :: Ring -> Int -> FilePath -> IO ()
---writeSample start seed fname = writeFile (kt_home++"src/gen/"++fname++".c") (sampleCode start seed)
-=======
-writeSample :: Ring -> Int -> FilePath -> IO ()
-writeSample start seed fname = code_path fname >>= (\x -> writeFile x (sampleCode start seed))
->>>>>>> 430192f91dd8f7fd12b483cf7cfa2c3d24f85ccc
+--writeSample start seed fname = code_path fname >>= (\x -> writeFile x (sampleCode start seed))
 
 timeCode :: FilePath -> IO String
 timeCode fname = do { -- IO 
@@ -84,10 +77,10 @@ pathCode path = let pstart = path_get_start path in
         let msteps = path_get_steps path in
           squashMaybeString (msteps >>= (\steps -> Just (compile (sn,sb,sp) "Gen" steps) ) ) "Compilation Error"
        
-writePath :: Maybe Path -> FilePath -> IO ()
-writePath (Just path) fname = let pcode = pathCode path in
+writePath :: Path -> FilePath -> IO ()
+writePath path fname = let pcode = pathCode path in
   code_path fname >>= (\x -> writeFile x pcode)
-writePath Nothing fname = code_path fname >>= (\x -> writeFile x "Compilation Error")
+--writePath Nothing fname = code_path fname >>= (\x -> writeFile x "Compilation Error")
 
 timePath :: Path -> FilePath -> IO Float
 timePath path fname = writePath path fname >> timeCodeAvg fname

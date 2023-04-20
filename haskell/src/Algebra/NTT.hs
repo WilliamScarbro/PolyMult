@@ -2,10 +2,10 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 
-module NTT where
+module Algebra.NTT where
 
-import FField
-import PolyRings
+import Algebra.FField
+import Algebra.PolyRings
 
 import Data.Matrix 
 
@@ -93,11 +93,11 @@ tpose l = linearOp (size l) (\(x,y) -> get_el y x l)
 
 
 mId :: Integral a => a -> LinearOp FF
-mId n = linearOp n (\(i,j) -> if i==j then Just one else Just FField.zero)
+mId n = linearOp n (\(i,j) -> if i==j then Just one else Just Algebra.FField.zero)
 
 -- assumes (Int -> Int) is a bijection
 perm :: Integral a => a -> (Int -> Int) -> LinearOp FF
-perm n f = linearOp n (\(i,j) -> if f(j)==i then Just one else Just FField.zero)
+perm n f = linearOp n (\(i,j) -> if f(j)==i then Just one else Just Algebra.FField.zero)
 
 mL :: Integral a => a -> a -> LinearOp FF
 mL n k = let m = fromIntegral (div n k) in let ik = fromIntegral k in perm n (\x -> (div x ik) + m * (mod x ik))

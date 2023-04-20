@@ -1,4 +1,4 @@
-module Logger where
+module Util.Logger where
 
 import Control.Monad
 

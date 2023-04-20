@@ -1,21 +1,27 @@
-module PolyMult where
+module Interface.PolyMult where
 
-import NTT
-import CompileKernel
-import Search
-import Fourier
-import PolyRings
+import Algebra.NTT
+import Compile.CompileKernel
+import Search.Search
+import Algebra.Fourier
+import Algebra.PolyRings
 import qualified Data.Map as Map (empty,insert,Map,member)
 import Data.Tree
 import System.Random
 
 
 --interface functions
-pathTree :: Ring -> IO()
-pathTree r = putStrLn (drawForest (fmap (fmap show) (buildPathForest r)))
+pathTree :: Ring -> IO ()
+pathTree r = do {
+  pf <- buildPathForest r;
+  pf_str <- return (fmap (fmap show) pf);
+  putStrLn (drawForest pf_str); }
 
 ringTree :: Ring -> IO()
-ringTree r = putStrLn (drawTree (fmap show (buildRingTree r)))
+ringTree r = do {
+ rt <- buildRingTree r;
+ rt_str <- return (fmap show rt);
+ putStrLn (drawTree rt_str); }
 
 --samplePath :: Ring -> Int -> IO ()
 --samplePath start seed = 

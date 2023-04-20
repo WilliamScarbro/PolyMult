@@ -1,6 +1,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 
-module Genetic where
+module Search.Genetic where
 
 import System.Random
 import System.Random.Shuffle
@@ -9,8 +9,8 @@ import Data.List
 import Control.Monad
 import Data.Maybe
 
-import Search
-import Logger
+import Search.Search
+import Util.Logger
 
 class Species a where
   sample :: a -> StdGen -> IO (a,StdGen)

@@ -19,20 +19,17 @@ extra-source-files: CHANGELOG.md
 executable haskell
   main-is:             Main.hs
   other-modules:
-        PolyMult,
-        CodeGen,
-        Search,
-        PolyRings,
-        Fourier,
-        CompileKernel,
-        FField,
-        NTT,
-        TimeTest_Factor,
-        Genetic,
-        GeneticCode,
-        Logger,
-        GeneticTest
-  -- other-extensions:
+    Algebra.FField,
+    Algebra.Fourier,
+    Algebra.NTT,
+    Algebra.PolyRings,
+    Compile.CompileKernel,
+    Interface.PolyMult,
+    Search.CodeGen,
+    Search.GeneticCode,
+    Search.Genetic,
+    Search.Search,
+    Util.Logger 
   build-depends:
        base >=4.12,
        mtl >=2.2.2,
@@ -46,4 +43,17 @@ executable haskell
        hashable >= 1.4.2.0
   hs-source-dirs: src
   default-language:    Haskell2010
- 
+
+Test-Suite Compile-Test
+  type:               exitcode-stdio-1.0
+  main-is:            Test/CAST_Test.hs
+  hs-source-dirs:     src
+  other-modules:
+    Compile.CAST
+  build-depends:
+    base,
+    hspec >= 2.7,
+    hspec-discover >= 2.7
+  default-langauge: Haskell2010
+  --, test-framework, test-framework-hunit, HSpec
+
